@@ -55,6 +55,68 @@ export const beltColors = {
 
 export const allBelts: (keyof typeof beltColors)[] = [ "Branca", "Azul", "Roxa", "Marrom", "Preta", "Coral"];
 
+export const beltInfo = {
+  Branca: {
+    description: "Foco nos fundamentos, sobrevivência e defesa. O início da jornada.",
+    skills: ["Postura na Guarda", "Fuga de Quadril", "Rolamentos", "Levantada Técnica", "Defesa de Estrangulamento", "Pegada Básica", "Amortecimento de Queda"],
+  },
+  Azul: {
+    description: "Expansão do repertório de técnicas, começo do ataque e combinações.",
+    skills: ["Americana da Montada", "Armlock da Guarda", "Kimura", "Guarda Fechada", "Passagem de Guarda de Joelhos", "Estrangulamento Cruzado", "Raspagem de Tesoura"],
+  },
+  Roxa: {
+    description: "Desenvolvimento de um jogo próprio, refinamento técnico e estratégia.",
+    skills: ["Triângulo", "Ataques das Costas", "Guarda De La Riva", "Guarda Aranha", "Berimbolo", "Controle Lateral", "Passagem de Meia Guarda"],
+  },
+  Marrom: {
+    description: "Consolidação da técnica, alta eficiência e preparação para a faixa preta.",
+    skills: ["Chaves de Pé Retas", "Passagens de Guarda em Pé", "Omoplata", "Jogo de Pressão", "Controle do Kesa-Gatame", "Leg Drag", "Finalizações da Montada"],
+  },
+  Preta: {
+    description: "Maestria dos fundamentos, liderança e representação da arte.",
+    skills: ["Refinamento de Jogo", "Estratégia de Competição", "Contra-ataques", "Variações de Finalizações", "Liderança", "Ensinar e Conduzir", "Domínio do Timing"],
+  },
+  Coral: {
+    description: "Anos de dedicação e contribuição ao esporte, um grande mestre.",
+    skills: ["Legado no Esporte", "Filosofia do Jiu-Jitsu", "Contribuição para a Comunidade", "Desenvolvimento de Mestres", "Grande Mestria", "Impacto na Arte", "Visão Estratégica"],
+  },
+};
+
+// --- Sistema de Graduação Infantil ---
+
+export const beltColorsKids = {
+  Branca: { bg: "bg-white", text: "text-black" },
+  Cinza: { bg: "bg-gray-500", text: "text-white" },
+  Amarela: { bg: "bg-yellow-500", text: "text-black" },
+  Laranja: { bg: "bg-orange-500", text: "text-white" },
+  Verde: { bg: "bg-green-600", text: "text-white" },
+};
+
+export const allBeltsKids: (keyof typeof beltColorsKids)[] = ["Branca", "Cinza", "Amarela", "Laranja", "Verde"];
+
+export const beltInfoKids = {
+  Branca: {
+    description: "Foco em respeito, disciplina e movimentos básicos como rolamentos e quedas seguras.",
+    skills: ["Respeito ao Tatame", "Disciplina", "Rolamento para Frente", "Rolamento para Trás", "Amortecimento de Queda"],
+  },
+  Cinza: {
+    description: "Introdução às posições básicas de controle e conceitos de imobilização.",
+    skills: ["Posição de Montada", "Controle de 100kg", "Fuga de Quadril Básica", "Pegada de Judô", "Postura na Guarda"],
+  },
+  Amarela: {
+    description: "Primeiras finalizações seguras e raspagens, começando a conectar movimentos ofensivos.",
+    skills: ["Armlock da Montada", "Estrangulamento pela Gola", "Raspagem de Gancho", "Passagem de Guarda Simples", "Defesa Pessoal Básica"],
+  },
+  Laranja: {
+    description: "Maior repertório de ataques e defesas, e o desenvolvimento de combinações simples.",
+    skills: ["Triângulo da Montada", "Ataque Duplo (Raspagem + Finalização)", "Guarda Aranha Básica", "Quedas Simples (O-Goshi)", "Controle das Costas"],
+  },
+  Verde: {
+    description: "Transição para técnicas mais avançadas, preparando para o sistema de graduação adulto.",
+    skills: ["Kimura da Guarda", "Passagem de Guarda Toreando", "De La Riva Básica", "Defesa de Chaves de Braço", "Início do Jogo Estratégico"],
+  },
+};
+
 const studentUser: User = {
   id: "user1",
   name: "Alex Costa",
@@ -149,30 +211,3 @@ export const mockStudents: Omit<User, 'role'>[] = [
     { id: "s3", name: "Carlos Souza", email: "carlos@email.com", avatar: "https://placehold.co/128x128.png", belt: "Roxa", stripes: 1, attendance: { total: 150, lastMonth: 8 }, nextGraduationProgress: 30, affiliation: "Kings BJJ - Norte", branchId: "b2" },
     { id: "s4", name: "Ana Oliveira", email: "ana@email.com", avatar: "https://placehold.co/128x128.png", belt: "Marrom", stripes: 3, attendance: { total: 200, lastMonth: 16 }, nextGraduationProgress: 85, affiliation: "Kings BJJ - Norte", branchId: "b2" },
 ]
-
-export const beltInfo = {
-  Branca: {
-    description: "Foco nos fundamentos, sobrevivência e defesa. O início da jornada.",
-    skills: ["Postura na Guarda", "Fuga de Quadril", "Rolamentos", "Levantada Técnica", "Defesa de Estrangulamento"],
-  },
-  Azul: {
-    description: "Expansão do repertório de técnicas, começo do ataque e combinações.",
-    skills: ["Americana da Montada", "Armlock da Guarda", "Kimura", "Guarda Fechada", "Passagem de Guarda de Joelhos"],
-  },
-  Roxa: {
-    description: "Desenvolvimento de um jogo próprio, refinamento técnico e estratégia.",
-    skills: ["Triângulo", "Ataques das Costas", "Guarda De La Riva", "Guarda Aranha", "Berimbolo"],
-  },
-  Marrom: {
-    description: "Consolidação da técnica, alta eficiência e preparação para a faixa preta.",
-    skills: ["Chaves de Pé Retas", "Passagens de Guarda em Pé", "Omoplata", "Jogo de Pressão", "Controle do Kesa-Gatame"],
-  },
-  Preta: {
-    description: "Maestria dos fundamentos, liderança e representação da arte.",
-    skills: ["Refinamento de Jogo", "Estratégia de Competição", "Contra-ataques", "Variações de Finalizações", "Liderança"],
-  },
-  Coral: {
-    description: "Anos de dedicação e contribuição ao esporte, um grande mestre.",
-    skills: ["Legado no Esporte", "Filosofia do Jiu-Jitsu", "Contribuição para a Comunidade", "Desenvolvimento de Mestres", "Grande Mestria"],
-  },
-};

@@ -3,22 +3,38 @@
 import { useContext } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { beltColors, allBelts, beltInfo } from "@/lib/mock-data";
+import {
+  beltColors,
+  allBelts,
+  beltInfo,
+  beltColorsKids,
+  allBeltsKids,
+  beltInfoKids,
+} from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 import { CheckCircle } from "lucide-react";
 import { UserContext } from "../client-layout";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+type BeltListItemProps = {
+  belt: string;
+  stripes: number;
+  isCurrentUser?: boolean;
+  beltColors: Record<string, { bg: string; text: string }>;
+  beltInfo: Record<string, { description: string; skills: string[] }>;
+};
 
 const BeltListItem = ({
   belt,
   stripes,
   isCurrentUser,
-}: {
-  belt: keyof typeof beltColors;
-  stripes: number;
-  isCurrentUser?: boolean;
-}) => {
+  beltColors,
+  beltInfo,
+}: BeltListItemProps) => {
   const beltStyle = beltColors[belt];
   const info = beltInfo[belt];
+
+  if (!beltStyle || !info) return null;
 
   return (
     <Card
@@ -101,16 +117,40 @@ export default function RankingsPage() {
         </p>
       </div>
 
-      <div className="space-y-4">
-        {allBelts.map((belt) => (
-          <BeltListItem
-            key={belt}
-            belt={belt}
-            stripes={user.belt === belt ? user.stripes : 0}
-            isCurrentUser={user.belt === belt}
-          />
-        ))}
-      </div>
+      <Tabs defaultValue="adults" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="adults">Adulto</TabsTrigger>
+          <TabsTrigger value="kids">Infantil</TabsTrigger>
+        </TabsList>
+        <TabsContent value="adults" className="mt-4">
+          <div className="space-y-4">
+            {allBelts.map((belt) => (
+              <BeltListItem
+                key={belt}
+                belt={belt}
+                beltColors={beltColors}
+                beltInfo={beltInfo}
+                stripes={user.belt === belt ? user.stripes : 0}
+                isCurrentUser={user.belt === belt}
+              />
+            ))}
+          </div>
+        </TabsContent>
+        <TabsContent value="kids" className="mt-4">
+           <div className="space-y-4">
+            {allBeltsKids.map((belt) => (
+              <BeltListItem
+                key={belt}
+                belt={belt}
+                beltColors={beltColorsKids}
+                beltInfo={beltInfoKids}
+                stripes={0}
+                isCurrentUser={false}
+              />
+            ))}
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
