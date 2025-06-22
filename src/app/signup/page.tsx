@@ -56,6 +56,20 @@ export default function SignUpPage() {
             </div>
 
             <div className="grid gap-2">
+              <Label>Tipo de Conta</Label>
+              <RadioGroup defaultValue="aluno" className="flex gap-4 pt-2">
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="aluno" id="r-aluno" />
+                  <Label htmlFor="r-aluno">Aluno</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="professor" id="r-professor" />
+                  <Label htmlFor="r-professor">Professor</Label>
+                </div>
+              </RadioGroup>
+            </div>
+
+            <div className="grid gap-2">
               <Label htmlFor="affiliation">Filial</Label>
               <Select>
                 <SelectTrigger id="affiliation">
