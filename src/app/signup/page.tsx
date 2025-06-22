@@ -10,6 +10,15 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { KingsBjjLogo } from "@/components/kings-bjj-logo";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { mockBranches, allBelts } from "@/lib/mock-data";
 
 export default function SignUpPage() {
   return (
@@ -38,9 +47,56 @@ export default function SignUpPage() {
               />
             </div>
             <div className="grid gap-2">
-                <Label htmlFor="password">Senha</Label>
+              <Label htmlFor="password">Senha</Label>
               <Input id="password" type="password" required />
             </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="affiliation">Filial</Label>
+              <Select>
+                <SelectTrigger id="affiliation">
+                  <SelectValue placeholder="Selecione sua filial" />
+                </SelectTrigger>
+                <SelectContent>
+                  {mockBranches.map((branch) => (
+                    <SelectItem key={branch.id} value={branch.name}>
+                      {branch.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="belt">Graduação</Label>
+              <Select>
+                <SelectTrigger id="belt">
+                  <SelectValue placeholder="Selecione sua graduação" />
+                </SelectTrigger>
+                <SelectContent>
+                  {allBelts.map((belt) => (
+                    <SelectItem key={belt} value={belt}>
+                      {belt}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid gap-2">
+              <Label>Categoria</Label>
+              <RadioGroup defaultValue="adulto" className="flex gap-4 pt-2">
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="adulto" id="r-adulto" />
+                  <Label htmlFor="r-adulto">Adulto</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="kids" id="r-kids" />
+                  <Label htmlFor="r-kids">Kids</Label>
+                </div>
+              </RadioGroup>
+            </div>
+            
             <Button asChild type="submit" className="w-full">
               <Link href="/dashboard">Criar conta</Link>
             </Button>
