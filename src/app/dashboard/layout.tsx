@@ -44,8 +44,12 @@ const baseNavItems = [
 ];
 
 const adminNavItems = [
-  ...baseNavItems,
-  { href: "/dashboard/manage-students", icon: Shield, label: "Gerenciar Alunos" },
+  { href: "/dashboard", icon: LayoutDashboard, label: "Painel" },
+  { href: "/dashboard/profile", icon: UserIcon, label: "Perfil" },
+  { href: "/dashboard/rankings", icon: Award, label: "Graduações" },
+  { href: "/dashboard/instructors", icon: Users, label: "Professores" },
+  { href: "/dashboard/branches", icon: MapPin, label: "Filiais" },
+  { href: "/dashboard/manage-students", icon: Shield, label: "Alunos" },
 ];
 
 
