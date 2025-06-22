@@ -20,7 +20,7 @@ export default function LoginPage() {
           <CardTitle className="text-3xl font-bold tracking-tight">
             Kings BJJ
           </CardTitle>
-          <CardDescription>Welcome to the Game</CardDescription>
+          <CardDescription>Bem-vindo ao Jogo</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4">
@@ -29,25 +29,25 @@ export default function LoginPage() {
               <Input
                 id="email"
                 type="email"
-                placeholder="m@example.com"
+                placeholder="m@exemplo.com"
                 required
                 defaultValue="student@kingsbjj.com"
               />
             </div>
             <div className="grid gap-2">
               <div className="flex items-center">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">Senha</Label>
                 <Link
                   href="#"
                   className="ml-auto inline-block text-sm underline"
                 >
-                  Forgot your password?
+                  Esqueceu sua senha?
                 </Link>
               </div>
               <Input id="password" type="password" required defaultValue="password" />
             </div>
             <Button asChild type="submit" className="w-full">
-              <Link href="/dashboard">Sign in</Link>
+              <Link href="/dashboard">Entrar</Link>
             </Button>
           </div>
           <div className="mt-4 text-center text-sm">

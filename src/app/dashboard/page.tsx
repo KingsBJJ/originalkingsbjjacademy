@@ -18,10 +18,10 @@ export default function DashboardPage() {
     <div className="grid gap-6">
       <div className="grid gap-2">
         <h1 className="text-3xl font-bold tracking-tight">
-          Welcome back, {mockUser.name.split(" ")[0]}!
+          Bem-vindo de volta, {mockUser.name.split(" ")[0]}!
         </h1>
         <p className="text-muted-foreground">
-          Here's your training summary. Let's get to work.
+          Aqui está seu resumo de treinos. Vamos ao trabalho.
         </p>
       </div>
 
@@ -29,10 +29,10 @@ export default function DashboardPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <CheckCircle className="text-primary" />
-            <span>Next Class Check-in</span>
+            <span>Check-in da Próxima Aula</span>
           </CardTitle>
           <CardDescription>
-            Your next class is starting soon. Check in to mark your attendance.
+            Sua próxima aula começa em breve. Faça o check-in para marcar sua presença.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -40,11 +40,11 @@ export default function DashboardPage() {
             <div>
               <p className="text-lg font-semibold">{nextClass.name}</p>
               <p className="text-muted-foreground">
-                {nextClass.time} with {nextClass.instructor}
+                {nextClass.time} com {nextClass.instructor}
               </p>
             </div>
             <Button size="lg" className="w-full sm:w-auto">
-              Check-in Now
+              Fazer Check-in
             </Button>
           </div>
         </CardContent>
@@ -55,14 +55,14 @@ export default function DashboardPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Medal />
-              <span>Rank Progression</span>
+              <span>Progresso de Graduação</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="font-medium">
-                  {mockUser.belt} Belt, {mockUser.stripes} Stripes
+                  Faixa {mockUser.belt}, {mockUser.stripes} Graus
                 </span>
                 <span className="text-muted-foreground">
                   {mockUser.nextGraduationProgress}%
@@ -70,7 +70,7 @@ export default function DashboardPage() {
               </div>
               <Progress value={mockUser.nextGraduationProgress} />
               <p className="text-xs text-muted-foreground">
-                Progress towards your next stripe/belt.
+                Progresso para seu próximo grau/faixa.
               </p>
             </div>
           </CardContent>
@@ -80,35 +80,35 @@ export default function DashboardPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <BarChart />
-              <span>Attendance</span>
+              <span>Frequência</span>
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
              <div className="flex items-baseline justify-center gap-2">
                 <p className="text-4xl font-bold">{mockUser.attendance.lastMonth}</p>
-                <p className="text-sm text-muted-foreground">classes last month</p>
+                <p className="text-sm text-muted-foreground">aulas no último mês</p>
             </div>
             <div className="text-center text-sm text-muted-foreground">
-                Total attendance: {mockUser.attendance.total} classes
+                Frequência total: {mockUser.attendance.total} aulas
             </div>
           </CardContent>
         </Card>
         
         <Card className="md:col-span-2 lg:col-span-1">
             <CardHeader>
-                <CardTitle>Training Focus</CardTitle>
-                <CardDescription>Based on your recent classes</CardDescription>
+                <CardTitle>Foco do Treino</CardTitle>
+                <CardDescription>Baseado em suas aulas recentes</CardDescription>
             </CardHeader>
             <CardContent>
                 <ul className="space-y-2 text-sm text-muted-foreground">
                     <li className="flex items-center gap-2">
-                        <span className="text-primary">●</span> Spider Guard Sweeps
+                        <span className="text-primary">●</span> Raspagens da Guarda Aranha
                     </li>
                     <li className="flex items-center gap-2">
-                        <span className="text-primary">●</span> Triangle Choke Setups
+                        <span className="text-primary">●</span> Ajustes de Triângulo
                     </li>
                     <li className="flex items-center gap-2">
-                        <span className="text-primary">●</span> Mount Escapes
+                        <span className="text-primary">●</span> Saídas da Montada
                     </li>
                 </ul>
             </CardContent>

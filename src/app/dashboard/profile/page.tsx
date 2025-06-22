@@ -22,7 +22,7 @@ import { cn } from "@/lib/utils";
 import { Medal } from "lucide-react";
 
 export default function ProfilePage() {
-  const beltStyle = beltColors[mockUser.belt] || beltColors.White;
+  const beltStyle = beltColors[mockUser.belt] || beltColors.Branca;
 
   return (
     <div className="grid gap-6">
@@ -47,7 +47,7 @@ export default function ProfilePage() {
                 beltStyle.text
               )}
             >
-              {mockUser.belt} Belt
+              Faixa {mockUser.belt}
             </Badge>
             <div className="flex gap-1">
               {Array.from({ length: mockUser.stripes }).map((_, i) => (
@@ -56,7 +56,7 @@ export default function ProfilePage() {
             </div>
           </div>
         </div>
-        <Button>Edit Profile</Button>
+        <Button>Editar Perfil</Button>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
@@ -64,16 +64,16 @@ export default function ProfilePage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Medal />
-              <span>Graduation Progress</span>
+              <span>Progresso de Graduação</span>
             </CardTitle>
             <CardDescription>
-              Track your journey to the next level.
+              Acompanhe sua jornada para o próximo nível.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <div className="flex justify-between text-sm font-medium">
-                <span>Towards Next Stripe/Belt</span>
+                <span>Para o Próximo Grau/Faixa</span>
                 <span>{mockUser.nextGraduationProgress}%</span>
               </div>
               <Progress value={mockUser.nextGraduationProgress} />
@@ -83,36 +83,36 @@ export default function ProfilePage() {
                 <p className="text-2xl font-bold">
                   {mockUser.attendance.total}
                 </p>
-                <p className="text-sm text-muted-foreground">Total Classes</p>
+                <p className="text-sm text-muted-foreground">Total de Aulas</p>
               </div>
               <div>
                 <p className="text-2xl font-bold">
                   {mockUser.attendance.lastMonth}
                 </p>
-                <p className="text-sm text-muted-foreground">Classes This Month</p>
+                <p className="text-sm text-muted-foreground">Aulas no Mês</p>
               </div>
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Personal Information</CardTitle>
+            <CardTitle>Informações Pessoais</CardTitle>
             <CardDescription>
-              Your personal details.
+              Seus detalhes pessoais.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
             <div className="flex justify-between">
-                <span className="font-medium text-muted-foreground">Role:</span>
+                <span className="font-medium text-muted-foreground">Função:</span>
                 <span className="capitalize">{mockUser.role}</span>
             </div>
              <div className="flex justify-between">
-                <span className="font-medium text-muted-foreground">Member Since:</span>
+                <span className="font-medium text-muted-foreground">Membro Desde:</span>
                 <span>Jan 2022</span>
             </div>
              <div className="flex justify-between">
-                <span className="font-medium text-muted-foreground">Emergency Contact:</span>
-                <span>(555) 000-1111</span>
+                <span className="font-medium text-muted-foreground">Contato de Emergência:</span>
+                <span>(55) 5555-1111</span>
             </div>
           </CardContent>
         </Card>
@@ -120,17 +120,17 @@ export default function ProfilePage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Attendance History</CardTitle>
+          <CardTitle>Histórico de Presença</CardTitle>
           <CardDescription>
-            Your recent class check-ins.
+            Seus check-ins de aulas recentes.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Class</TableHead>
+                <TableHead>Data</TableHead>
+                <TableHead>Aula</TableHead>
                 <TableHead className="text-right">Status</TableHead>
               </TableRow>
             </TableHeader>
@@ -142,10 +142,10 @@ export default function ProfilePage() {
                   <TableCell className="text-right">
                     <Badge
                       variant={
-                        item.status === "Present" ? "default" : "destructive"
+                        item.status === "Presente" ? "default" : "destructive"
                       }
                       className={cn(
-                        item.status === "Present" && "bg-green-500/20 text-green-300 border-green-500/30"
+                        item.status === "Presente" && "bg-green-500/20 text-green-300 border-green-500/30"
                       )}
                     >
                       {item.status}

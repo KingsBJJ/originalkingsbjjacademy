@@ -16,23 +16,23 @@ export default function SchedulePage() {
   return (
     <div className="grid gap-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Class Schedule</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Horários das Aulas</h1>
         <p className="text-muted-foreground">
-          Find your next class and plan your week.
+          Encontre sua próxima aula e planeje sua semana.
         </p>
       </div>
 
       <Tabs defaultValue="adults" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="adults">Adults</TabsTrigger>
-          <TabsTrigger value="kids">Kids</TabsTrigger>
+          <TabsTrigger value="adults">Adultos</TabsTrigger>
+          <TabsTrigger value="kids">Infantil</TabsTrigger>
         </TabsList>
         <TabsContent value="adults">
           <Card>
             <CardHeader>
-              <CardTitle>Adults Classes</CardTitle>
+              <CardTitle>Aulas para Adultos</CardTitle>
               <CardDescription>
-                Schedule for all adult Gi and No-Gi classes.
+                Horário de todas as aulas de Adulto com e sem kimono.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -59,9 +59,9 @@ export default function SchedulePage() {
         <TabsContent value="kids">
           <Card>
             <CardHeader>
-              <CardTitle>Kids Classes</CardTitle>
+              <CardTitle>Aulas para Crianças</CardTitle>
               <CardDescription>
-                Fun and safe jiu-jitsu classes for the little ones.
+                Aulas de jiu-jitsu divertidas e seguras para os pequenos.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">

@@ -14,16 +14,16 @@ export default function InstructorsPage() {
   return (
     <div className="grid gap-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Our Professors</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Nossos Professores</h1>
         <p className="text-muted-foreground">
-          Learn from the best in the game.
+          Aprenda com os melhores do ramo.
         </p>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {mockInstructors.map((instructor) => {
           const beltStyle =
-            beltColors[instructor.belt] || beltColors.White;
+            beltColors[instructor.belt] || beltColors.Branca;
           return (
             <Card key={instructor.id} className="flex flex-col">
               <CardHeader className="items-center text-center">
@@ -46,7 +46,7 @@ export default function InstructorsPage() {
                         beltStyle.text
                       )}
                     >
-                      {instructor.belt} Belt
+                      Faixa {instructor.belt}
                     </Badge>
                   </div>
                 </div>

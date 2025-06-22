@@ -15,9 +15,9 @@ export default function BranchesPage() {
   return (
     <div className="grid gap-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Our Academies</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Nossas Academias</h1>
         <p className="text-muted-foreground">
-          Find a Kings BJJ location near you.
+          Encontre uma unidade Kings BJJ perto de você.
         </p>
       </div>
 
@@ -26,7 +26,7 @@ export default function BranchesPage() {
           <div className="aspect-video w-full">
              <Image
                 src={mockBranches[0].mapImage}
-                alt="Map of all branches"
+                alt="Mapa de todas as filiais"
                 width={1200}
                 height={600}
                 className="h-full w-full object-cover"
@@ -56,7 +56,7 @@ export default function BranchesPage() {
             <CardFooter>
               <Button variant="outline" className="w-full">
                 <MapPin className="mr-2 h-4 w-4" />
-                View Details
+                Ver Detalhes
               </Button>
             </CardFooter>
           </Card>

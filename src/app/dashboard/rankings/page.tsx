@@ -46,7 +46,7 @@ const Belt = ({
       {isCurrentUser && (
         <div className="absolute -top-2 -right-2 flex items-center gap-1 rounded-full bg-background px-2 py-1 text-xs font-medium text-green-400">
           <CheckCircle className="h-4 w-4 text-green-400" />
-          <span>Your Rank</span>
+          <span>Sua Graduação</span>
         </div>
       )}
     </div>
@@ -57,16 +57,16 @@ export default function RankingsPage() {
   return (
     <div className="grid gap-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">BJJ Ranking System</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Sistema de Graduação BJJ</h1>
         <p className="text-muted-foreground">
-          The path of progression in Brazilian Jiu-Jitsu.
+          O caminho de progressão no Jiu-Jitsu Brasileiro.
         </p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Adult Belt Ranks</CardTitle>
-          <CardDescription>From white to black belt and beyond.</CardDescription>
+          <CardTitle>Faixas - Adulto</CardTitle>
+          <CardDescription>Da faixa branca à preta e além.</CardDescription>
         </CardHeader>
         <CardContent className="grid grid-cols-1 gap-8 md:grid-cols-2">
             {allBelts.map((belt) => (
