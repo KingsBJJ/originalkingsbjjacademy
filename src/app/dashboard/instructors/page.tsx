@@ -7,8 +7,26 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { MoreHorizontal } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { mockInstructors, beltColors } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 import { UserContext } from "../client-layout";
@@ -34,47 +52,82 @@ export default function InstructorsPage() {
         </p>
       </div>
 
-      <div className="space-y-4">
-        {displayedInstructors.map((instructor) => {
-          const beltStyle =
-            beltColors[instructor.belt] || beltColors.Branca;
-          return (
-            <Card key={instructor.id}>
-              <CardContent className="flex items-start gap-4 p-4">
-                <Avatar className="h-20 w-20 border">
-                  <AvatarImage
-                    src={instructor.avatar}
-                    alt={instructor.name}
-                  />
-                  <AvatarFallback className="text-2xl">
-                    {instructor.name.charAt(0)}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-xl">{instructor.name}</CardTitle>
-                    <Badge
-                      className={cn(
-                        "text-xs font-semibold",
-                        beltStyle.bg,
-                        beltStyle.text
-                      )}
-                    >
-                      Faixa {instructor.belt}
-                    </Badge>
-                  </div>
-                  <CardDescription className="mt-1">
-                    {instructor.affiliation}
-                  </CardDescription>
-                  <p className="mt-3 text-sm text-muted-foreground">
-                    {instructor.bio}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Lista de Professores</CardTitle>
+          <CardDescription>
+            {user.role === 'admin' 
+              ? `Total de ${displayedInstructors.length} professores em todas as filiais.`
+              : `Professores da sua filial.`
+            }
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Professor</TableHead>
+                <TableHead>Filial</TableHead>
+                <TableHead>Graduação</TableHead>
+                <TableHead className="text-right">Ações</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {displayedInstructors.map((instructor) => {
+                const beltStyle =
+                  beltColors[instructor.belt] || beltColors.Branca;
+                return (
+                  <TableRow key={instructor.id}>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-9 w-9">
+                          <AvatarImage
+                            src={instructor.avatar}
+                            alt={instructor.name}
+                          />
+                          <AvatarFallback>
+                            {instructor.name.charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                           <p className="font-medium">{instructor.name}</p>
+                           <p className="text-xs text-muted-foreground">{instructor.email}</p>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>{instructor.affiliation}</TableCell>
+                    <TableCell>
+                      <Badge
+                        className={cn(
+                          "text-xs font-semibold",
+                          beltStyle.bg,
+                          beltStyle.text
+                        )}
+                      >
+                        {instructor.belt}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                       <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon">
+                            <MoreHorizontal />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                          <DropdownMenuItem>Ver Perfil</DropdownMenuItem>
+                          <DropdownMenuItem>Ver Bio</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
     </div>
   );
 }
