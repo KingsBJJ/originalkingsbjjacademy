@@ -21,10 +21,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { mockBranches, allBelts } from "@/lib/mock-data";
+import { mockBranches, allBelts, mockUsers } from "@/lib/mock-data";
 
 export default function SignUpPage() {
   const [email, setEmail] = useState("");
+  const [role, setRole] = useState("student");
 
   return (
     <div className="flex min-h-screen w-full items-center justify-center bg-background p-4">
@@ -64,16 +65,20 @@ export default function SignUpPage() {
 
             <div className="grid gap-2">
               <Label>Tipo de Conta</Label>
-              <RadioGroup defaultValue="aluno" className="flex gap-4 pt-2">
+              <RadioGroup
+                defaultValue="student"
+                onValueChange={setRole}
+                className="flex gap-4 pt-2"
+              >
                 <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="aluno" id="r-aluno" />
+                  <RadioGroupItem value="student" id="r-aluno" />
                   <Label htmlFor="r-aluno">Aluno</Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="professor" id="r-professor" />
                   <Label htmlFor="r-professor">Professor</Label>
                 </div>
-                {email.toLowerCase() === "admin@kingsbjj.com" && (
+                {email.toLowerCase() === mockUsers.admin.email && (
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="admin" id="r-admin" />
                     <Label htmlFor="r-admin">Admin</Label>
@@ -129,7 +134,7 @@ export default function SignUpPage() {
             </div>
 
             <Button asChild type="submit" className="w-full">
-              <Link href="/dashboard">Criar conta</Link>
+              <Link href={`/dashboard?role=${role}`}>Criar conta</Link>
             </Button>
           </div>
           <div className="mt-4 text-center text-sm">

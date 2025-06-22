@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -12,8 +13,21 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { KingsBjjLogo } from "@/components/kings-bjj-logo";
+import { mockUsers } from "@/lib/mock-data";
 
 export default function LoginPage() {
+  const [email, setEmail] = useState("");
+
+  const getRole = () => {
+    if (email.toLowerCase() === mockUsers.admin.email) {
+      return "admin";
+    }
+    if (email.toLowerCase() === mockUsers.professor.email) {
+      return "professor";
+    }
+    return "student";
+  };
+
   return (
     <div className="flex min-h-screen w-full items-center justify-center bg-background p-4">
       <Card className="mx-auto w-full max-w-sm border-0 bg-transparent shadow-none sm:border sm:bg-card sm:shadow-sm">
@@ -33,6 +47,8 @@ export default function LoginPage() {
                 type="email"
                 placeholder="m@exemplo.com"
                 required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
             </div>
             <div className="grid gap-2">
@@ -48,7 +64,7 @@ export default function LoginPage() {
               <Input id="password" type="password" required />
             </div>
             <Button asChild type="submit" className="w-full">
-              <Link href="/dashboard?role=student">Entrar</Link>
+              <Link href={`/dashboard?role=${getRole()}`}>Entrar</Link>
             </Button>
           </div>
           <div className="mt-4 text-center text-sm">
