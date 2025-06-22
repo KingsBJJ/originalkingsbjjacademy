@@ -149,3 +149,30 @@ export const mockStudents: Omit<User, 'role'>[] = [
     { id: "s3", name: "Carlos Souza", email: "carlos@email.com", avatar: "https://placehold.co/128x128.png", belt: "Roxa", stripes: 1, attendance: { total: 150, lastMonth: 8 }, nextGraduationProgress: 30, affiliation: "Kings BJJ - Norte", branchId: "b2" },
     { id: "s4", name: "Ana Oliveira", email: "ana@email.com", avatar: "https://placehold.co/128x128.png", belt: "Marrom", stripes: 3, attendance: { total: 200, lastMonth: 16 }, nextGraduationProgress: 85, affiliation: "Kings BJJ - Norte", branchId: "b2" },
 ]
+
+export const beltInfo = {
+  Branca: {
+    description: "Foco nos fundamentos, sobrevivência e defesa. O início da jornada.",
+    skills: ["Postura", "Controle Básico", "Defesa Pessoal"],
+  },
+  Azul: {
+    description: "Expansão do repertório de técnicas, começo do ataque e combinações.",
+    skills: ["Passagens de Guarda", "Finalizações Básicas", "Raspagens"],
+  },
+  Roxa: {
+    description: "Desenvolvimento de um jogo próprio, refinamento técnico e estratégia.",
+    skills: ["Ataques e Defesas Avançadas", "Controle de Posições", "Estratégia de Luta"],
+  },
+  Marrom: {
+    description: "Consolidação da técnica, alta eficiência e preparação para a faixa preta.",
+    skills: ["Finalizações de Alto Nível", "Transições Rápidas", "Timing e Pressão"],
+  },
+  Preta: {
+    description: "Maestria dos fundamentos, liderança e representação da arte.",
+    skills: ["Desenvolvimento de Jogo", "Ensino e Liderança", "Domínio Técnico"],
+  },
+  Coral: {
+    description: "Anos de dedicação e contribuição ao esporte, um grande mestre.",
+    skills: ["Legado no Esporte", "Contribuição para o BJJ", "Grande Mestria"],
+  },
+};
