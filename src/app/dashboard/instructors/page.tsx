@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/card";
 import { mockInstructors, beltColors } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
-import { UserContext } from "../layout";
+import { UserContext } from "../client-layout";
 
 export default function InstructorsPage() {
   const user = useContext(UserContext);

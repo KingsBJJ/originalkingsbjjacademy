@@ -11,7 +11,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { mockClasses } from "@/lib/mock-data";
 import { Clock } from "lucide-react";
-import { UserContext } from "../layout";
+import { UserContext } from "../client-layout";
 
 export default function SchedulePage() {
   const user = useContext(UserContext);

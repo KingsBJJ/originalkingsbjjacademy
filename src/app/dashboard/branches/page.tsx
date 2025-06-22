@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/card";
 import { mockBranches } from "@/lib/mock-data";
 import { Clock, MapPin, Phone } from "lucide-react";
-import { UserContext } from "../layout";
+import { UserContext } from "../client-layout";
 
 export default function BranchesPage() {
   const user = useContext(UserContext);

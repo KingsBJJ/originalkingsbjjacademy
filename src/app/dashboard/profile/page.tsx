@@ -23,7 +23,7 @@ import {
 import { mockAttendanceHistory, beltColors } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 import { Medal } from "lucide-react";
-import { UserContext } from "../layout";
+import { UserContext } from "../client-layout";
 
 
 export default function ProfilePage() {

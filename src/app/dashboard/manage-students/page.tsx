@@ -18,7 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { UserContext } from '../layout';
+import { UserContext } from '../client-layout';
 import { mockStudents, beltColors } from '@/lib/mock-data';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';

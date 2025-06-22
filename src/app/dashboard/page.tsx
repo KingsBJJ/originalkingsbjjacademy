@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { mockClasses, mockStudents, mockUsers } from "@/lib/mock-data";
 import { CheckCircle, Medal, BarChart, Users, Map, User } from "lucide-react";
-import { UserContext } from "./layout";
+import { UserContext } from "./client-layout";
 
 
 const AdminDashboard = () => (
