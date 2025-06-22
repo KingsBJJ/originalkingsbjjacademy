@@ -18,15 +18,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { MoreHorizontal } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { mockInstructors, beltColors } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 import { UserContext } from "../client-layout";
@@ -69,7 +60,7 @@ export default function InstructorsPage() {
                 <TableHead>Professor</TableHead>
                 <TableHead>Filial</TableHead>
                 <TableHead>Graduação</TableHead>
-                <TableHead className="text-right">Ações</TableHead>
+                <TableHead className="text-right">Contato</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -107,20 +98,7 @@ export default function InstructorsPage() {
                         {instructor.belt}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right">
-                       <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                          <DropdownMenuItem>Ver Perfil</DropdownMenuItem>
-                          <DropdownMenuItem>Ver Bio</DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
+                    <TableCell className="text-right">{instructor.phone}</TableCell>
                   </TableRow>
                 );
               })}
