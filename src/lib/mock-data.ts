@@ -153,26 +153,26 @@ export const mockStudents: Omit<User, 'role'>[] = [
 export const beltInfo = {
   Branca: {
     description: "Foco nos fundamentos, sobrevivência e defesa. O início da jornada.",
-    skills: ["Postura", "Controle Básico", "Defesa Pessoal"],
+    skills: ["Postura na Guarda", "Fuga de Quadril", "Rolamentos", "Levantada Técnica", "Defesa de Estrangulamento"],
   },
   Azul: {
     description: "Expansão do repertório de técnicas, começo do ataque e combinações.",
-    skills: ["Passagens de Guarda", "Finalizações Básicas", "Raspagens"],
+    skills: ["Americana da Montada", "Armlock da Guarda", "Kimura", "Guarda Fechada", "Passagem de Guarda de Joelhos"],
   },
   Roxa: {
     description: "Desenvolvimento de um jogo próprio, refinamento técnico e estratégia.",
-    skills: ["Ataques e Defesas Avançadas", "Controle de Posições", "Estratégia de Luta"],
+    skills: ["Triângulo", "Ataques das Costas", "Guarda De La Riva", "Guarda Aranha", "Berimbolo"],
   },
   Marrom: {
     description: "Consolidação da técnica, alta eficiência e preparação para a faixa preta.",
-    skills: ["Finalizações de Alto Nível", "Transições Rápidas", "Timing e Pressão"],
+    skills: ["Chaves de Pé Retas", "Passagens de Guarda em Pé", "Omoplata", "Jogo de Pressão", "Controle do Kesa-Gatame"],
   },
   Preta: {
     description: "Maestria dos fundamentos, liderança e representação da arte.",
-    skills: ["Desenvolvimento de Jogo", "Ensino e Liderança", "Domínio Técnico"],
+    skills: ["Refinamento de Jogo", "Estratégia de Competição", "Contra-ataques", "Variações de Finalizações", "Liderança"],
   },
   Coral: {
     description: "Anos de dedicação e contribuição ao esporte, um grande mestre.",
-    skills: ["Legado no Esporte", "Contribuição para o BJJ", "Grande Mestria"],
+    skills: ["Legado no Esporte", "Filosofia do Jiu-Jitsu", "Contribuição para a Comunidade", "Desenvolvimento de Mestres", "Grande Mestria"],
   },
 };
