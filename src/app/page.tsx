@@ -50,8 +50,11 @@ export default function LoginPage() {
               <Link href="/dashboard">Sign in</Link>
             </Button>
           </div>
-          <div className="mt-4 text-center text-sm text-muted-foreground">
-            Registration is by admin approval only.
+          <div className="mt-4 text-center text-sm">
+            Não tem uma conta?{" "}
+            <Link href="#" className="underline">
+              Criar conta
+            </Link>
           </div>
         </CardContent>
       </Card>
