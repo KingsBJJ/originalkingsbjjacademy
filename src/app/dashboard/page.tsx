@@ -266,7 +266,7 @@ export default function DashboardPage() {
   }
 
   const welcomeMessage = {
-    admin: "Visão Geral do Sistema",
+    admin: "Visão geral da Kings Bjj",
     professor: `Bem-vindo de volta, ${user.name.split(" ")[0]}!`,
     student: `Bem-vindo de volta, ${user.name.split(" ")[0]}!`,
   };
