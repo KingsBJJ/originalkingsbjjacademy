@@ -1,4 +1,5 @@
 export type User = {
+  id: string;
   name: string;
   email: string;
   role: "student" | "professor" | "admin";
@@ -11,6 +12,7 @@ export type User = {
   };
   nextGraduationProgress: number;
   affiliation: string;
+  branchId: string;
 };
 
 export type Class = {
@@ -21,6 +23,7 @@ export type Class = {
   category: "Adults" | "Kids";
   enrolled: number;
   capacity: number;
+  branchId: string;
 };
 
 export type Instructor = {
@@ -52,7 +55,8 @@ export const beltColors = {
 
 export const allBelts: (keyof typeof beltColors)[] = [ "Branca", "Azul", "Roxa", "Marrom", "Preta", "Coral"];
 
-export const mockUser: User = {
+const studentUser: User = {
+  id: "user1",
   name: "Alex Costa",
   email: "student@kingsbjj.com",
   role: "student",
@@ -65,7 +69,48 @@ export const mockUser: User = {
   },
   nextGraduationProgress: 75,
   affiliation: "Kings BJJ - Centro",
+  branchId: "b1",
 };
+
+const professorUser: User = {
+    id: "user2",
+    name: "Prof. Rickson Gracie",
+    email: "professor@kingsbjj.com",
+    role: "professor",
+    avatar: "https://placehold.co/128x128.png",
+    belt: "Preta",
+    stripes: 6,
+    attendance: {
+      total: 1024,
+      lastMonth: 20,
+    },
+    nextGraduationProgress: 100,
+    affiliation: "Kings BJJ - Centro",
+    branchId: "b1",
+};
+
+const adminUser: User = {
+    id: "user3",
+    name: "Admin Geral",
+    email: "admin@kingsbjj.com",
+    role: "admin",
+    avatar: "https://placehold.co/128x128.png",
+    belt: "Preta",
+    stripes: 10,
+    attendance: {
+      total: 999,
+      lastMonth: 99,
+    },
+    nextGraduationProgress: 100,
+    affiliation: "Todas as Filiais",
+    branchId: "all",
+};
+
+export const mockUsers = {
+    student: studentUser,
+    professor: professorUser,
+    admin: adminUser,
+}
 
 export const mockAttendanceHistory = [
     { date: "2024-07-22", class: "Fundamentos de Kimono", status: "Presente" },
@@ -77,11 +122,13 @@ export const mockAttendanceHistory = [
 ];
 
 export const mockClasses: Class[] = [
-  { id: "c1", name: "Fundamentos de Kimono", time: "18:00 - 19:00", instructor: "Prof. Helio", category: "Adults", enrolled: 18, capacity: 20 },
-  { id: "c2", name: "Jiu-Jitsu Kids (5-8 anos)", time: "17:00 - 17:45", instructor: "Profa. Carla", category: "Kids", enrolled: 10, capacity: 15 },
-  { id: "c3", name: "Sem Kimono - Avançado", time: "19:00 - 20:00", instructor: "Prof. Rickson", category: "Adults", enrolled: 12, capacity: 20 },
-  { id: "c4", name: "Treino Livre", time: "20:00 - 21:00", instructor: "Todos", category: "Adults", enrolled: 25, capacity: 30 },
-  { id: "c5", name: "Jiu-Jitsu Kids (9-12 anos)", time: "16:00 - 16:45", instructor: "Profa. Carla", category: "Kids", enrolled: 14, capacity: 15 },
+  { id: "c1", name: "Fundamentos de Kimono", time: "18:00 - 19:00", instructor: "Prof. Helio", category: "Adults", enrolled: 18, capacity: 20, branchId: "b1" },
+  { id: "c2", name: "Jiu-Jitsu Kids (5-8 anos)", time: "17:00 - 17:45", instructor: "Profa. Carla", category: "Kids", enrolled: 10, capacity: 15, branchId: "b1" },
+  { id: "c3", name: "Sem Kimono - Avançado", time: "19:00 - 20:00", instructor: "Prof. Rickson", category: "Adults", enrolled: 12, capacity: 20, branchId: "b1" },
+  { id: "c4", name: "Treino Livre", time: "20:00 - 21:00", instructor: "Todos", category: "Adults", enrolled: 25, capacity: 30, branchId: "b1" },
+  { id: "c5", name: "Jiu-Jitsu Kids (9-12 anos)", time: "16:00 - 16:45", instructor: "Profa. Carla", category: "Kids", enrolled: 14, capacity: 15, branchId: "b1" },
+  { id: "c6", name: "Fundamentos (Manhã)", time: "07:00 - 08:00", instructor: "Prof. Fabio Gurgel", category: "Adults", enrolled: 15, capacity: 20, branchId: "b2" },
+  { id: "c7", name: "Sem Kimono (Manhã)", time: "08:00 - 09:00", instructor: "Prof. Fabio Gurgel", category: "Adults", enrolled: 10, capacity: 20, branchId: "b2" },
 ];
 
 export const mockInstructors: Instructor[] = [
@@ -95,3 +142,10 @@ export const mockBranches: Branch[] = [
   { id: "b1", name: "Kings BJJ - Centro", address: "Rua Principal 123, Cidade, BR", phone: "(55) 1234-5678", hours: "Seg-Sáb, 9h - 21h", mapImage: "https://placehold.co/600x400.png" },
   { id: "b2", name: "Kings BJJ - Norte", address: "Avenida Norte 456, Cidade, BR", phone: "(55) 8765-4321", hours: "Seg-Sex, 10h - 20h", mapImage: "https://placehold.co/600x400.png" },
 ];
+
+export const mockStudents: Omit<User, 'role'>[] = [
+    { id: "s1", name: "Maria Silva", email: "maria@email.com", avatar: "https://placehold.co/128x128.png", belt: "Azul", stripes: 2, attendance: { total: 80, lastMonth: 10 }, nextGraduationProgress: 60, affiliation: "Kings BJJ - Centro", branchId: "b1" },
+    { id: "s2", name: "João Pereira", email: "joao@email.com", avatar: "https://placehold.co/128x128.png", belt: "Branca", stripes: 4, attendance: { total: 40, lastMonth: 15 }, nextGraduationProgress: 90, affiliation: "Kings BJJ - Centro", branchId: "b1" },
+    { id: "s3", name: "Carlos Souza", email: "carlos@email.com", avatar: "https://placehold.co/128x128.png", belt: "Roxa", stripes: 1, attendance: { total: 150, lastMonth: 8 }, nextGraduationProgress: 30, affiliation: "Kings BJJ - Norte", branchId: "b2" },
+    { id: "s4", name: "Ana Oliveira", email: "ana@email.com", avatar: "https://placehold.co/128x128.png", belt: "Marrom", stripes: 3, attendance: { total: 200, lastMonth: 16 }, nextGraduationProgress: 85, affiliation: "Kings BJJ - Norte", branchId: "b2" },
+]

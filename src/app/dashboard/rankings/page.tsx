@@ -1,7 +1,11 @@
+"use client";
+
+import { useContext } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { mockUser, beltColors, allBelts } from "@/lib/mock-data";
+import { beltColors, allBelts } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 import { CheckCircle } from "lucide-react";
+import { UserContext } from "../layout";
 
 const Belt = ({
   belt,
@@ -54,6 +58,12 @@ const Belt = ({
 };
 
 export default function RankingsPage() {
+  const user = useContext(UserContext);
+
+  if (!user) {
+    return <div>Carregando...</div>;
+  }
+  
   return (
     <div className="grid gap-6">
       <div>
@@ -73,8 +83,8 @@ export default function RankingsPage() {
                 <Belt
                     key={belt}
                     belt={belt}
-                    stripes={mockUser.stripes}
-                    isCurrentUser={mockUser.belt === belt}
+                    stripes={user.stripes}
+                    isCurrentUser={user.belt === belt}
                 />
             ))}
         </CardContent>

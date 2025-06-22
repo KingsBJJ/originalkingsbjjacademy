@@ -1,4 +1,7 @@
+"use client";
+
 import Image from "next/image";
+import { useContext } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -10,8 +13,20 @@ import {
 } from "@/components/ui/card";
 import { mockBranches } from "@/lib/mock-data";
 import { Clock, MapPin, Phone } from "lucide-react";
+import { UserContext } from "../layout";
 
 export default function BranchesPage() {
+  const user = useContext(UserContext);
+
+  if (!user) {
+    return <div>Carregando...</div>;
+  }
+
+  const displayedBranches =
+    user.role === "admin"
+      ? mockBranches
+      : mockBranches.filter((b) => b.id === user.branchId);
+
   return (
     <div className="grid gap-6">
       <div>
@@ -21,29 +36,41 @@ export default function BranchesPage() {
         </p>
       </div>
 
-      <Card>
-        <CardContent className="p-0">
-          <div className="aspect-video w-full">
-             <Image
-                src={mockBranches[0].mapImage}
+      {user.role === "admin" && (
+        <Card>
+          <CardContent className="p-0">
+            <div className="aspect-video w-full">
+              <Image
+                src={"https://placehold.co/1200x600.png"}
                 alt="Mapa de todas as filiais"
                 width={1200}
                 height={600}
                 className="h-full w-full object-cover"
                 data-ai-hint="world map"
-            />
-          </div>
-        </CardContent>
-      </Card>
+              />
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid gap-6 md:grid-cols-2">
-        {mockBranches.map((branch) => (
+        {displayedBranches.map((branch) => (
           <Card key={branch.id}>
             <CardHeader>
               <CardTitle>{branch.name}</CardTitle>
               <CardDescription>{branch.address}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
+               <div className="aspect-video w-full rounded-md overflow-hidden mb-4">
+                <Image
+                    src={branch.mapImage}
+                    alt={`Mapa para ${branch.name}`}
+                    width={600}
+                    height={400}
+                    className="h-full w-full object-cover"
+                    data-ai-hint="city map"
+                />
+              </div>
               <div className="flex items-center gap-3 text-sm">
                 <Phone className="h-4 w-4 text-primary" />
                 <span className="text-muted-foreground">{branch.phone}</span>

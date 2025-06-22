@@ -1,3 +1,6 @@
+"use client";
+
+import { useContext } from "react";
 import {
   Card,
   CardContent,
@@ -8,10 +11,24 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { mockClasses } from "@/lib/mock-data";
 import { Clock } from "lucide-react";
+import { UserContext } from "../layout";
 
 export default function SchedulePage() {
-  const adultClasses = mockClasses.filter((c) => c.category === "Adults");
-  const kidsClasses = mockClasses.filter((c) => c.category === "Kids");
+  const user = useContext(UserContext);
+
+  if (!user) {
+    return <div>Carregando...</div>;
+  }
+
+  const displayedClasses =
+    user.role === "admin"
+      ? mockClasses
+      : mockClasses.filter((c) => c.branchId === user.branchId);
+
+  const adultClasses = displayedClasses.filter(
+    (c) => c.category === "Adults"
+  );
+  const kidsClasses = displayedClasses.filter((c) => c.category === "Kids");
 
   return (
     <div className="grid gap-6">

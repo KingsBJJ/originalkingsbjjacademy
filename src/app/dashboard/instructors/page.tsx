@@ -1,3 +1,6 @@
+"use client";
+
+import { useContext } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -9,8 +12,20 @@ import {
 } from "@/components/ui/card";
 import { mockInstructors, beltColors } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
+import { UserContext } from "../layout";
 
 export default function InstructorsPage() {
+  const user = useContext(UserContext);
+
+  if (!user) {
+    return <div>Carregando...</div>;
+  }
+
+  const displayedInstructors =
+    user.role === "admin"
+      ? mockInstructors
+      : mockInstructors.filter((i) => i.affiliation === user.affiliation);
+
   return (
     <div className="grid gap-6">
       <div>
@@ -21,7 +36,7 @@ export default function InstructorsPage() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {mockInstructors.map((instructor) => {
+        {displayedInstructors.map((instructor) => {
           const beltStyle =
             beltColors[instructor.belt] || beltColors.Branca;
           return (
@@ -38,6 +53,7 @@ export default function InstructorsPage() {
                 </Avatar>
                 <div className="mt-4">
                   <CardTitle>{instructor.name}</CardTitle>
+                   <CardDescription className="mt-1">{instructor.affiliation}</CardDescription>
                   <div className="mt-2">
                     <Badge
                       className={cn(

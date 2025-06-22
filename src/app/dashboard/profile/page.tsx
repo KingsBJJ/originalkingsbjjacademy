@@ -1,3 +1,6 @@
+"use client";
+
+import { useContext } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,27 +20,35 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { mockUser, mockAttendanceHistory, beltColors } from "@/lib/mock-data";
+import { mockAttendanceHistory, beltColors } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 import { Medal } from "lucide-react";
+import { UserContext } from "../layout";
+
 
 export default function ProfilePage() {
-  const beltStyle = beltColors[mockUser.belt] || beltColors.Branca;
+  const user = useContext(UserContext);
+
+  if (!user) {
+    return <div>Carregando...</div>;
+  }
+
+  const beltStyle = beltColors[user.belt] || beltColors.Branca;
 
   return (
     <div className="grid gap-6">
       <div className="flex flex-col items-start gap-4 md:flex-row">
         <Avatar className="h-24 w-24 border-2 border-primary">
-          <AvatarImage src={mockUser.avatar} alt={mockUser.name} />
+          <AvatarImage src={user.avatar} alt={user.name} />
           <AvatarFallback className="text-3xl">
-            {mockUser.name.charAt(0)}
+            {user.name.charAt(0)}
           </AvatarFallback>
         </Avatar>
         <div className="flex-1">
-          <h1 className="text-3xl font-bold tracking-tight">{mockUser.name}</h1>
-          <p className="text-muted-foreground">{mockUser.email}</p>
+          <h1 className="text-3xl font-bold tracking-tight">{user.name}</h1>
+          <p className="text-muted-foreground">{user.email}</p>
           <p className="text-sm text-muted-foreground">
-            {mockUser.affiliation}
+            {user.affiliation}
           </p>
           <div className="mt-2 flex items-center gap-2">
             <Badge
@@ -47,10 +58,10 @@ export default function ProfilePage() {
                 beltStyle.text
               )}
             >
-              Faixa {mockUser.belt}
+              Faixa {user.belt}
             </Badge>
             <div className="flex gap-1">
-              {Array.from({ length: mockUser.stripes }).map((_, i) => (
+              {Array.from({ length: user.stripes }).map((_, i) => (
                 <div key={i} className="h-4 w-1 bg-white" />
               ))}
             </div>
@@ -74,20 +85,20 @@ export default function ProfilePage() {
             <div className="space-y-2">
               <div className="flex justify-between text-sm font-medium">
                 <span>Para o Próximo Grau/Faixa</span>
-                <span>{mockUser.nextGraduationProgress}%</span>
+                <span>{user.nextGraduationProgress}%</span>
               </div>
-              <Progress value={mockUser.nextGraduationProgress} />
+              <Progress value={user.nextGraduationProgress} />
             </div>
             <div className="grid grid-cols-2 gap-4 text-center">
               <div>
                 <p className="text-2xl font-bold">
-                  {mockUser.attendance.total}
+                  {user.attendance.total}
                 </p>
                 <p className="text-sm text-muted-foreground">Total de Aulas</p>
               </div>
               <div>
                 <p className="text-2xl font-bold">
-                  {mockUser.attendance.lastMonth}
+                  {user.attendance.lastMonth}
                 </p>
                 <p className="text-sm text-muted-foreground">Aulas no Mês</p>
               </div>
@@ -104,7 +115,7 @@ export default function ProfilePage() {
           <CardContent className="space-y-2 text-sm">
             <div className="flex justify-between">
                 <span className="font-medium text-muted-foreground">Função:</span>
-                <span className="capitalize">{mockUser.role}</span>
+                <span className="capitalize">{user.role}</span>
             </div>
              <div className="flex justify-between">
                 <span className="font-medium text-muted-foreground">Membro Desde:</span>
