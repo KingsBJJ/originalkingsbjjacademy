@@ -110,7 +110,6 @@ const AdminDashboard = () => {
                 tickLine={false}
                 axisLine={false}
                 tickMargin={10}
-                domain={["dataMin - 5", "dataMax + 5"]}
               />
               <ChartTooltip
                 cursor={true}
