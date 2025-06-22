@@ -1,18 +1,14 @@
 "use client";
 
-import Image from "next/image";
 import { useContext } from "react";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { mockBranches } from "@/lib/mock-data";
-import { Clock, MapPin, Phone } from "lucide-react";
+import { Clock, MapPin, Phone, User as UserIcon } from "lucide-react";
 import { UserContext } from "../client-layout";
 
 export default function BranchesPage() {
@@ -36,40 +32,16 @@ export default function BranchesPage() {
         </p>
       </div>
 
-      {user.role === "admin" && (
-        <Card>
-          <CardContent className="p-0">
-            <div className="aspect-video w-full">
-              <Image
-                src={"https://placehold.co/1200x600.png"}
-                alt="Mapa de todas as filiais"
-                width={1200}
-                height={600}
-                className="h-full w-full object-cover"
-                data-ai-hint="world map"
-              />
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="space-y-4">
         {displayedBranches.map((branch) => (
           <Card key={branch.id}>
             <CardHeader>
               <CardTitle>{branch.name}</CardTitle>
-              <CardDescription>{branch.address}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-               <div className="aspect-video w-full rounded-md overflow-hidden mb-4">
-                <Image
-                    src={branch.mapImage}
-                    alt={`Mapa para ${branch.name}`}
-                    width={600}
-                    height={400}
-                    className="h-full w-full object-cover"
-                    data-ai-hint="city map"
-                />
+              <div className="flex items-center gap-3 text-sm">
+                <MapPin className="h-4 w-4 text-primary" />
+                <span className="text-muted-foreground">{branch.address}</span>
               </div>
               <div className="flex items-center gap-3 text-sm">
                 <Phone className="h-4 w-4 text-primary" />
@@ -79,13 +51,12 @@ export default function BranchesPage() {
                 <Clock className="h-4 w-4 text-primary" />
                 <span className="text-muted-foreground">{branch.hours}</span>
               </div>
+               <div className="flex items-center gap-3 text-sm">
+                <UserIcon className="h-4 w-4 text-primary" />
+                <span className="font-medium">Responsável:</span>
+                <span className="text-muted-foreground">{branch.responsible}</span>
+              </div>
             </CardContent>
-            <CardFooter>
-              <Button variant="outline" className="w-full">
-                <MapPin className="mr-2 h-4 w-4" />
-                Ver Detalhes
-              </Button>
-            </CardFooter>
           </Card>
         ))}
       </div>

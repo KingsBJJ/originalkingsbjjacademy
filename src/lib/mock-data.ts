@@ -33,6 +33,8 @@ export type Instructor = {
   belt: keyof typeof beltColors;
   bio: string;
   affiliation: string;
+  email: string;
+  phone: string;
 };
 
 export type Branch = {
@@ -41,7 +43,7 @@ export type Branch = {
   address: string;
   phone: string;
   hours: string;
-  mapImage: string;
+  responsible: string;
 };
 
 export const beltColors = {
@@ -58,27 +60,27 @@ export const allBelts: (keyof typeof beltColors)[] = [ "Branca", "Azul", "Roxa",
 export const beltInfo = {
   Branca: {
     description: "Foco nos fundamentos, sobrevivência e defesa. O início da jornada.",
-    skills: ["Postura na Guarda", "Fuga de Quadril", "Rolamentos", "Levantada Técnica", "Defesa de Estrangulamento", "Pegada Básica", "Amortecimento de Queda"],
+    skills: ["Postura na Guarda", "Fuga de Quadril", "Rolamentos", "Levantada Técnica", "Defesa de Estrangulamento", "Pegada Básica", "Amortecimento de Queda", "Controle de 100kg", "Raspagem de Gancho"],
   },
   Azul: {
     description: "Expansão do repertório de técnicas, começo do ataque e combinações.",
-    skills: ["Americana da Montada", "Armlock da Guarda", "Kimura", "Guarda Fechada", "Passagem de Guarda de Joelhos", "Estrangulamento Cruzado", "Raspagem de Tesoura"],
+    skills: ["Americana da Montada", "Armlock da Guarda", "Kimura", "Guarda Fechada", "Passagem de Guarda de Joelhos", "Estrangulamento Cruzado", "Raspagem de Tesoura", "Triângulo", "Defesa de Passagem"],
   },
   Roxa: {
     description: "Desenvolvimento de um jogo próprio, refinamento técnico e estratégia.",
-    skills: ["Triângulo", "Ataques das Costas", "Guarda De La Riva", "Guarda Aranha", "Berimbolo", "Controle Lateral", "Passagem de Meia Guarda"],
+    skills: ["Triângulo", "Ataques das Costas", "Guarda De La Riva", "Guarda Aranha", "Berimbolo", "Controle Lateral", "Passagem de Meia Guarda", "Omoplata", "Leg Drag"],
   },
   Marrom: {
     description: "Consolidação da técnica, alta eficiência e preparação para a faixa preta.",
-    skills: ["Chaves de Pé Retas", "Passagens de Guarda em Pé", "Omoplata", "Jogo de Pressão", "Controle do Kesa-Gatame", "Leg Drag", "Finalizações da Montada"],
+    skills: ["Chaves de Pé Retas", "Passagens de Guarda em Pé", "Omoplata", "Jogo de Pressão", "Controle do Kesa-Gatame", "Leg Drag", "Finalizações da Montada", "Relógio", "Estrangulamento Ezequiel"],
   },
   Preta: {
     description: "Maestria dos fundamentos, liderança e representação da arte.",
-    skills: ["Refinamento de Jogo", "Estratégia de Competição", "Contra-ataques", "Variações de Finalizações", "Liderança", "Ensinar e Conduzir", "Domínio do Timing"],
+    skills: ["Refinamento de Jogo", "Estratégia de Competição", "Contra-ataques", "Variações de Finalizações", "Liderança", "Ensinar e Conduzir", "Domínio do Timing", "Criação de Posições", "Leitura de Jogo"],
   },
   Coral: {
     description: "Anos de dedicação e contribuição ao esporte, um grande mestre.",
-    skills: ["Legado no Esporte", "Filosofia do Jiu-Jitsu", "Contribuição para a Comunidade", "Desenvolvimento de Mestres", "Grande Mestria", "Impacto na Arte", "Visão Estratégica"],
+    skills: ["Legado no Esporte", "Filosofia do Jiu-Jitsu", "Contribuição para a Comunidade", "Desenvolvimento de Mestres", "Grande Mestria", "Impacto na Arte", "Visão Estratégica", "Embaixador da Arte", "Mentor de Gerações"],
   },
 };
 
@@ -194,15 +196,15 @@ export const mockClasses: Class[] = [
 ];
 
 export const mockInstructors: Instructor[] = [
-  { id: "i1", name: "Prof. Helio Gracie", avatar: "https://placehold.co/128x128.png", belt: "Coral", bio: "Co-criador do Jiu-Jitsu Brasileiro, com foco em alavancagem e técnica.", affiliation: "Kings BJJ - Centro" },
-  { id: "i2", name: "Prof. Rickson Gracie", avatar: "https://placehold.co/128x128.png", belt: "Preta", bio: "Conhecido por seu recorde invicto e domínio dos fundamentos.", affiliation: "Kings BJJ - Centro" },
-  { id: "i3", name: "Profa. Carla Ribeiro", avatar: "https://placehold.co/128x128.png", belt: "Preta", bio: "Especialista em treino infantil e técnicas modernas de jiu-jitsu.", affiliation: "Kings BJJ - Centro" },
-  { id: "i4", name: "Prof. Fabio Gurgel", avatar: "https://placehold.co/128x128.png", belt: "Preta", bio: "Múltiplo campeão mundial e um estrategista especialista.", affiliation: "Kings BJJ - Norte" },
+  { id: "i1", name: "Prof. Helio Gracie", avatar: "https://placehold.co/128x128.png", belt: "Coral", bio: "Co-criador do Jiu-Jitsu Brasileiro, com foco em alavancagem e técnica.", affiliation: "Kings BJJ - Centro", email: "helio@kingsbjj.com", phone: "(55) 1111-1111" },
+  { id: "i2", name: "Prof. Rickson Gracie", avatar: "https://placehold.co/128x128.png", belt: "Preta", bio: "Conhecido por seu recorde invicto e domínio dos fundamentos.", affiliation: "Kings BJJ - Centro", email: "rickson@kingsbjj.com", phone: "(55) 2222-2222" },
+  { id: "i3", name: "Profa. Carla Ribeiro", avatar: "https://placehold.co/128x128.png", belt: "Preta", bio: "Especialista em treino infantil e técnicas modernas de jiu-jitsu.", affiliation: "Kings BJJ - Centro", email: "carla@kingsbjj.com", phone: "(55) 3333-3333" },
+  { id: "i4", name: "Prof. Fabio Gurgel", avatar: "https://placehold.co/128x128.png", belt: "Preta", bio: "Múltiplo campeão mundial e um estrategista especialista.", affiliation: "Kings BJJ - Norte", email: "fabio@kingsbjj.com", phone: "(55) 4444-4444" },
 ];
 
 export const mockBranches: Branch[] = [
-  { id: "b1", name: "Kings BJJ - Centro", address: "Rua Principal 123, Cidade, BR", phone: "(55) 1234-5678", hours: "Seg-Sáb, 9h - 21h", mapImage: "https://placehold.co/600x400.png" },
-  { id: "b2", name: "Kings BJJ - Norte", address: "Avenida Norte 456, Cidade, BR", phone: "(55) 8765-4321", hours: "Seg-Sex, 10h - 20h", mapImage: "https://placehold.co/600x400.png" },
+  { id: "b1", name: "Kings BJJ - Centro", address: "Rua Principal 123, Cidade, BR", phone: "(55) 1234-5678", hours: "Seg-Sáb, 9h - 21h", responsible: "Prof. Rickson Gracie" },
+  { id: "b2", name: "Kings BJJ - Norte", address: "Avenida Norte 456, Cidade, BR", phone: "(55) 8765-4321", hours: "Seg-Sex, 10h - 20h", responsible: "Prof. Fabio Gurgel" },
 ];
 
 export const mockStudents: Omit<User, 'role'>[] = [
