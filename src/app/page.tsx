@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -12,6 +15,9 @@ import { Label } from "@/components/ui/label";
 import { KingsBjjLogo } from "@/components/kings-bjj-logo";
 
 export default function LoginPage() {
+  const searchParams = useSearchParams();
+  const isAdminLogin = searchParams.get("role") === "admin";
+
   return (
     <div className="flex min-h-screen w-full items-center justify-center bg-background p-4">
       <Card className="mx-auto w-full max-w-sm border-0 bg-transparent shadow-none sm:border sm:bg-card sm:shadow-sm">
@@ -31,7 +37,11 @@ export default function LoginPage() {
                 type="email"
                 placeholder="m@exemplo.com"
                 required
-                defaultValue="student@kingsbjj.com"
+                defaultValue={
+                  isAdminLogin
+                    ? "admin@kingsbjj.com"
+                    : "student@kingsbjj.com"
+                }
               />
             </div>
             <div className="grid gap-2">
@@ -44,7 +54,12 @@ export default function LoginPage() {
                   Esqueceu sua senha?
                 </Link>
               </div>
-              <Input id="password" type="password" required defaultValue="password" />
+              <Input
+                id="password"
+                type="password"
+                required
+                defaultValue="password"
+              />
             </div>
             <Button asChild type="submit" className="w-full">
               <Link href="/dashboard">Entrar</Link>

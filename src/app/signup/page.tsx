@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -21,6 +24,9 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { mockBranches, allBelts } from "@/lib/mock-data";
 
 export default function SignUpPage() {
+  const searchParams = useSearchParams();
+  const role = searchParams.get("role");
+
   return (
     <div className="flex min-h-screen w-full items-center justify-center bg-background p-4">
       <Card className="mx-auto w-full max-w-sm border-0 bg-transparent shadow-none sm:border sm:bg-card sm:shadow-sm">
@@ -66,6 +72,12 @@ export default function SignUpPage() {
                   <RadioGroupItem value="professor" id="r-professor" />
                   <Label htmlFor="r-professor">Professor</Label>
                 </div>
+                {role === "admin" && (
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="admin" id="r-admin" />
+                    <Label htmlFor="r-admin">Admin</Label>
+                  </div>
+                )}
               </RadioGroup>
             </div>
 
@@ -114,7 +126,7 @@ export default function SignUpPage() {
                 </div>
               </RadioGroup>
             </div>
-            
+
             <Button asChild type="submit" className="w-full">
               <Link href="/dashboard">Criar conta</Link>
             </Button>
