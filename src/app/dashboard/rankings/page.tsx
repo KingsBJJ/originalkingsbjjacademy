@@ -1,18 +1,36 @@
 "use client";
 
 import { useContext } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import {
-  beltColors,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
   allBelts,
-  beltInfo,
-  beltColorsKids,
   allBeltsKids,
+  beltColors,
+  beltColorsKids,
+  beltInfo,
   beltInfoKids,
+  mockStudents,
 } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, GraduationCap } from "lucide-react";
 import { UserContext } from "../client-layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -42,7 +60,8 @@ const BeltListItem = ({
         "transition-all duration-300",
         isCurrentUser
           ? "border-primary shadow-lg shadow-primary/20 ring-2 ring-primary"
-          : "border-border"
+          : "border-border",
+        "hover:bg-primary/10"
       )}
     >
       <CardContent className="flex flex-col gap-6 p-4 md:flex-row md:items-center md:p-6">
@@ -99,12 +118,89 @@ const BeltListItem = ({
   );
 };
 
+const GraduationPlan = () => {
+  return (
+    <Card className="mt-8">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <GraduationCap />
+          Plano de Graduação de Alunos
+        </CardTitle>
+        <CardDescription>
+          Acompanhe e promova o progresso dos alunos para a próxima graduação.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Aluno</TableHead>
+              <TableHead>Graduação Atual</TableHead>
+              <TableHead className="w-[250px]">Progresso para Próxima</TableHead>
+              <TableHead className="text-right">Ações</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {mockStudents.map((student) => {
+              const beltStyle = beltColors[student.belt] || beltColors.Branca;
+              return (
+                <TableRow key={student.id}>
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-9 w-9">
+                        <AvatarImage
+                          src={student.avatar}
+                          alt={student.name}
+                        />
+                        <AvatarFallback>{student.name[0]}</AvatarFallback>
+                      </Avatar>
+                      <p className="font-medium">{student.name}</p>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      className={cn(
+                        "text-xs font-semibold",
+                        beltStyle.bg,
+                        beltStyle.text
+                      )}
+                    >
+                      {student.belt} - {student.stripes} grau(s)
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <Progress
+                        value={student.nextGraduationProgress}
+                        className="h-2"
+                      />
+                      <span className="text-xs font-medium text-muted-foreground">
+                        {student.nextGraduationProgress}%
+                      </span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button size="sm">Promover</Button>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
+  );
+};
+
 export default function RankingsPage() {
   const user = useContext(UserContext);
 
   if (!user) {
     return <div>Carregando...</div>;
   }
+
+  const canManageGraduation =
+    user.role === "admin" || user.role === "professor";
 
   return (
     <div className="grid gap-6">
@@ -137,7 +233,7 @@ export default function RankingsPage() {
           </div>
         </TabsContent>
         <TabsContent value="kids" className="mt-4">
-           <div className="space-y-4">
+          <div className="space-y-4">
             {allBeltsKids.map((belt) => (
               <BeltListItem
                 key={belt}
@@ -151,6 +247,8 @@ export default function RankingsPage() {
           </div>
         </TabsContent>
       </Tabs>
+
+      {canManageGraduation && <GraduationPlan />}
     </div>
   );
 }
