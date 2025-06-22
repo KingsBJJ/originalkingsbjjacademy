@@ -23,51 +23,50 @@ const BeltCard = ({
   return (
     <Card
       className={cn(
-        "overflow-hidden transition-all duration-300",
+        "flex flex-col overflow-hidden transition-all duration-300",
         isCurrentUser
           ? "border-primary shadow-lg shadow-primary/20 ring-2 ring-primary"
           : "border-border"
       )}
     >
-      <div className={cn("p-4", beltStyle.bg)}>
-        <div className="flex items-center justify-between">
-          <h3
-            className={cn(
-              "text-2xl font-bold tracking-wider",
-              beltStyle.text
-            )}
-          >
-            {belt}
-          </h3>
-          {isCurrentUser && (
-            <div className="flex items-center gap-1.5 rounded-full bg-black/50 px-3 py-1 text-xs font-medium text-white">
-              <CheckCircle className="h-4 w-4" />
-              <span>Sua Graduação</span>
-            </div>
-          )}
-        </div>
+      <CardContent className="flex flex-1 flex-col p-6">
         <div
           className={cn(
-            "relative mt-4 flex h-8 w-full items-center justify-end rounded-sm pr-4",
+            "relative mb-4 flex h-12 w-full items-center justify-end rounded-md pr-4 shadow-inner",
             beltStyle.bg
           )}
         >
-          <div className="absolute inset-0 h-full w-full bg-black/10" />
-          <div className="relative h-full w-12 bg-black/70">
-            <div className="absolute inset-y-0 right-2 flex items-center gap-1">
+          <div className="absolute inset-0 h-full w-full rounded-md bg-black/10" />
+          <div className="relative h-full w-20 bg-black/70">
+            <div className="absolute inset-y-0 right-3 flex items-center gap-1.5">
               {isCurrentUser &&
                 Array.from({ length: stripes }).map((_, i) => (
-                  <div key={i} className="h-5 w-1 bg-white" />
+                  <div key={i} className="h-8 w-1.5 bg-zinc-300" />
                 ))}
             </div>
           </div>
         </div>
-      </div>
-      <CardContent className="space-y-4 p-6">
-        <p className="text-muted-foreground">{info.description}</p>
+
+        <div className="flex items-start justify-between">
+          <h3 className="text-2xl font-bold tracking-wider">Faixa {belt}</h3>
+          {isCurrentUser && (
+            <Badge
+              variant="outline"
+              className="shrink-0 border-primary text-primary"
+            >
+              <CheckCircle className="mr-1.5 h-3.5 w-3.5" />
+              Sua Graduação
+            </Badge>
+          )}
+        </div>
+
+        <p className="my-4 flex-1 text-sm text-muted-foreground">
+          {info.description}
+        </p>
+
         <div>
           <h4 className="mb-2 font-semibold text-foreground">
-            Habilidades Chave
+            Habilidades Chave:
           </h4>
           <div className="flex flex-wrap gap-2">
             {info.skills.map((skill) => (
