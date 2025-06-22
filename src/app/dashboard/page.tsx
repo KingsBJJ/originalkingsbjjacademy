@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { mockClasses, mockStudents, mockUsers, allBelts } from "@/lib/mock-data";
+import { mockClasses, mockStudents, mockUsers, mockTeamGrowth } from "@/lib/mock-data";
 import {
   CheckCircle,
   Medal,
@@ -19,9 +19,10 @@ import {
   Users,
   Map,
   User,
+  TrendingUp,
 } from "lucide-react";
 import { UserContext } from "./client-layout";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid } from "recharts";
 import {
   ChartContainer,
   ChartTooltip,
@@ -30,16 +31,7 @@ import {
 } from "@/components/ui/chart";
 
 const AdminDashboard = () => {
-  const beltCounts = mockStudents.reduce((acc, student) => {
-    const beltName = student.belt;
-    acc[beltName] = (acc[beltName] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
-
-  const chartData = allBelts.map((belt) => ({
-    belt: belt,
-    total: beltCounts[belt] || 0,
-  }));
+  const chartData = mockTeamGrowth;
 
   const chartConfig = {
     total: {
@@ -58,7 +50,7 @@ const AdminDashboard = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-4xl font-bold">{mockStudents.length}</p>
+          <p className="text-4xl font-bold">{chartData[chartData.length - 1].total}</p>
           <p className="text-xs text-muted-foreground">
             Alunos ativos em todas as filiais
           </p>
@@ -92,32 +84,61 @@ const AdminDashboard = () => {
       </Card>
       <Card className="md:col-span-2 lg:col-span-3">
         <CardHeader>
-          <CardTitle>Distribuição de Alunos por Faixa</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <TrendingUp />
+            Crescimento da Equipe
+          </CardTitle>
           <CardDescription>
-            Quantidade de alunos em cada nível de graduação.
+            Evolução do número de alunos nos últimos meses.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <ChartContainer config={chartConfig} className="h-[250px] w-full">
-            <BarChart
+            <AreaChart
               accessibilityLayer
               data={chartData}
               margin={{ top: 20, right: 20, left: -10, bottom: 0 }}
             >
               <CartesianGrid vertical={false} />
               <XAxis
-                dataKey="belt"
+                dataKey="month"
                 tickLine={false}
                 tickMargin={10}
                 axisLine={false}
               />
-              <YAxis />
-              <ChartTooltip
-                cursor={false}
-                content={<ChartTooltipContent indicator="dot" />}
+              <YAxis
+                tickLine={false}
+                axisLine={false}
+                tickMargin={10}
+                domain={["dataMin - 5", "dataMax + 5"]}
               />
-              <Bar dataKey="total" fill="var(--color-total)" radius={4} />
-            </BarChart>
+              <ChartTooltip
+                cursor={true}
+                content={<ChartTooltipContent indicator="line" />}
+              />
+              <defs>
+                <linearGradient id="fillTotal" x1="0" y1="0" x2="0" y2="1">
+                  <stop
+                    offset="5%"
+                    stopColor="var(--color-total)"
+                    stopOpacity={0.8}
+                  />
+                  <stop
+                    offset="95%"
+                    stopColor="var(--color-total)"
+                    stopOpacity={0.1}
+                  />
+                </linearGradient>
+              </defs>
+              <Area
+                dataKey="total"
+                type="monotone"
+                fill="url(#fillTotal)"
+                strokeWidth={2}
+                stroke="var(--color-total)"
+                stackId="a"
+              />
+            </AreaChart>
           </ChartContainer>
         </CardContent>
       </Card>

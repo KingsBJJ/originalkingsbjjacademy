@@ -60,27 +60,27 @@ export const allBelts: (keyof typeof beltColors)[] = [ "Branca", "Azul", "Roxa",
 export const beltInfo = {
   Branca: {
     description: "Foco nos fundamentos, sobrevivência e defesa. O início da jornada.",
-    skills: ["Postura na Guarda", "Fuga de Quadril", "Rolamentos", "Levantada Técnica", "Defesa de Estrangulamento", "Pegada Básica", "Amortecimento de Queda", "Controle de 100kg", "Raspagem de Gancho"],
+    skills: ["Postura na Guarda", "Fuga de Quadril", "Rolamentos", "Levantada Técnica", "Defesa de Estrangulamento", "Pegada Básica", "Amortecimento de Queda", "Controle de 100kg", "Raspagem de Gancho", "Finalização da Montada"],
   },
   Azul: {
     description: "Expansão do repertório de técnicas, começo do ataque e combinações.",
-    skills: ["Americana da Montada", "Armlock da Guarda", "Kimura", "Guarda Fechada", "Passagem de Guarda de Joelhos", "Estrangulamento Cruzado", "Raspagem de Tesoura", "Triângulo", "Defesa de Passagem"],
+    skills: ["Americana da Montada", "Armlock da Guarda", "Kimura", "Guarda Fechada", "Passagem de Guarda de Joelhos", "Estrangulamento Cruzado", "Raspagem de Tesoura", "Triângulo", "Defesa de Passagem", "Controle Lateral"],
   },
   Roxa: {
     description: "Desenvolvimento de um jogo próprio, refinamento técnico e estratégia.",
-    skills: ["Triângulo", "Ataques das Costas", "Guarda De La Riva", "Guarda Aranha", "Berimbolo", "Controle Lateral", "Passagem de Meia Guarda", "Omoplata", "Leg Drag"],
+    skills: ["Triângulo", "Ataques das Costas", "Guarda De La Riva", "Guarda Aranha", "Berimbolo", "Controle Lateral", "Passagem de Meia Guarda", "Omoplata", "Leg Drag", "Chave de Pé Reta"],
   },
   Marrom: {
     description: "Consolidação da técnica, alta eficiência e preparação para a faixa preta.",
-    skills: ["Chaves de Pé Retas", "Passagens de Guarda em Pé", "Omoplata", "Jogo de Pressão", "Controle do Kesa-Gatame", "Leg Drag", "Finalizações da Montada", "Relógio", "Estrangulamento Ezequiel"],
+    skills: ["Chaves de Pé Retas", "Passagens de Guarda em Pé", "Omoplata", "Jogo de Pressão", "Controle do Kesa-Gatame", "Leg Drag", "Finalizações da Montada", "Relógio", "Estrangulamento Ezequiel", "Ataques no 50/50"],
   },
   Preta: {
     description: "Maestria dos fundamentos, liderança e representação da arte.",
-    skills: ["Refinamento de Jogo", "Estratégia de Competição", "Contra-ataques", "Variações de Finalizações", "Liderança", "Ensinar e Conduzir", "Domínio do Timing", "Criação de Posições", "Leitura de Jogo"],
+    skills: ["Refinamento de Jogo", "Estratégia de Competição", "Contra-ataques", "Variações de Finalizações", "Liderança", "Ensinar e Conduzir", "Domínio do Timing", "Criação de Posições", "Leitura de Jogo", "Transições Avançadas"],
   },
   Coral: {
     description: "Anos de dedicação e contribuição ao esporte, um grande mestre.",
-    skills: ["Legado no Esporte", "Filosofia do Jiu-Jitsu", "Contribuição para a Comunidade", "Desenvolvimento de Mestres", "Grande Mestria", "Impacto na Arte", "Visão Estratégica", "Embaixador da Arte", "Mentor de Gerações"],
+    skills: ["Legado no Esporte", "Filosofia do Jiu-Jitsu", "Contribuição para a Comunidade", "Desenvolvimento de Mestres", "Grande Mestria", "Impacto na Arte", "Visão Estratégica", "Embaixador da Arte", "Mentor de Gerações", "Inovação Técnica"],
   },
 };
 
@@ -213,3 +213,12 @@ export const mockStudents: Omit<User, 'role'>[] = [
     { id: "s3", name: "Carlos Souza", email: "carlos@email.com", avatar: "https://placehold.co/128x128.png", belt: "Roxa", stripes: 1, attendance: { total: 150, lastMonth: 8 }, nextGraduationProgress: 30, affiliation: "Kings BJJ - Norte", branchId: "b2" },
     { id: "s4", name: "Ana Oliveira", email: "ana@email.com", avatar: "https://placehold.co/128x128.png", belt: "Marrom", stripes: 3, attendance: { total: 200, lastMonth: 16 }, nextGraduationProgress: 85, affiliation: "Kings BJJ - Norte", branchId: "b2" },
 ]
+
+export const mockTeamGrowth = [
+  { month: "Fev", total: 35 },
+  { month: "Mar", total: 42 },
+  { month: "Abr", total: 48 },
+  { month: "Mai", total: 55 },
+  { month: "Jun", total: 62 },
+  { month: "Jul", total: 70 },
+];
