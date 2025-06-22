@@ -222,3 +222,11 @@ export const mockTeamGrowth = [
   { month: "Jun", total: 62 },
   { month: "Jul", total: 70 },
 ];
+
+export const mockGrowthMetrics = [
+  { metric: "Novos Alunos (Mês)", value: 15, fill: "hsl(var(--chart-1))" },
+  { metric: "Retenção (Trimestre)", value: 92, fill: "hsl(var(--chart-2))" },
+  { metric: "Crescimento Kids", value: 25, fill: "hsl(var(--chart-3))" },
+  { metric: "Engajamento (Check-in)", value: 88, fill: "hsl(var(--chart-4))" },
+  { metric: "Graduações (Ano)", value: 40, fill: "hsl(var(--chart-5))" },
+];

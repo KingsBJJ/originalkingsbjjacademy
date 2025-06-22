@@ -11,7 +11,13 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { mockClasses, mockStudents, mockUsers, mockTeamGrowth } from "@/lib/mock-data";
+import {
+  mockClasses,
+  mockGrowthMetrics,
+  mockStudents,
+  mockTeamGrowth,
+  mockUsers,
+} from "@/lib/mock-data";
 import {
   CheckCircle,
   Medal,
@@ -19,10 +25,18 @@ import {
   Users,
   Map,
   User,
-  TrendingUp,
+  BarChart2,
 } from "lucide-react";
 import { UserContext } from "./client-layout";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid } from "recharts";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Cell,
+  LabelList,
+} from "recharts";
 import {
   ChartContainer,
   ChartTooltip,
@@ -32,11 +46,11 @@ import {
 
 const AdminDashboard = () => {
   const chartData = mockTeamGrowth;
+  const growthMetricsData = mockGrowthMetrics;
 
   const chartConfig = {
-    total: {
-      label: "Alunos",
-      color: "hsl(var(--primary))",
+    value: {
+      label: "Valor (%)",
     },
   } satisfies ChartConfig;
 
@@ -50,7 +64,9 @@ const AdminDashboard = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-4xl font-bold">{chartData[chartData.length - 1].total}</p>
+          <p className="text-4xl font-bold">
+            {chartData[chartData.length - 1].total}
+          </p>
           <p className="text-xs text-muted-foreground">
             Alunos ativos em todas as filiais
           </p>
@@ -85,59 +101,50 @@ const AdminDashboard = () => {
       <Card className="md:col-span-2 lg:col-span-3">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <TrendingUp />
-            Crescimento da Equipe
+            <BarChart2 />
+            Estatísticas de Crescimento da Equipe
           </CardTitle>
           <CardDescription>
-            Evolução do número de alunos nos últimos meses.
+            Principais métricas de crescimento em porcentagem.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <ChartContainer config={chartConfig} className="h-[250px] w-full">
-            <AreaChart
+          <ChartContainer config={chartConfig} className="h-[300px] w-full">
+            <BarChart
               accessibilityLayer
-              data={chartData}
-              margin={{ top: 20, right: 20, left: -10, bottom: 0 }}
+              data={growthMetricsData}
+              margin={{
+                top: 30,
+              }}
             >
               <CartesianGrid vertical={false} />
               <XAxis
-                dataKey="month"
+                dataKey="metric"
                 tickLine={false}
-                tickMargin={10}
                 axisLine={false}
+                tickMargin={10}
               />
               <YAxis
-                tickLine={false}
-                axisLine={false}
-                tickMargin={10}
+                tickFormatter={(value) => `${value}%`}
+                domain={[0, 100]}
               />
               <ChartTooltip
-                cursor={true}
-                content={<ChartTooltipContent indicator="line" />}
+                cursor={false}
+                content={<ChartTooltipContent hideLabel />}
               />
-              <defs>
-                <linearGradient id="fillTotal" x1="0" y1="0" x2="0" y2="1">
-                  <stop
-                    offset="5%"
-                    stopColor="var(--color-total)"
-                    stopOpacity={0.8}
-                  />
-                  <stop
-                    offset="95%"
-                    stopColor="var(--color-total)"
-                    stopOpacity={0.1}
-                  />
-                </linearGradient>
-              </defs>
-              <Area
-                dataKey="total"
-                type="monotone"
-                fill="url(#fillTotal)"
-                strokeWidth={2}
-                stroke="var(--color-total)"
-                stackId="a"
-              />
-            </AreaChart>
+              <Bar dataKey="value" radius={[8, 8, 0, 0]}>
+                <LabelList
+                  position="top"
+                  offset={8}
+                  className="fill-foreground"
+                  fontSize={12}
+                  formatter={(value: number) => `${value}%`}
+                />
+                {growthMetricsData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.fill} />
+                ))}
+              </Bar>
+            </BarChart>
           </ChartContainer>
         </CardContent>
       </Card>
