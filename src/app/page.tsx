@@ -50,12 +50,6 @@ export default function LoginPage() {
             <Button asChild type="submit" className="w-full">
               <Link href="/dashboard?role=student">Entrar</Link>
             </Button>
-            <Button variant="secondary" asChild className="w-full">
-               <Link href="/dashboard?role=professor">Entrar como Professor</Link>
-            </Button>
-            <Button variant="outline" asChild className="w-full">
-               <Link href="/dashboard?role=admin">Entrar como Admin</Link>
-            </Button>
           </div>
           <div className="mt-4 text-center text-sm">
             Não tem uma conta?{" "}
