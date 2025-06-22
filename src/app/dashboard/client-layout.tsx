@@ -37,19 +37,18 @@ import {
 const baseNavItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Painel" },
   { href: "/dashboard/profile", icon: UserIcon, label: "Perfil" },
-  { href: "/dashboard/schedule", icon: Calendar, label: "Horários" },
-  { href: "/dashboard/rankings", icon: Award, label: "Graduações" },
   { href: "/dashboard/instructors", icon: Users, label: "Professores" },
+  { href: "/dashboard/rankings", icon: Award, label: "Graduações" },
   { href: "/dashboard/branches", icon: MapPin, label: "Filiais" },
 ];
 
 const adminNavItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Painel" },
   { href: "/dashboard/profile", icon: UserIcon, label: "Perfil" },
-  { href: "/dashboard/rankings", icon: Award, label: "Graduações" },
   { href: "/dashboard/instructors", icon: Users, label: "Professores" },
-  { href: "/dashboard/branches", icon: MapPin, label: "Filiais" },
   { href: "/dashboard/manage-students", icon: Shield, label: "Alunos" },
+  { href: "/dashboard/rankings", icon: Award, label: "Graduações" },
+  { href: "/dashboard/branches", icon: MapPin, label: "Filiais" },
 ];
 
 
