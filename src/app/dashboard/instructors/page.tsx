@@ -7,7 +7,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { mockInstructors, beltColors } from "@/lib/mock-data";
@@ -35,29 +34,28 @@ export default function InstructorsPage() {
         </p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="space-y-4">
         {displayedInstructors.map((instructor) => {
           const beltStyle =
             beltColors[instructor.belt] || beltColors.Branca;
           return (
-            <Card key={instructor.id} className="flex flex-col">
-              <CardHeader className="items-center text-center">
-                <Avatar className="h-24 w-24 border-2 border-primary">
+            <Card key={instructor.id}>
+              <CardContent className="flex items-start gap-4 p-4">
+                <Avatar className="h-20 w-20 border">
                   <AvatarImage
                     src={instructor.avatar}
                     alt={instructor.name}
                   />
-                  <AvatarFallback className="text-3xl">
+                  <AvatarFallback className="text-2xl">
                     {instructor.name.charAt(0)}
                   </AvatarFallback>
                 </Avatar>
-                <div className="mt-4">
-                  <CardTitle>{instructor.name}</CardTitle>
-                   <CardDescription className="mt-1">{instructor.affiliation}</CardDescription>
-                  <div className="mt-2">
+                <div className="flex-1">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-xl">{instructor.name}</CardTitle>
                     <Badge
                       className={cn(
-                        "px-3 py-0.5 text-xs font-semibold",
+                        "text-xs font-semibold",
                         beltStyle.bg,
                         beltStyle.text
                       )}
@@ -65,10 +63,13 @@ export default function InstructorsPage() {
                       Faixa {instructor.belt}
                     </Badge>
                   </div>
+                  <CardDescription className="mt-1">
+                    {instructor.affiliation}
+                  </CardDescription>
+                  <p className="mt-3 text-sm text-muted-foreground">
+                    {instructor.bio}
+                  </p>
                 </div>
-              </CardHeader>
-              <CardContent className="flex-1">
-                <CardDescription>{instructor.bio}</CardDescription>
               </CardContent>
             </Card>
           );
