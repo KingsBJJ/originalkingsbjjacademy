@@ -230,3 +230,9 @@ export const mockGrowthMetrics = [
   { metric: "Engajamento (Check-in)", value: 88, fill: "hsl(var(--chart-4))" },
   { metric: "Graduações (Ano)", value: 40, fill: "hsl(var(--chart-5))" },
 ];
+
+export const mockNotifications = [
+    { id: "n1", text: 'Novo aluno "Carlos Souza" foi cadastrado na filial Kings BJJ - Norte.', time: "há 5 minutos" },
+    { id: "n2", text: 'A conta de professor para "Joana Lima" foi criada e aguarda sua aprovação.', time: "há 2 horas" },
+    { id: "n3", text: 'Check-in de "Alex Costa" na aula de Fundamentos de Kimono.', time: "há 1 dia" },
+];

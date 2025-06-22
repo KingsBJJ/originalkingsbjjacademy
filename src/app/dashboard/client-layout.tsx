@@ -22,10 +22,10 @@ import {
   SidebarInset,
 } from "@/components/ui/sidebar";
 import { KingsBjjLogo } from "@/components/kings-bjj-logo";
-import { mockUsers, User } from "@/lib/mock-data";
+import { mockUsers, User, mockNotifications } from "@/lib/mock-data";
 import {
   Award,
-  Calendar,
+  Bell,
   LayoutDashboard,
   LogOut,
   MapPin,
@@ -33,6 +33,12 @@ import {
   Users,
   Shield,
 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 const baseNavItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Painel" },
@@ -128,9 +134,46 @@ export default function DashboardClientLayout({
               <h1 className="text-lg font-semibold md:hidden">
                 {navItems.find(item => item.href === pathname)?.label || 'Painel'}
               </h1>
-              <div className="text-sm font-medium">
-                  <span className="text-muted-foreground">Perfil: </span>
-                  <span className="capitalize font-semibold text-primary">{user.role}</span>
+               <div className="flex items-center gap-4">
+                {(user.role === 'admin' || user.role === 'professor') && (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="ghost" size="icon" className="relative rounded-full">
+                        <Bell className="h-5 w-5" />
+                        <span className="absolute top-1.5 right-1.5 flex h-2.5 w-2.5">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                        </span>
+                        <span className="sr-only">Ver notificações</span>
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent align="end" className="w-96 p-0">
+                      <div className="flex items-center justify-between border-b p-4">
+                        <h3 className="font-semibold">Notificações</h3>
+                        <Badge variant="secondary">{mockNotifications.length}</Badge>
+                      </div>
+                      <div className="max-h-96 overflow-y-auto">
+                        {mockNotifications.map((notification) => (
+                          <div key={notification.id} className="flex items-start gap-3 border-b p-4 text-sm hover:bg-muted/50 last:border-b-0">
+                            <div className="grid gap-1">
+                              <p className="leading-relaxed">{notification.text}</p>
+                              <p className="text-xs text-muted-foreground">{notification.time}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="border-t p-2">
+                          <Button size="sm" variant="link" className="w-full">
+                            Marcar todas como lidas
+                          </Button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                )}
+                <div className="text-sm font-medium">
+                    <span className="text-muted-foreground">Perfil: </span>
+                    <span className="capitalize font-semibold text-primary">{user.role}</span>
+                </div>
               </div>
           </header>
           <main className="flex-1 overflow-auto p-4 sm:p-6">{children}</main>
