@@ -50,6 +50,10 @@ export default function SignUpPage() {
               <Label htmlFor="password">Senha</Label>
               <Input id="password" type="password" required />
             </div>
+            <div className="grid gap-2">
+              <Label htmlFor="confirm-password">Confirmar Senha</Label>
+              <Input id="confirm-password" type="password" required />
+            </div>
 
             <div className="grid gap-2">
               <Label htmlFor="affiliation">Filial</Label>
