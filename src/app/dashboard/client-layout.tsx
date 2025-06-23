@@ -46,6 +46,7 @@ const studentNavItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Painel" },
   { href: "/dashboard/profile", icon: UserIcon, label: "Perfil" },
   { href: "/dashboard/schedule", icon: Calendar, label: "Horários" },
+  { href: "/dashboard/check-in", icon: QrCode, label: "Check-in" },
   { href: "/dashboard/branches", icon: MapPin, label: "Filiais" },
   { href: "/dashboard/rankings", icon: Award, label: "Graduações" },
 ];
