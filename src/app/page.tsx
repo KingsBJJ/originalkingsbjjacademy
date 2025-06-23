@@ -30,10 +30,11 @@ export default function LoginPage() {
 
   return (
     <div
+      data-ai-hint="dojo background"
       className="flex min-h-screen w-full items-center justify-center bg-cover bg-center p-4"
       style={{
         backgroundImage:
-          "linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://i.imgur.com/gKj3T5b.jpg')",
+          "linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('/background.jpg')",
       }}
     >
       <Card className="mx-auto w-full max-w-sm border-0 bg-transparent shadow-none sm:border sm:border-white/10 sm:bg-black/20 sm:backdrop-blur-sm sm:shadow-lg">
