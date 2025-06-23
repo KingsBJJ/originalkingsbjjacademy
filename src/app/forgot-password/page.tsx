@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -37,21 +38,28 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="flex min-h-screen w-full items-center justify-center bg-background p-4">
-      <Card className="mx-auto w-full max-w-sm">
+    <div className="relative flex min-h-screen w-full items-center justify-center p-4">
+       <Image
+            src="https://i.imgur.com/K1xT3f7.jpg"
+            alt="Dois lutadores de jiu-jitsu no tatame"
+            fill
+            className="object-cover -z-10 brightness-[.3]"
+            data-ai-hint="jiujitsu match"
+        />
+      <Card className="mx-auto w-full max-w-sm border-0 bg-transparent shadow-none sm:border sm:border-white/10 sm:bg-black/20 sm:backdrop-blur-sm sm:shadow-lg">
         <CardHeader className="text-center">
            <KingsBjjLogo className="mx-auto mb-4 h-24 w-24" />
-          <CardTitle className="text-2xl font-bold tracking-tight">
+          <CardTitle className="text-2xl font-bold tracking-tight text-white">
             Esqueceu sua Senha?
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-white/80">
             Insira seu email para receber um link de recuperação.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="grid gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email" className="text-white/80">Email</Label>
               <Input
                 id="email"
                 type="email"
@@ -59,14 +67,15 @@ export default function ForgotPasswordPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                className="bg-white/5 border-white/20 text-white placeholder:text-white/50"
               />
             </div>
             <Button type="submit" className="w-full">
               Enviar Link de Recuperação
             </Button>
           </form>
-           <div className="mt-4 text-center text-sm">
-             <Link href="/" className="inline-flex items-center gap-1 underline">
+           <div className="mt-4 text-center text-sm text-white/80">
+             <Link href="/" className="inline-flex items-center gap-1 underline hover:text-white">
                 <ArrowLeft className="h-3 w-3" />
                 Voltar para o login
             </Link>
