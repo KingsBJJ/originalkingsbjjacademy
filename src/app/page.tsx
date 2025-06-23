@@ -32,7 +32,7 @@ export default function LoginPage() {
     <div className="flex min-h-screen w-full items-center justify-center bg-background p-4">
       <Card className="mx-auto w-full max-w-sm border-0 bg-transparent shadow-none sm:border sm:bg-card sm:shadow-sm">
         <CardHeader className="text-center">
-          <KingsBjjLogo className="mx-auto mb-4 h-16 w-16" />
+          <KingsBjjLogo className="mx-auto mb-4 h-24 w-24" />
           <CardTitle className="text-3xl font-bold tracking-tight">
             Kings BJJ
           </CardTitle>
