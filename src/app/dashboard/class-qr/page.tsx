@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import QRCode from 'qrcode.react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Printer } from 'lucide-react';
 
 function QRCodeGenerator() {
   const router = useRouter();
@@ -23,22 +23,32 @@ function QRCodeGenerator() {
     );
   }
 
+  const handlePrint = () => {
+    window.print();
+  };
+
   return (
-    <Card className="w-full max-w-md">
-      <CardHeader>
+    <Card className="w-full max-w-md print:border-none print:shadow-none">
+      <CardHeader className="print:text-center">
         <CardTitle className="text-2xl">QR Code para: {className}</CardTitle>
-        <CardDescription>
-          Aponte a câmera do seu celular para fazer o check-in na aula.
+        <CardDescription className="print:hidden">
+          Aponte a câmera do seu celular para fazer o check-in na aula ou imprima o código.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col items-center gap-6 pt-6">
         <div className="rounded-lg bg-white p-4">
           <QRCode value={className} size={256} />
         </div>
-        <Button onClick={() => router.back()} variant="outline" className="w-full">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Voltar para os Horários
-        </Button>
+        <div className="flex w-full gap-2 print:hidden">
+            <Button onClick={() => router.back()} variant="outline" className="w-full">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Voltar
+            </Button>
+            <Button onClick={handlePrint} className="w-full">
+                <Printer className="mr-2 h-4 w-4" />
+                Imprimir
+            </Button>
+        </div>
       </CardContent>
     </Card>
   );

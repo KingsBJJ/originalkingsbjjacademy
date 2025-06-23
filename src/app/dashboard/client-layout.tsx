@@ -104,7 +104,7 @@ export default function DashboardClientLayout({
   return (
     <UserContext.Provider value={user}>
       <SidebarProvider>
-        <Sidebar>
+        <Sidebar className="print:hidden">
           <SidebarHeader>
             <div className="flex items-center gap-2">
               <KingsBjjLogo className="h-8 w-8" />
@@ -152,7 +152,7 @@ export default function DashboardClientLayout({
           </SidebarFooter>
         </Sidebar>
         <SidebarInset>
-          <header className="sticky top-0 z-10 flex h-14 items-center justify-between gap-4 border-b bg-background/80 px-4 backdrop-blur-sm sm:px-6 md:justify-end">
+          <header className="sticky top-0 z-10 flex h-14 items-center justify-between gap-4 border-b bg-background/80 px-4 backdrop-blur-sm sm:px-6 md:justify-end print:hidden">
               <SidebarTrigger className="md:hidden"/>
               <h1 className="text-lg font-semibold md:hidden">
                 {navItems.find(item => item.href === pathname)?.label || 'Painel'}
