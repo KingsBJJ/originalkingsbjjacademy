@@ -52,6 +52,26 @@ const AdminDashboard = () => {
     value: {
       label: "Valor (%)",
     },
+    new: {
+      label: "Novos Alunos (Mês)",
+      color: "hsl(var(--chart-1))",
+    },
+    retention: {
+      label: "Retenção (Trimestre)",
+      color: "hsl(var(--chart-2))",
+    },
+    kids: {
+      label: "Crescimento Kids",
+      color: "hsl(var(--chart-3))",
+    },
+    engagement: {
+      label: "Engajamento (Check-in)",
+      color: "hsl(var(--chart-4))",
+    },
+    graduations: {
+      label: "Graduações (Ano)",
+      color: "hsl(var(--chart-5))",
+    },
   } satisfies ChartConfig;
 
   return (
@@ -140,8 +160,8 @@ const AdminDashboard = () => {
                   fontSize={12}
                   formatter={(value: number) => `${value}%`}
                 />
-                {growthMetricsData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.fill} />
+                {growthMetricsData.map((entry) => (
+                  <Cell key={entry.metric} fill={`var(--color-${entry.key})`} />
                 ))}
               </Bar>
             </BarChart>

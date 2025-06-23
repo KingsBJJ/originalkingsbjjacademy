@@ -224,11 +224,11 @@ export const mockTeamGrowth = [
 ];
 
 export const mockGrowthMetrics = [
-  { metric: "Novos Alunos (Mês)", value: 15, fill: "hsl(var(--chart-1))" },
-  { metric: "Retenção (Trimestre)", value: 92, fill: "hsl(var(--chart-2))" },
-  { metric: "Crescimento Kids", value: 25, fill: "hsl(var(--chart-3))" },
-  { metric: "Engajamento (Check-in)", value: 88, fill: "hsl(var(--chart-4))" },
-  { metric: "Graduações (Ano)", value: 40, fill: "hsl(var(--chart-5))" },
+  { metric: "Novos Alunos (Mês)", value: 15, key: "new" },
+  { metric: "Retenção (Trimestre)", value: 92, key: "retention" },
+  { metric: "Crescimento Kids", value: 25, key: "kids" },
+  { metric: "Engajamento (Check-in)", value: 88, key: "engagement" },
+  { metric: "Graduações (Ano)", value: 40, key: "graduations" },
 ];
 
 export const mockNotifications = [
