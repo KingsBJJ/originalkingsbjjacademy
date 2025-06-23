@@ -75,11 +75,11 @@ export const beltInfo = {
     skills: ["Chaves de Pé Retas", "Passagens de Guarda em Pé", "Omoplata", "Jogo de Pressão", "Controle do Kesa-Gatame", "Leg Drag", "Finalizações da Montada", "Relógio", "Estrangulamento Ezequiel", "Ataques no 50/50"],
   },
   Preta: {
-    description: "Maestria dos fundamentos e liderança. A faixa preta possui 6 graus, representando a jornada de aprendizado, ensino e contribuição para a arte.",
+    description: "Maestria dos fundamentos e liderança. A faixa preta possui 6 graus antes da faixa coral, representando a jornada de aprendizado, ensino e contribuição para a arte.",
     skills: ["1º a 3º Grau (Professor)", "4º a 6º Grau (Mestre)", "Liderança e Mentoria", "Domínio Técnico", "Estratégia Avançada", "Desenvolvimento de Alunos", "Contribuição à Comunidade", "Arbitragem e Regras", "História do Jiu-Jitsu", "Primeiros Socorros"],
   },
   Coral: {
-    description: "Anos de dedicação e contribuição ao esporte, um grande mestre.",
+    description: "Representa o 7º grau da faixa preta. Anos de dedicação e contribuição ao esporte, um grande mestre.",
     skills: ["Legado no Esporte", "Filosofia do Jiu-Jitsu", "Contribuição para a Comunidade", "Desenvolvimento de Mestres", "Grande Mestria", "Impacto na Arte", "Visão Estratégica", "Embaixador da Arte", "Mentor de Gerações", "Inovação Técnica"],
   },
 };

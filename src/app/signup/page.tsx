@@ -74,10 +74,6 @@ export default function SignUpPage() {
                   <RadioGroupItem value="student" id="r-aluno" />
                   <Label htmlFor="r-aluno">Aluno</Label>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="professor" id="r-professor" />
-                  <Label htmlFor="r-professor">Professor</Label>
-                </div>
                 {email.toLowerCase() === mockUsers.admin.email && (
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="admin" id="r-admin" />
