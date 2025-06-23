@@ -1,6 +1,7 @@
 "use client";
 
 import { useContext } from "react";
+import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -57,9 +58,11 @@ export default function InstructorsPage() {
             </CardDescription>
           </div>
            {user.role === 'admin' && (
-            <Button>
-                <PlusCircle />
-                <span>Adicionar Professor</span>
+            <Button asChild>
+                <Link href={`/dashboard/instructors/new?role=${user.role}`}>
+                    <PlusCircle />
+                    <span>Adicionar Professor</span>
+                </Link>
             </Button>
         )}
         </CardHeader>

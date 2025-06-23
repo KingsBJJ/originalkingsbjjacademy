@@ -1,6 +1,7 @@
 "use client";
 
 import { useContext } from "react";
+import Link from 'next/link';
 import {
   Card,
   CardContent,
@@ -34,9 +35,11 @@ export default function BranchesPage() {
           </p>
         </div>
         {user.role === 'admin' && (
-            <Button>
-                <PlusCircle />
-                <span>Adicionar Filial</span>
+            <Button asChild>
+                <Link href={`/dashboard/branches/new?role=${user.role}`}>
+                    <PlusCircle />
+                    <span>Adicionar Filial</span>
+                </Link>
             </Button>
         )}
       </div>
