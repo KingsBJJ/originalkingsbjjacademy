@@ -87,11 +87,3 @@ body {
     @apply bg-background text-foreground;
   }
 }
-
-@layer components {
-  .bg-auth-screen {
-    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('/background.jpg');
-    background-size: cover;
-    background-position: center;
-  }
-}
