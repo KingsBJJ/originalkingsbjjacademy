@@ -1,6 +1,7 @@
 "use client";
 
 import { useContext } from "react";
+import Link from 'next/link';
 import {
   Card,
   CardContent,
@@ -10,8 +11,9 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { mockClasses } from "@/lib/mock-data";
-import { Clock } from "lucide-react";
+import { Clock, QrCode } from "lucide-react";
 import { UserContext } from "../client-layout";
+import { Button } from "@/components/ui/button";
 
 export default function SchedulePage() {
   const user = useContext(UserContext);
@@ -19,6 +21,8 @@ export default function SchedulePage() {
   if (!user) {
     return <div>Carregando...</div>;
   }
+
+  const canManageSchedule = user.role === 'admin' || user.role === 'professor';
 
   const displayedClasses =
     user.role === "admin"
@@ -29,6 +33,38 @@ export default function SchedulePage() {
     (c) => c.category === "Adults"
   );
   const kidsClasses = displayedClasses.filter((c) => c.category === "Kids");
+
+  const classListRenderer = (classes: typeof mockClasses) => (
+    <CardContent className="space-y-4">
+      {classes.map((item) => (
+        <div
+          key={item.id}
+          className="flex items-center justify-between rounded-lg border p-4"
+        >
+          <div>
+            <p className="font-semibold">{item.name}</p>
+            <p className="text-sm text-muted-foreground">
+              {item.instructor}
+            </p>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 text-sm">
+              <Clock className="h-4 w-4 text-primary" />
+              <span>{item.time}</span>
+            </div>
+            {canManageSchedule && (
+              <Button variant="outline" size="sm" asChild>
+                <Link href={`/dashboard/class-qr?class=${encodeURIComponent(item.name)}&role=${user.role}`}>
+                  <QrCode className="mr-2 h-4 w-4" />
+                  <span>QR Code</span>
+                </Link>
+              </Button>
+            )}
+          </div>
+        </div>
+      ))}
+    </CardContent>
+  );
 
   return (
     <div className="grid gap-6">
@@ -52,25 +88,7 @@ export default function SchedulePage() {
                 Horário de todas as aulas de Adulto com e sem kimono.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              {adultClasses.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex items-center justify-between rounded-lg border p-4"
-                >
-                  <div>
-                    <p className="font-semibold">{item.name}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {item.instructor}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <Clock className="h-4 w-4 text-primary" />
-                    <span>{item.time}</span>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
+            {classListRenderer(adultClasses)}
           </Card>
         </TabsContent>
         <TabsContent value="kids">
@@ -81,25 +99,7 @@ export default function SchedulePage() {
                 Aulas de jiu-jitsu divertidas e seguras para os pequenos.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              {kidsClasses.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex items-center justify-between rounded-lg border p-4"
-                >
-                  <div>
-                    <p className="font-semibold">{item.name}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {item.instructor}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <Clock className="h-4 w-4 text-primary" />
-                    <span>{item.time}</span>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
+            {classListRenderer(kidsClasses)}
           </Card>
         </TabsContent>
       </Tabs>
