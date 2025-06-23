@@ -1,7 +1,6 @@
 "use client";
 
 import { useContext } from "react";
-import Link from 'next/link';
 import {
   Card,
   CardContent,
@@ -11,9 +10,8 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { mockClasses } from "@/lib/mock-data";
-import { Clock, QrCode } from "lucide-react";
+import { Clock } from "lucide-react";
 import { UserContext } from "../client-layout";
-import { Button } from "@/components/ui/button";
 
 export default function SchedulePage() {
   const user = useContext(UserContext);
@@ -21,8 +19,6 @@ export default function SchedulePage() {
   if (!user) {
     return <div>Carregando...</div>;
   }
-
-  const canManageSchedule = user.role === 'admin' || user.role === 'professor';
 
   const displayedClasses =
     user.role === "admin"
@@ -52,14 +48,6 @@ export default function SchedulePage() {
               <Clock className="h-4 w-4 text-primary" />
               <span>{item.time}</span>
             </div>
-            {canManageSchedule && (
-              <Button variant="outline" size="sm" asChild>
-                <Link href={`/dashboard/class-qr?class=${encodeURIComponent(item.name)}&role=${user.role}`}>
-                  <QrCode className="mr-2 h-4 w-4" />
-                  <span>QR Code</span>
-                </Link>
-              </Button>
-            )}
           </div>
         </div>
       ))}

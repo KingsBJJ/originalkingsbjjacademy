@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useContext } from 'react';
 import {
   Card,
   CardContent,
@@ -15,6 +15,8 @@ import { Camera, Check } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { UserContext } from '../client-layout';
+import { mockClasses } from '@/lib/mock-data';
 
 
 export default function CheckInPage() {
@@ -28,6 +30,7 @@ export default function CheckInPage() {
   const jsQRRef = useRef<any>(null);
   const router = useRouter();
   const { toast } = useToast();
+  const user = useContext(UserContext);
 
   const stopCamera = useCallback(() => {
     if (streamRef.current) {
@@ -92,7 +95,8 @@ export default function CheckInPage() {
         videoRef.current &&
         videoRef.current.readyState === videoRef.current.HAVE_ENOUGH_DATA &&
         canvasRef.current &&
-        jsQRRef.current
+        jsQRRef.current &&
+        user
       ) {
         const video = videoRef.current;
         const canvas = canvasRef.current;
@@ -109,13 +113,30 @@ export default function CheckInPage() {
           });
 
           if (code) {
-            setScannedCode(code.data);
-            setCheckinTime(new Date());
             stopCamera();
-            toast({
-              title: 'Check-in Realizado!',
-              description: `Código "${code.data}" escaneado com sucesso.`,
-            });
+            if (code.data === 'KINGS_BJJ_UNIVERSAL_CHECKIN') {
+              const nextClass = mockClasses.find(c => c.branchId === user.branchId);
+              if (nextClass) {
+                setScannedCode(nextClass.name);
+                setCheckinTime(new Date());
+                toast({
+                  title: 'Check-in Realizado!',
+                  description: `Presença confirmada na aula "${nextClass.name}".`,
+                });
+              } else {
+                 toast({
+                    variant: 'destructive',
+                    title: 'Nenhuma aula encontrada',
+                    description: 'Não foi possível encontrar uma aula para sua filial no momento.',
+                  });
+              }
+            } else {
+              toast({
+                variant: 'destructive',
+                title: 'QR Code Inválido',
+                description: 'Este não é um QR code de check-in válido.',
+              });
+            }
           }
         }
       }
@@ -131,7 +152,7 @@ export default function CheckInPage() {
     return () => {
       cancelAnimationFrame(animationFrameId);
     };
-  }, [isScanning, stopCamera, toast]);
+  }, [isScanning, stopCamera, toast, user]);
 
 
   return (
