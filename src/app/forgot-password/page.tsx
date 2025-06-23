@@ -44,7 +44,7 @@ export default function ForgotPasswordPage() {
         alt="Dojo background"
         data-ai-hint="dojo background"
         fill
-        className="object-cover object-center -z-10"
+        className="object-cover object-center -z-20"
         quality={80}
         priority
       />
