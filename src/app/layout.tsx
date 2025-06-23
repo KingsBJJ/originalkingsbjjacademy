@@ -11,7 +11,7 @@ const poppins = Poppins({
 
 export const metadata: Metadata = {
   title: "Kings BJJ Hub de Treinamento",
-  description: "Bem-vindo ao Jogo",
+  description: "Welcome to the Game!",
 };
 
 export default function RootLayout({

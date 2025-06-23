@@ -36,7 +36,7 @@ export default function LoginPage() {
           <CardTitle className="text-3xl font-bold tracking-tight">
             Kings BJJ
           </CardTitle>
-          <CardDescription>Bem-vindo ao Jogo</CardDescription>
+          <CardDescription>Welcome to the Game!</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4">
