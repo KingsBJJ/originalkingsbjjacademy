@@ -42,7 +42,16 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 
-const baseNavItems = [
+const studentNavItems = [
+  { href: "/dashboard", icon: LayoutDashboard, label: "Painel" },
+  { href: "/dashboard/check-in", icon: QrCode, label: "Check-in" },
+  { href: "/dashboard/schedule", icon: Calendar, label: "Horários" },
+  { href: "/dashboard/profile", icon: UserIcon, label: "Perfil" },
+  { href: "/dashboard/rankings", icon: Award, label: "Graduações" },
+  { href: "/dashboard/branches", icon: MapPin, label: "Filiais" },
+];
+
+const professorNavItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Painel" },
   { href: "/dashboard/check-in", icon: QrCode, label: "Check-in" },
   { href: "/dashboard/schedule", icon: Calendar, label: "Horários" },
@@ -80,7 +89,15 @@ export default function DashboardClientLayout({
     return mockUsers[validRole];
   }, [role]);
 
-  const navItems = user.role === 'admin' ? adminNavItems : baseNavItems;
+  const navItems = useMemo(() => {
+    if (user.role === 'admin') {
+      return adminNavItems;
+    }
+    if (user.role === 'professor') {
+      return professorNavItems;
+    }
+    return studentNavItems;
+  }, [user.role]);
 
   const getHref = (href: string) => `${href}?role=${role}`;
 
