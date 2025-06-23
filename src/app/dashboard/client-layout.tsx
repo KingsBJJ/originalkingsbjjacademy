@@ -44,11 +44,10 @@ import {
 
 const studentNavItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Painel" },
-  { href: "/dashboard/check-in", icon: QrCode, label: "Check-in" },
-  { href: "/dashboard/schedule", icon: Calendar, label: "Horários" },
   { href: "/dashboard/profile", icon: UserIcon, label: "Perfil" },
-  { href: "/dashboard/rankings", icon: Award, label: "Graduações" },
+  { href: "/dashboard/schedule", icon: Calendar, label: "Horários" },
   { href: "/dashboard/branches", icon: MapPin, label: "Filiais" },
+  { href: "/dashboard/rankings", icon: Award, label: "Graduações" },
 ];
 
 const professorNavItems = [
