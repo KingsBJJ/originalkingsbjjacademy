@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -30,15 +29,13 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative flex min-h-screen w-full items-center justify-center p-4">
-      <Image
-        src="https://i.imgur.com/K1xT3f7.jpg"
-        alt="Dois lutadores de jiu-jitsu no tatame"
-        fill
-        priority
-        className="object-cover -z-10 brightness-[.3]"
-        data-ai-hint="jiujitsu match"
-      />
+    <div
+      className="flex min-h-screen w-full items-center justify-center bg-cover bg-center p-4"
+      style={{
+        backgroundImage:
+          "linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://i.imgur.com/K1xT3f7.jpg')",
+      }}
+    >
       <Card className="mx-auto w-full max-w-sm border-0 bg-transparent shadow-none sm:border sm:border-white/10 sm:bg-black/20 sm:backdrop-blur-sm sm:shadow-lg">
         <CardHeader className="text-center">
           <KingsBjjLogo className="mx-auto mb-4 h-24 w-24" />
