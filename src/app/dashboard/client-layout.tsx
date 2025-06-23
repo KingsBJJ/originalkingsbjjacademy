@@ -63,7 +63,6 @@ const professorNavItems = [
 
 const adminNavItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Painel" },
-  { href: "/dashboard/schedule", icon: Calendar, label: "Horários" },
   { href: "/dashboard/class-qr", icon: QrCode, label: "QR Code Universal" },
   { href: "/dashboard/profile", icon: UserIcon, label: "Perfil" },
   { href: "/dashboard/instructors", icon: Users, label: "Professores" },
