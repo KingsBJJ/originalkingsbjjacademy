@@ -1,6 +1,7 @@
 "use client";
 
 import { useContext } from "react";
+import Link from "next/link";
 import {
   Card,
   CardContent,
@@ -200,8 +201,8 @@ const StudentDashboard = () => {
                 {nextClass.time} com {nextClass.instructor}
               </p>
             </div>
-            <Button size="lg" className="w-full sm:w-auto">
-              Fazer Check-in
+            <Button size="lg" className="w-full sm:w-auto" asChild>
+              <Link href={`/dashboard/check-in?role=${user.role}`}>Fazer Check-in</Link>
             </Button>
           </div>
         </CardContent>

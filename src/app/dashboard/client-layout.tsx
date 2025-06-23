@@ -32,6 +32,8 @@ import {
   User as UserIcon,
   Users,
   Shield,
+  QrCode,
+  Calendar,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -42,6 +44,8 @@ import {
 
 const baseNavItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Painel" },
+  { href: "/dashboard/check-in", icon: QrCode, label: "Check-in" },
+  { href: "/dashboard/schedule", icon: Calendar, label: "Horários" },
   { href: "/dashboard/profile", icon: UserIcon, label: "Perfil" },
   { href: "/dashboard/instructors", icon: Users, label: "Professores" },
   { href: "/dashboard/rankings", icon: Award, label: "Graduações" },
@@ -50,6 +54,8 @@ const baseNavItems = [
 
 const adminNavItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Painel" },
+  { href: "/dashboard/check-in", icon: QrCode, label: "Check-in" },
+  { href: "/dashboard/schedule", icon: Calendar, label: "Horários" },
   { href: "/dashboard/profile", icon: UserIcon, label: "Perfil" },
   { href: "/dashboard/instructors", icon: Users, label: "Professores" },
   { href: "/dashboard/manage-students", icon: Shield, label: "Alunos" },
