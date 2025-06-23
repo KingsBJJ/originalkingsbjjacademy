@@ -31,7 +31,7 @@ export default function SignUpPage() {
   return (
     <div className="relative flex min-h-screen w-full items-center justify-center p-4">
       <Image
-        src="/background.jpg"
+        src="https://images.unsplash.com/photo-1599495810403-16a24a733ebb"
         alt="Dojo background"
         data-ai-hint="dojo background"
         fill
