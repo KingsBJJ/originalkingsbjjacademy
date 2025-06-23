@@ -1,12 +1,10 @@
-
-
 runConfig:
  
   maxInstances: 1
 
 env:
   - variable: kings bjj
-      value: new_value
+    value: new_value
     availability:
-      - BUILD
-      - RUNTIME
+    - BUILD
+    - RUNTIME
