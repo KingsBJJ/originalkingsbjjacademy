@@ -35,6 +35,7 @@ export default function LoginPage() {
         src="https://i.imgur.com/K1xT3f7.jpg"
         alt="Dois lutadores de jiu-jitsu no tatame"
         fill
+        priority
         className="object-cover -z-10 brightness-[.3]"
         data-ai-hint="jiujitsu match"
       />
