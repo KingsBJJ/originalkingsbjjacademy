@@ -1,11 +1,7 @@
-import { KingsBjjLogo } from "@/components/kings-bjj-logo";
-
 export default function Loading() {
-  // Você pode adicionar qualquer UI aqui, incluindo um Skeleton.
   return (
-    <div className="flex h-full w-full flex-col items-center justify-center gap-4">
-        <KingsBjjLogo className="h-16 w-16 animate-spin" />
-        <p className="text-muted-foreground">Carregando página...</p>
+    <div className="fixed top-0 left-0 z-50 w-full h-1 bg-secondary">
+      <div className="h-full bg-primary animate-progress-bar" />
     </div>
   );
 }
