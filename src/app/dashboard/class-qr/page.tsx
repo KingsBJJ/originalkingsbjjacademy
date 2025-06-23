@@ -1,13 +1,21 @@
 "use client";
 
-import { Suspense, useContext } from 'react';
+import { useContext } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import QRCode from 'qrcode.react';
+import dynamic from 'next/dynamic';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Printer } from 'lucide-react';
 import { UserContext } from '../client-layout';
+import { Skeleton } from '@/components/ui/skeleton';
+
+
+// Dynamically import the QRCode component to prevent SSR issues
+const QRCode = dynamic(() => import('qrcode.react'), {
+    ssr: false,
+    loading: () => <Skeleton className="h-[256px] w-[256px]" />,
+});
 
 function QRCodeGenerator() {
   const router = useRouter();
@@ -76,9 +84,7 @@ function QRCodeGenerator() {
 export default function UniversalQRCodePage() {
     return (
         <div className="flex h-full w-full items-center justify-center">
-            <Suspense fallback={<div className="text-muted-foreground">Carregando QR Code...</div>}>
-                <QRCodeGenerator />
-            </Suspense>
+            <QRCodeGenerator />
         </div>
     );
 }
