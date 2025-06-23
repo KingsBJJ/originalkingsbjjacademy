@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import { cn } from '@/lib/utils';
 
 export function KingsBjjLogo({ className }: { className?: string }) {
   return (
@@ -7,7 +8,7 @@ export function KingsBjjLogo({ className }: { className?: string }) {
       alt="Kings BJJ Logo"
       width={512}
       height={512}
-      className={className}
+      className={cn("object-contain", className)}
     />
   );
 }
