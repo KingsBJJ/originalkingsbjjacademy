@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import jsQR from 'jsqr';
 import {
   Card,
   CardContent,
@@ -12,7 +11,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Camera, Check, QrCode, X } from 'lucide-react';
+import { Camera, Check } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 export default function CheckInPage() {
@@ -22,6 +21,7 @@ export default function CheckInPage() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const jsQRRef = useRef<any>(null);
   const router = useRouter();
   const { toast } = useToast();
 
@@ -30,11 +30,18 @@ export default function CheckInPage() {
       streamRef.current.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
     }
+    setIsScanning(false);
   }, []);
 
-  const startScan = async () => {
+  const startScan = useCallback(async () => {
     try {
-      if (streamRef.current) stopCamera();
+      if (!jsQRRef.current) {
+        jsQRRef.current = (await import('jsqr')).default;
+      }
+      
+      if (streamRef.current) {
+        stopCamera();
+      }
 
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: 'environment' },
@@ -57,7 +64,7 @@ export default function CheckInPage() {
         description: 'Por favor, habilite a permissão de câmera para continuar.',
       });
     }
-  };
+  }, [stopCamera, toast]);
 
   const handleScanAgain = () => {
     setScannedCode(null);
@@ -69,7 +76,7 @@ export default function CheckInPage() {
     return () => {
       stopCamera();
     };
-  }, [stopCamera]);
+  }, [startScan, stopCamera]);
 
   useEffect(() => {
     let animationFrameId: number;
@@ -79,11 +86,13 @@ export default function CheckInPage() {
         isScanning &&
         videoRef.current &&
         videoRef.current.readyState === videoRef.current.HAVE_ENOUGH_DATA &&
-        canvasRef.current
+        canvasRef.current &&
+        jsQRRef.current
       ) {
         const video = videoRef.current;
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
+        const jsQR = jsQRRef.current;
 
         if (ctx) {
           canvas.height = video.videoHeight;
@@ -96,7 +105,6 @@ export default function CheckInPage() {
 
           if (code) {
             setScannedCode(code.data);
-            setIsScanning(false);
             stopCamera();
             toast({
               title: 'Check-in Realizado!',
