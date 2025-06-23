@@ -13,10 +13,14 @@ import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Camera, Check } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+
 
 export default function CheckInPage() {
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
   const [scannedCode, setScannedCode] = useState<string | null>(null);
+  const [checkinTime, setCheckinTime] = useState<Date | null>(null);
   const [isScanning, setIsScanning] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -68,6 +72,7 @@ export default function CheckInPage() {
 
   const handleScanAgain = () => {
     setScannedCode(null);
+    setCheckinTime(null);
     startScan();
   };
   
@@ -105,6 +110,7 @@ export default function CheckInPage() {
 
           if (code) {
             setScannedCode(code.data);
+            setCheckinTime(new Date());
             stopCamera();
             toast({
               title: 'Check-in Realizado!',
@@ -143,7 +149,7 @@ export default function CheckInPage() {
           <div className="flex w-full flex-col items-center justify-center gap-6">
             
             <div className="relative flex h-80 w-full max-w-md items-center justify-center overflow-hidden rounded-lg border bg-muted">
-              {scannedCode ? (
+              {scannedCode && checkinTime ? (
                 <div className="flex flex-col items-center gap-4 text-center">
                     <div className="rounded-full bg-green-500/20 p-4 text-green-400">
                         <Check className="h-12 w-12" />
@@ -152,6 +158,10 @@ export default function CheckInPage() {
                   <p className="text-muted-foreground">
                     Você está confirmado na aula: <br />
                     <span className="font-semibold text-foreground">{scannedCode}</span>
+                     <br />
+                    <span className="text-xs">
+                        {format(checkinTime, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                    </span>
                   </p>
                 </div>
               ) : (
