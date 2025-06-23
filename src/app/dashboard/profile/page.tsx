@@ -62,7 +62,7 @@ export default function ProfilePage() {
             </Badge>
             <div className="flex gap-1">
               {Array.from({ length: user.stripes }).map((_, i) => (
-                <div key={i} className="h-4 w-1 bg-white" />
+                <div key={i} className="h-4 w-1 bg-primary" />
               ))}
             </div>
           </div>

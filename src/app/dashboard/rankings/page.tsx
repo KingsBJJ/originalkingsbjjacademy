@@ -61,7 +61,7 @@ const BeltListItem = ({
         isCurrentUser
           ? "border-primary shadow-lg shadow-primary/20 ring-2 ring-primary"
           : "border-border",
-        "hover:bg-primary/10"
+        "hover:bg-primary/10 transition-colors"
       )}
     >
       <CardContent className="flex flex-col gap-6 p-4 md:flex-row md:items-center md:p-6">
