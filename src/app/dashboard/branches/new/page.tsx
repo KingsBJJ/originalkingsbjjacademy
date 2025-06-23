@@ -23,6 +23,7 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -41,6 +42,9 @@ const branchFormSchema = z.object({
   phone: z.string().min(10, { message: 'O telefone deve ter pelo menos 10 dígitos.' }),
   hours: z.string().min(5, { message: 'Insira um horário de funcionamento válido.' }),
   responsible: z.string({ required_error: 'Selecione um responsável.' }),
+  instructor2: z.string().optional(),
+  instructor3: z.string().optional(),
+  instructor4: z.string().optional(),
 });
 
 type BranchFormValues = z.infer<typeof branchFormSchema>;
@@ -145,6 +149,76 @@ export default function NewBranchPage() {
                   )}
                 />
               </div>
+
+              <div className="space-y-2">
+                <Label>Professores Adicionais (Opcional)</Label>
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                    <FormField
+                      control={form.control}
+                      name="instructor2"
+                      render={({ field }) => (
+                        <FormItem>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="2º Professor" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {mockInstructors.map((instructor) => (
+                                <SelectItem key={instructor.id} value={instructor.name}>{instructor.name}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="instructor3"
+                      render={({ field }) => (
+                        <FormItem>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="3º Professor" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {mockInstructors.map((instructor) => (
+                                <SelectItem key={instructor.id} value={instructor.name}>{instructor.name}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="instructor4"
+                      render={({ field }) => (
+                        <FormItem>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="4º Professor" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {mockInstructors.map((instructor) => (
+                                <SelectItem key={instructor.id} value={instructor.name}>{instructor.name}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                </div>
+              </div>
+
 
               <FormField
                 control={form.control}
