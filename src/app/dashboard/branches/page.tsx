@@ -8,8 +8,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { mockBranches } from "@/lib/mock-data";
-import { Clock, MapPin, Phone, User as UserIcon } from "lucide-react";
+import { Clock, MapPin, Phone, User as UserIcon, PlusCircle } from "lucide-react";
 import { UserContext } from "../client-layout";
+import { Button } from "@/components/ui/button";
 
 export default function BranchesPage() {
   const user = useContext(UserContext);
@@ -25,11 +26,19 @@ export default function BranchesPage() {
 
   return (
     <div className="grid gap-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Nossas Academias</h1>
-        <p className="text-muted-foreground">
-          Encontre uma unidade Kings BJJ perto de você.
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Nossas Academias</h1>
+          <p className="text-muted-foreground">
+            Encontre uma unidade Kings BJJ perto de você.
+          </p>
+        </div>
+        {user.role === 'admin' && (
+            <Button>
+                <PlusCircle />
+                <span>Adicionar Filial</span>
+            </Button>
+        )}
       </div>
 
       <div className="space-y-4">

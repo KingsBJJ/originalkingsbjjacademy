@@ -21,6 +21,8 @@ import {
 import { mockInstructors, beltColors } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 import { UserContext } from "../client-layout";
+import { Button } from "@/components/ui/button";
+import { PlusCircle } from "lucide-react";
 
 export default function InstructorsPage() {
   const user = useContext(UserContext);
@@ -44,14 +46,22 @@ export default function InstructorsPage() {
       </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Lista de Professores</CardTitle>
-          <CardDescription>
-            {user.role === 'admin' 
-              ? `Total de ${displayedInstructors.length} professores em todas as filiais.`
-              : `Professores da sua filial.`
-            }
-          </CardDescription>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>Lista de Professores</CardTitle>
+            <CardDescription>
+              {user.role === 'admin' 
+                ? `Total de ${displayedInstructors.length} professores em todas as filiais.`
+                : `Professores da sua filial.`
+              }
+            </CardDescription>
+          </div>
+           {user.role === 'admin' && (
+            <Button>
+                <PlusCircle />
+                <span>Adicionar Professor</span>
+            </Button>
+        )}
         </CardHeader>
         <CardContent>
           <Table>
