@@ -40,7 +40,7 @@ export default function ForgotPasswordPage() {
   return (
     <div className="relative flex min-h-screen w-full items-center justify-center p-4">
       <Image
-        src="https://images.unsplash.com/photo-1599495810403-16a24a733ebb"
+        src="/background.jpg"
         alt="Dojo background"
         data-ai-hint="dojo background"
         fill
