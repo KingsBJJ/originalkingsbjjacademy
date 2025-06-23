@@ -32,7 +32,7 @@ export default function LoginPage() {
   return (
     <div className="relative flex min-h-screen w-full items-center justify-center p-4">
       <Image
-        src="/background.jpg"
+        src="/background.jpg.png"
         alt="Dojo background"
         data-ai-hint="dojo background"
         fill
