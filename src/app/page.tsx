@@ -31,7 +31,7 @@ export default function LoginPage() {
   return (
     <div
       data-ai-hint="dojo background"
-      className="bg-login-background flex min-h-screen w-full items-center justify-center bg-cover bg-center p-4"
+      className="bg-login-background flex min-h-screen w-full items-center justify-center p-4"
     >
       <Card className="mx-auto w-full max-w-sm border-0 bg-transparent shadow-none sm:border sm:border-white/10 sm:bg-black/20 sm:backdrop-blur-sm sm:shadow-lg">
         <CardHeader className="text-center">
