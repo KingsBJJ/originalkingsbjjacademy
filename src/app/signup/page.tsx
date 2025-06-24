@@ -86,6 +86,12 @@ export default function SignUpPage() {
                   <RadioGroupItem value="student" id="r-aluno" />
                   <Label htmlFor="r-aluno" className="text-white/80 font-normal">Aluno</Label>
                 </div>
+                {email.toLowerCase() === mockUsers.professor.email && (
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="professor" id="r-professor" />
+                    <Label htmlFor="r-professor" className="text-white/80 font-normal">Professor</Label>
+                  </div>
+                )}
                 {email.toLowerCase() === mockUsers.admin.email && (
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="admin" id="r-admin" />
