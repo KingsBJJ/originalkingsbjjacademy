@@ -31,6 +31,7 @@ export type Instructor = {
   name: string;
   avatar: string;
   belt: keyof typeof beltColors;
+  stripes: number;
   bio: string;
   affiliation: string;
   email: string;
@@ -205,10 +206,10 @@ export const mockClasses: Class[] = [
 ];
 
 export const mockInstructors: Instructor[] = [
-  { id: "i1", name: "Prof. Helio Gracie", avatar: "https://placehold.co/128x128.png", belt: "Coral", bio: "Co-criador do Jiu-Jitsu Brasileiro, com foco em alavancagem e técnica.", affiliation: "Kings BJJ - Centro", email: "helio@kingsbjj.com", phone: "(55) 1111-1111" },
-  { id: "i2", name: "Prof. Rickson Gracie", avatar: "https://placehold.co/128x128.png", belt: "Preta", bio: "Conhecido por seu recorde invicto e domínio dos fundamentos.", affiliation: "Kings BJJ - Centro", email: "rickson@kingsbjj.com", phone: "(55) 2222-2222" },
-  { id: "i3", name: "Profa. Carla Ribeiro", avatar: "https://placehold.co/128x128.png", belt: "Preta", bio: "Especialista em treino infantil e técnicas modernas de jiu-jitsu.", affiliation: "Kings BJJ - Centro", email: "carla@kingsbjj.com", phone: "(55) 3333-3333" },
-  { id: "i4", name: "Prof. Fabio Gurgel", avatar: "https://placehold.co/128x128.png", belt: "Preta", bio: "Múltiplo campeão mundial e um estrategista especialista.", affiliation: "Kings BJJ - Norte", email: "fabio@kingsbjj.com", phone: "(55) 4444-4444" },
+  { id: "i1", name: "Prof. Helio Gracie", avatar: "https://placehold.co/128x128.png", belt: "Coral", stripes: 7, bio: "Co-criador do Jiu-Jitsu Brasileiro, com foco em alavancagem e técnica.", affiliation: "Kings BJJ - Centro", email: "helio@kingsbjj.com", phone: "(55) 1111-1111" },
+  { id: "i2", name: "Prof. Rickson Gracie", avatar: "https://placehold.co/128x128.png", belt: "Preta", stripes: 6, bio: "Conhecido por seu recorde invicto e domínio dos fundamentos.", affiliation: "Kings BJJ - Centro", email: "rickson@kingsbjj.com", phone: "(55) 2222-2222" },
+  { id: "i3", name: "Profa. Carla Ribeiro", avatar: "https://placehold.co/128x128.png", belt: "Preta", stripes: 3, bio: "Especialista em treino infantil e técnicas modernas de jiu-jitsu.", affiliation: "Kings BJJ - Centro", email: "carla@kingsbjj.com", phone: "(55) 3333-3333" },
+  { id: "i4", name: "Prof. Fabio Gurgel", avatar: "https://placehold.co/128x128.png", belt: "Preta", stripes: 5, bio: "Múltiplo campeão mundial e um estrategista especialista.", affiliation: "Kings BJJ - Norte", email: "fabio@kingsbjj.com", phone: "(55) 4444-4444" },
 ];
 
 export const mockBranches: Branch[] = [
@@ -221,6 +222,7 @@ export const mockStudents: Omit<User, 'role'>[] = [
     { id: "s2", name: "João Pereira", email: "joao@email.com", avatar: "https://placehold.co/128x128.png", belt: "Branca", stripes: 4, attendance: { total: 40, lastMonth: 15 }, nextGraduationProgress: 90, affiliation: "Kings BJJ - Centro", branchId: "b1" },
     { id: "s3", name: "Carlos Souza", email: "carlos@email.com", avatar: "https://placehold.co/128x128.png", belt: "Roxa", stripes: 1, attendance: { total: 150, lastMonth: 8 }, nextGraduationProgress: 30, affiliation: "Kings BJJ - Norte", branchId: "b2" },
     { id: "s4", name: "Ana Oliveira", email: "ana@email.com", avatar: "https://placehold.co/128x128.png", belt: "Marrom", stripes: 3, attendance: { total: 200, lastMonth: 16 }, nextGraduationProgress: 85, affiliation: "Kings BJJ - Norte", branchId: "b2" },
+    { id: "s5", name: "Bruno Alves", email: "bruno@email.com", avatar: "https://placehold.co/128x128.png", belt: "Preta", stripes: 1, attendance: { total: 300, lastMonth: 18 }, nextGraduationProgress: 10, affiliation: "Kings BJJ - Centro", branchId: "b1" },
 ]
 
 export const mockTeamGrowth = [

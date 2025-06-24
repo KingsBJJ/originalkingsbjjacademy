@@ -109,6 +109,7 @@ export default function InstructorsPage() {
                         )}
                       >
                         {instructor.belt}
+                        {(instructor.belt === 'Preta' || instructor.belt === 'Coral') && instructor.stripes > 0 && ` - ${instructor.stripes}º Grau`}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">{instructor.phone}</TableCell>

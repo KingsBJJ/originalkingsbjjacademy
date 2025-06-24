@@ -59,12 +59,15 @@ export default function ProfilePage() {
               )}
             >
               Faixa {user.belt}
+              {(user.belt === 'Preta' || user.belt === 'Coral') && user.stripes > 0 && ` - ${user.stripes}º Grau`}
             </Badge>
-            <div className="flex gap-1">
-              {Array.from({ length: user.stripes }).map((_, i) => (
-                <div key={i} className="h-4 w-1 bg-primary" />
-              ))}
-            </div>
+            {(user.belt !== 'Preta' && user.belt !== 'Coral') && (
+              <div className="flex gap-1">
+                {Array.from({ length: user.stripes }).map((_, i) => (
+                  <div key={i} className="h-4 w-1 bg-primary" />
+                ))}
+              </div>
+            )}
           </div>
         </div>
         <Button>Editar Perfil</Button>

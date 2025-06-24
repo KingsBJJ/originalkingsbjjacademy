@@ -100,6 +100,7 @@ export default function ManageStudentsPage() {
                         className={cn("text-xs font-semibold", beltStyle.bg, beltStyle.text)}
                         >
                         {student.belt}
+                        {(student.belt === 'Preta' || student.belt === 'Coral') && student.stripes > 0 && ` - ${student.stripes}º Grau`}
                         </Badge>
                     </TableCell>
                     <TableCell className="text-right">

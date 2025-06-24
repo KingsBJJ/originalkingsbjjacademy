@@ -75,7 +75,7 @@ const BeltListItem = ({
             <div className="absolute inset-0 h-full w-full rounded-md bg-black/10" />
             <div className="relative h-full w-16 bg-black/70">
               <div className="absolute inset-y-0 right-3 flex items-center gap-1.5">
-                {isCurrentUser &&
+                {isCurrentUser && belt !== 'Preta' && belt !== 'Coral' &&
                   Array.from({ length: stripes }).map((_, i) => (
                     <div key={i} className="h-8 w-1.5 bg-zinc-300" />
                   ))}
@@ -86,7 +86,12 @@ const BeltListItem = ({
 
         <div className="flex-1">
           <div className="flex items-center justify-between">
-            <h3 className="text-2xl font-bold tracking-wider">Faixa {belt}</h3>
+            <h3 className="text-2xl font-bold tracking-wider">
+              Faixa {belt}
+              {isCurrentUser && (belt === 'Preta' || belt === 'Coral') && stripes > 0 && (
+                <span className="text-lg"> - {stripes}º Grau</span>
+              )}
+            </h3>
             {isCurrentUser && (
               <Badge
                 variant="outline"
@@ -165,7 +170,8 @@ const GraduationPlan = () => {
                         beltStyle.text
                       )}
                     >
-                      {student.belt} - {student.stripes} grau(s)
+                      {student.belt}
+                      {student.stripes > 0 && ` - ${student.stripes} grau(s)`}
                     </Badge>
                   </TableCell>
                   <TableCell>
