@@ -91,7 +91,7 @@ export default function NotificationsPage() {
             {canPost && <NotificationForm />}
             <div className="space-y-4">
                 {mockAnnouncements.map((announcement) => (
-                    <Card key={announcement.id}>
+                    <Card key={announcement.id} className="transition-colors hover:bg-muted/50">
                         <CardHeader>
                             <div className="flex items-start justify-between gap-4">
                                 <div className="space-y-1.5">
