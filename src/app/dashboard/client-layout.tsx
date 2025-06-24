@@ -22,7 +22,7 @@ import {
   SidebarInset,
 } from "@/components/ui/sidebar";
 import { KingsBjjLogo } from "@/components/kings-bjj-logo";
-import { mockUsers, User, mockNotifications } from "@/lib/mock-data";
+import { mockUsers, User, mockAnnouncements } from "@/lib/mock-data";
 import {
   Award,
   Bell,
@@ -44,6 +44,7 @@ import {
 
 const studentNavItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Painel" },
+  { href: "/dashboard/notifications", icon: Bell, label: "Notificações" },
   { href: "/dashboard/profile", icon: UserIcon, label: "Perfil" },
   { href: "/dashboard/schedule", icon: Calendar, label: "Horários" },
   { href: "/dashboard/check-in", icon: QrCode, label: "Check-in" },
@@ -53,6 +54,7 @@ const studentNavItems = [
 
 const professorNavItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Painel" },
+  { href: "/dashboard/notifications", icon: Bell, label: "Notificações" },
   { href: "/dashboard/check-in", icon: QrCode, label: "Check-in" },
   { href: "/dashboard/schedule", icon: Calendar, label: "Horários" },
   { href: "/dashboard/profile", icon: UserIcon, label: "Perfil" },
@@ -63,6 +65,7 @@ const professorNavItems = [
 
 const adminNavItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Painel" },
+  { href: "/dashboard/notifications", icon: Bell, label: "Notificações" },
   { href: "/dashboard/class-qr", icon: QrCode, label: "QR Code Universal" },
   { href: "/dashboard/profile", icon: UserIcon, label: "Perfil" },
   { href: "/dashboard/instructors", icon: Users, label: "Professores" },
@@ -162,31 +165,46 @@ export default function DashboardClientLayout({
                     <PopoverTrigger asChild>
                       <Button variant="ghost" size="icon" className="relative rounded-full">
                         <Bell className="h-5 w-5" />
-                        <span className="absolute top-1.5 right-1.5 flex h-2.5 w-2.5">
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                          <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-                        </span>
+                         {mockAnnouncements.length > 0 && (
+                            <span className="absolute top-1.5 right-1.5 flex h-2.5 w-2.5">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                              <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                            </span>
+                        )}
                         <span className="sr-only">Ver notificações</span>
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent align="end" className="w-96 p-0">
                       <div className="flex items-center justify-between border-b p-4">
-                        <h3 className="font-semibold">Notificações</h3>
-                        <Badge variant="secondary">{mockNotifications.length}</Badge>
+                        <h3 className="font-semibold">Recados Recentes</h3>
+                        <Badge variant="secondary">{mockAnnouncements.length}</Badge>
                       </div>
-                      <div className="max-h-96 overflow-y-auto">
-                        {mockNotifications.map((notification) => (
-                          <div key={notification.id} className="flex items-start gap-3 border-b p-4 text-sm hover:bg-muted/50 last:border-b-0">
-                            <div className="grid gap-1">
-                              <p className="leading-relaxed">{notification.text}</p>
-                              <p className="text-xs text-muted-foreground">{notification.time}</p>
+                      <div className="max-h-80 overflow-y-auto">
+                         {mockAnnouncements.length > 0 ? mockAnnouncements.slice(0, 3).map((announcement) => (
+                          <Link key={announcement.id} href={getHref('/dashboard/notifications')} className="block">
+                            <div className="flex items-start gap-3 border-b p-4 text-sm hover:bg-muted/50 last:border-b-0">
+                                <Avatar className="h-8 w-8">
+                                    <AvatarImage src={announcement.authorAvatar} alt={announcement.author} />
+                                    <AvatarFallback>{announcement.author.charAt(0)}</AvatarFallback>
+                                </Avatar>
+                                <div className="grid gap-1">
+                                  <p className="font-semibold leading-relaxed">{announcement.title}</p>
+                                  <p className="text-xs text-muted-foreground line-clamp-2">
+                                      {announcement.content}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">{announcement.timestamp}</p>
+                                </div>
                             </div>
-                          </div>
-                        ))}
+                          </Link>
+                        )) : (
+                           <div className="p-4 text-center text-sm text-muted-foreground">
+                              Nenhum recado recente.
+                           </div>
+                        )}
                       </div>
                       <div className="border-t p-2">
-                          <Button size="sm" variant="link" className="w-full">
-                            Marcar todas como lidas
+                          <Button size="sm" variant="link" className="w-full" asChild>
+                             <Link href={getHref('/dashboard/notifications')}>Ver todos os recados</Link>
                           </Button>
                       </div>
                     </PopoverContent>

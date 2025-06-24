@@ -46,6 +46,15 @@ export type Branch = {
   responsible: string;
 };
 
+export type Announcement = {
+  id: string;
+  title: string;
+  content: string;
+  author: string;
+  authorAvatar: string;
+  timestamp: string;
+};
+
 export const beltColors = {
   Branca: { bg: "bg-white", text: "text-black" },
   Azul: { bg: "bg-blue-600", text: "text-white" },
@@ -231,8 +240,29 @@ export const mockGrowthMetrics = [
   { metric: "Graduações (Ano)", value: 40, key: "graduations" },
 ];
 
-export const mockNotifications = [
-    { id: "n1", text: 'Novo aluno "Carlos Souza" foi cadastrado na filial Kings BJJ - Norte.', time: "há 5 minutos" },
-    { id: "n2", text: 'A conta de professor para "Joana Lima" foi criada e aguarda sua aprovação.', time: "há 2 horas" },
-    { id: "n3", text: 'Check-in de "Alex Costa" na aula de Fundamentos de Kimono.', time: "há 1 dia" },
+export const mockAnnouncements: Announcement[] = [
+    {
+        id: "a1",
+        title: "Graduação de Final de Ano!",
+        content: "Preparem seus kimonos! Nossa cerimônia de graduação de final de ano será no dia 15 de Dezembro. Teremos um super seminário com um convidado especial e um churrasco de confraternização. Não percam!",
+        author: "Prof. Rickson Gracie",
+        authorAvatar: "https://placehold.co/128x128.png",
+        timestamp: "há 2 dias"
+    },
+    {
+        id: "a2",
+        title: "Horário Especial de Feriado",
+        content: "Atenção, equipe! Na próxima sexta-feira, dia 7, não haverá aulas devido ao feriado. As aulas de sábado ocorrerão normalmente. Bom descanso a todos!",
+        author: "Admin Geral",
+        authorAvatar: "https://placehold.co/128x128.png",
+        timestamp: "há 1 semana"
+    },
+    {
+        id: "a3",
+        title: "Campeonato Interno Kings BJJ",
+        content: "Vem aí o nosso campeonato interno! Será no dia 28 do próximo mês. Inscrições abertas na recepção. Mostre sua técnica e espírito de equipe. Oss!",
+        author: "Prof. Fabio Gurgel",
+        authorAvatar: "https://placehold.co/128x128.png",
+        timestamp: "há 2 semanas"
+    }
 ];
