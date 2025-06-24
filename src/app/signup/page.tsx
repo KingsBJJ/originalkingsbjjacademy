@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -23,10 +24,25 @@ import {
 } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { mockBranches, allBelts, mockUsers } from "@/lib/mock-data";
+import { useToast } from "@/hooks/use-toast";
 
 export default function SignUpPage() {
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("student");
+  const router = useRouter();
+  const { toast } = useToast();
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (role === 'professor') {
+      toast({
+        title: "Solicitação Enviada",
+        description: "Seu cadastro como professor foi enviado para aprovação do administrador.",
+      });
+    }
+    // For simulation, we'll still navigate. In a real app, you'd wait for approval.
+    router.push(`/dashboard?role=${role}`);
+  };
 
   return (
     <div className="relative flex min-h-screen w-full items-center justify-center p-4">
@@ -49,7 +65,7 @@ export default function SignUpPage() {
           <CardDescription className="text-white/80">Insira seus dados para começar.</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4">
+          <form onSubmit={handleSubmit} className="grid gap-4">
             <div className="grid gap-2">
               <Label htmlFor="name" className="text-white/80">Nome</Label>
               <Input id="name" placeholder="Seu Nome" required className="bg-white/5 border-white/20 text-white placeholder:text-white/50" />
@@ -86,12 +102,10 @@ export default function SignUpPage() {
                   <RadioGroupItem value="student" id="r-aluno" />
                   <Label htmlFor="r-aluno" className="text-white/80 font-normal">Aluno</Label>
                 </div>
-                {email.toLowerCase() === mockUsers.professor.email && (
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="professor" id="r-professor" />
-                    <Label htmlFor="r-professor" className="text-white/80 font-normal">Professor</Label>
-                  </div>
-                )}
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="professor" id="r-professor" />
+                  <Label htmlFor="r-professor" className="text-white/80 font-normal">Professor</Label>
+                </div>
                 {email.toLowerCase() === mockUsers.admin.email && (
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="admin" id="r-admin" />
@@ -147,10 +161,10 @@ export default function SignUpPage() {
               </RadioGroup>
             </div>
 
-            <Button asChild type="submit" className="w-full">
-              <Link href={`/dashboard?role=${role}`}>Criar conta</Link>
+            <Button type="submit" className="w-full">
+              Criar conta
             </Button>
-          </div>
+          </form>
           <div className="mt-4 text-center text-sm text-white/80">
             Já tem uma conta?{" "}
             <Link href="/" className="underline hover:text-white">
