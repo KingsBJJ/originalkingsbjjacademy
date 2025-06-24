@@ -27,6 +27,7 @@ import {
   Map,
   User,
   BarChart2,
+  Trophy,
 } from "lucide-react";
 import { UserContext } from "./client-layout";
 import {
@@ -167,6 +168,46 @@ const AdminDashboard = () => {
               </Bar>
             </BarChart>
           </ChartContainer>
+        </CardContent>
+      </Card>
+      <Card className="md:col-span-2 lg:col-span-3">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Trophy />
+            <span>Filial em Destaque no Mês</span>
+          </CardTitle>
+          <CardDescription>
+            A filial com melhor desempenho este mês.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center gap-4 rounded-lg border bg-muted/50 p-4">
+            <Map className="h-10 w-10 text-primary" />
+            <div>
+              <h3 className="text-xl font-bold">Kings BJJ - Centro</h3>
+              <p className="text-muted-foreground">
+                Parabéns pelo excelente trabalho!
+              </p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div className="rounded-lg border p-3 text-center">
+              <p className="text-2xl font-bold">+12%</p>
+              <p className="text-xs text-muted-foreground">
+                Crescimento de Alunos
+              </p>
+            </div>
+            <div className="rounded-lg border p-3 text-center">
+              <p className="text-2xl font-bold">95%</p>
+              <p className="text-xs text-muted-foreground">Retenção</p>
+            </div>
+            <div className="rounded-lg border p-3 text-center">
+              <p className="text-2xl font-bold">85%</p>
+              <p className="text-xs text-muted-foreground">
+                Engajamento nas Aulas
+              </p>
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>
