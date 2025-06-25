@@ -1,6 +1,6 @@
 env:
-  - variable: kings bjj
-    value: new_value
+  - variable: KINGS_BJJ_APP
+    value: "default"
     availability:
       - BUILD
       - RUNTIME
