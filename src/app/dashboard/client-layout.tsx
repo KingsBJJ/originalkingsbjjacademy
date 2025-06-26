@@ -55,7 +55,6 @@ const studentNavItems = [
 const professorNavItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Painel" },
   { href: "/dashboard/notifications", icon: Bell, label: "Notificações" },
-  { href: "/dashboard/check-in", icon: QrCode, label: "Check-in" },
   { href: "/dashboard/schedule", icon: Calendar, label: "Horários" },
   { href: "/dashboard/profile", icon: UserIcon, label: "Perfil" },
   { href: "/dashboard/instructors", icon: Users, label: "Professores" },

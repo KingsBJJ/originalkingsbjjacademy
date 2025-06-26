@@ -17,7 +17,6 @@ import {
   mockGrowthMetrics,
   mockStudents,
   mockTeamGrowth,
-  mockUsers,
 } from "@/lib/mock-data";
 import {
   CheckCircle,
@@ -214,6 +213,84 @@ const AdminDashboard = () => {
   );
 };
 
+const ProfessorDashboard = () => {
+  const user = useContext(UserContext);
+  if (!user) return null;
+
+  const userFirstName = user.name.split(" ")[1];
+  const nextClass =
+    mockClasses.find((c) => c.branchId === user.branchId && c.instructor.includes(userFirstName)) ||
+    mockClasses.find((c) => c.branchId === user.branchId) ||
+    mockClasses[0];
+
+  return (
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <Card className="col-span-1 lg:col-span-1">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users />
+              <span>Seus Alunos</span>
+            </CardTitle>
+            <CardDescription>
+              Alunos na sua filial: {user.affiliation}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+              <p className="text-4xl font-bold">{mockStudents.filter(s => s.affiliation === user.affiliation).length}</p>
+          </CardContent>
+        </Card>
+        
+        <Card className="col-span-1 lg:col-span-2">
+            <CardHeader>
+                <CardTitle>Sua Próxima Aula</CardTitle>
+                <CardDescription>
+                    Prepare-se para a sua próxima aula agendada.
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <p className="text-lg font-semibold">{nextClass.name}</p>
+                        <p className="text-muted-foreground">
+                        Hoje às {nextClass.time.split(' - ')[0]}
+                        </p>
+                    </div>
+                    <Button size="lg" className="w-full sm:w-auto" asChild>
+                        <Link href={`/dashboard/schedule?role=${user.role}`}>Ver Grade Completa</Link>
+                    </Button>
+                </div>
+            </CardContent>
+        </Card>
+
+        <Card className="md:col-span-2 lg:col-span-3">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Medal />
+              <span>Seu Progresso de Graduação</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="font-medium">
+                  Faixa {user.belt}, {user.stripes} Graus
+                </span>
+                <span className="text-muted-foreground">
+                  {user.nextGraduationProgress}%
+                </span>
+              </div>
+              <Progress value={user.nextGraduationProgress} />
+              <p className="text-xs text-muted-foreground">
+                Seu progresso pessoal para o próximo grau/faixa.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+    </div>
+  );
+};
+
+
 const StudentDashboard = () => {
   const user = useContext(UserContext);
   if (!user) return null;
@@ -349,7 +426,7 @@ export default function DashboardPage() {
       </div>
 
       {user.role === "admin" && <AdminDashboard />}
-      {user.role === "professor" && <StudentDashboard />}
+      {user.role === "professor" && <ProfessorDashboard />}
       {user.role === "student" && <StudentDashboard />}
     </div>
   );
