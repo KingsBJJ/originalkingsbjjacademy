@@ -15,7 +15,7 @@ import { Progress } from "@/components/ui/progress";
 import {
   mockClasses,
   mockGrowthMetrics,
-  mockStudents,
+  mockAllStudents,
   mockTeamGrowth,
 } from "@/lib/mock-data";
 import {
@@ -86,7 +86,7 @@ const AdminDashboard = () => {
         </CardHeader>
         <CardContent>
           <p className="text-4xl font-bold">
-            {chartData[chartData.length - 1].total}
+            {mockAllStudents.length}
           </p>
           <p className="text-xs text-muted-foreground">
             Alunos ativos em todas as filiais
@@ -236,7 +236,7 @@ const ProfessorDashboard = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-              <p className="text-4xl font-bold">{mockStudents.filter(s => s.affiliation === user.affiliation).length}</p>
+              <p className="text-4xl font-bold">{mockAllStudents.filter(s => s.affiliation === user.affiliation).length}</p>
           </CardContent>
         </Card>
         

@@ -19,7 +19,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { UserContext } from '../client-layout';
-import { mockStudents, beltColors } from '@/lib/mock-data';
+import { mockAdultStudents, mockKidsStudents, beltColors, beltColorsKids, User as StudentUser } from '@/lib/mock-data';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { MoreHorizontal } from 'lucide-react';
@@ -30,6 +30,80 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+
+const allBeltColors = { ...beltColors, ...beltColorsKids };
+type Student = Omit<StudentUser, 'role'>;
+
+const StudentTable = ({ students }: { students: Student[] }) => (
+    <Card>
+      <CardHeader>
+        <CardTitle>Lista de Alunos</CardTitle>
+        <CardDescription>
+          Total de {students.length} alunos cadastrados.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Aluno</TableHead>
+              <TableHead>Filial</TableHead>
+              <TableHead>Graduação</TableHead>
+              <TableHead className="text-right">Ações</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {students.map((student) => {
+              const beltStyle = allBeltColors[student.belt as keyof typeof allBeltColors] || allBeltColors.Branca;
+              return (
+                <TableRow key={student.id}>
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-9 w-9">
+                        <AvatarImage src={student.avatar} alt={student.name} />
+                        <AvatarFallback>{student.name[0]}</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="font-medium">{student.name}</p>
+                        <p className="text-xs text-muted-foreground">{student.email}</p>
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell>{student.affiliation}</TableCell>
+                  <TableCell>
+                     <Badge
+                      className={cn("text-xs font-semibold", beltStyle.bg, beltStyle.text)}
+                      >
+                      {student.belt}
+                      {(student.belt === 'Preta' || student.belt === 'Coral') && student.stripes > 0 && ` - ${student.stripes}º Grau`}
+                      </Badge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                     <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <MoreHorizontal />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                        <DropdownMenuItem>Ver Perfil</DropdownMenuItem>
+                        <DropdownMenuItem>Editar</DropdownMenuItem>
+                         <DropdownMenuItem className="text-red-500">Remover</DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
+);
+
 
 export default function ManageStudentsPage() {
   const user = useContext(UserContext);
@@ -60,71 +134,18 @@ export default function ManageStudentsPage() {
           Visualize e gerencie todos os alunos do sistema.
         </p>
       </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>Lista de Alunos</CardTitle>
-          <CardDescription>
-            Total de {mockStudents.length} alunos cadastrados.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Aluno</TableHead>
-                <TableHead>Filial</TableHead>
-                <TableHead>Graduação</TableHead>
-                <TableHead className="text-right">Ações</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {mockStudents.map((student) => {
-                const beltStyle = beltColors[student.belt] || beltColors.Branca;
-                return (
-                  <TableRow key={student.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-9 w-9">
-                          <AvatarImage src={student.avatar} alt={student.name} />
-                          <AvatarFallback>{student.name[0]}</AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium">{student.name}</p>
-                          <p className="text-xs text-muted-foreground">{student.email}</p>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>{student.affiliation}</TableCell>
-                    <TableCell>
-                       <Badge
-                        className={cn("text-xs font-semibold", beltStyle.bg, beltStyle.text)}
-                        >
-                        {student.belt}
-                        {(student.belt === 'Preta' || student.belt === 'Coral') && student.stripes > 0 && ` - ${student.stripes}º Grau`}
-                        </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                       <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                          <DropdownMenuItem>Ver Perfil</DropdownMenuItem>
-                          <DropdownMenuItem>Editar</DropdownMenuItem>
-                           <DropdownMenuItem className="text-red-500">Remover</DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+       <Tabs defaultValue="adults" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="adults">Adultos ({mockAdultStudents.length})</TabsTrigger>
+          <TabsTrigger value="kids">Kids ({mockKidsStudents.length})</TabsTrigger>
+        </TabsList>
+        <TabsContent value="adults" className="mt-4">
+          <StudentTable students={mockAdultStudents} />
+        </TabsContent>
+        <TabsContent value="kids" className="mt-4">
+          <StudentTable students={mockKidsStudents} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

@@ -4,7 +4,7 @@ export type User = {
   email: string;
   role: "student" | "professor" | "admin";
   avatar: string;
-  belt: keyof typeof beltColors;
+  belt: keyof typeof beltColors | keyof typeof beltColorsKids;
   stripes: number;
   attendance: {
     total: number;
@@ -13,6 +13,7 @@ export type User = {
   nextGraduationProgress: number;
   affiliation: string;
   branchId: string;
+  category: "Adult" | "Kids";
 };
 
 export type Class = {
@@ -144,6 +145,7 @@ const studentUser: User = {
   nextGraduationProgress: 75,
   affiliation: "Kings BJJ - Centro",
   branchId: "b1",
+  category: "Adult",
 };
 
 const professorUser: User = {
@@ -161,6 +163,7 @@ const professorUser: User = {
     nextGraduationProgress: 100,
     affiliation: "Kings BJJ - Centro",
     branchId: "b1",
+    category: "Adult",
 };
 
 const adminUser: User = {
@@ -178,6 +181,7 @@ const adminUser: User = {
     nextGraduationProgress: 100,
     affiliation: "Todas as Filiais",
     branchId: "all",
+    category: "Adult",
 };
 
 export const mockUsers = {
@@ -217,13 +221,23 @@ export const mockBranches: Branch[] = [
   { id: "b2", name: "Kings BJJ - Norte", address: "Avenida Norte 456, Cidade, BR", phone: "(55) 8765-4321", hours: "Seg-Sex, 10h - 20h", responsible: "Prof. Fabio Gurgel" },
 ];
 
-export const mockStudents: Omit<User, 'role'>[] = [
-    { id: "s1", name: "Maria Silva", email: "maria@email.com", avatar: "https://placehold.co/128x128.png", belt: "Azul", stripes: 2, attendance: { total: 80, lastMonth: 10 }, nextGraduationProgress: 60, affiliation: "Kings BJJ - Centro", branchId: "b1" },
-    { id: "s2", name: "João Pereira", email: "joao@email.com", avatar: "https://placehold.co/128x128.png", belt: "Branca", stripes: 4, attendance: { total: 40, lastMonth: 15 }, nextGraduationProgress: 90, affiliation: "Kings BJJ - Centro", branchId: "b1" },
-    { id: "s3", name: "Carlos Souza", email: "carlos@email.com", avatar: "https://placehold.co/128x128.png", belt: "Roxa", stripes: 1, attendance: { total: 150, lastMonth: 8 }, nextGraduationProgress: 30, affiliation: "Kings BJJ - Norte", branchId: "b2" },
-    { id: "s4", name: "Ana Oliveira", email: "ana@email.com", avatar: "https://placehold.co/128x128.png", belt: "Marrom", stripes: 3, attendance: { total: 200, lastMonth: 16 }, nextGraduationProgress: 85, affiliation: "Kings BJJ - Norte", branchId: "b2" },
-    { id: "s5", name: "Bruno Alves", email: "bruno@email.com", avatar: "https://placehold.co/128x128.png", belt: "Preta", stripes: 1, attendance: { total: 300, lastMonth: 18 }, nextGraduationProgress: 10, affiliation: "Kings BJJ - Centro", branchId: "b1" },
-]
+export const mockAdultStudents: Omit<User, 'role'>[] = [
+    { id: "s1", name: "Maria Silva", email: "maria@email.com", avatar: "https://placehold.co/128x128.png", belt: "Azul", stripes: 2, attendance: { total: 80, lastMonth: 10 }, nextGraduationProgress: 60, affiliation: "Kings BJJ - Centro", branchId: "b1", category: "Adult" },
+    { id: "s2", name: "João Pereira", email: "joao@email.com", avatar: "https://placehold.co/128x128.png", belt: "Branca", stripes: 4, attendance: { total: 40, lastMonth: 15 }, nextGraduationProgress: 90, affiliation: "Kings BJJ - Centro", branchId: "b1", category: "Adult" },
+    { id: "s3", name: "Carlos Souza", email: "carlos@email.com", avatar: "https://placehold.co/128x128.png", belt: "Roxa", stripes: 1, attendance: { total: 150, lastMonth: 8 }, nextGraduationProgress: 30, affiliation: "Kings BJJ - Norte", branchId: "b2", category: "Adult" },
+    { id: "s4", name: "Ana Oliveira", email: "ana@email.com", avatar: "https://placehold.co/128x128.png", belt: "Marrom", stripes: 3, attendance: { total: 200, lastMonth: 16 }, nextGraduationProgress: 85, affiliation: "Kings BJJ - Norte", branchId: "b2", category: "Adult" },
+    { id: "s5", name: "Bruno Alves", email: "bruno@email.com", avatar: "https://placehold.co/128x128.png", belt: "Preta", stripes: 1, attendance: { total: 300, lastMonth: 18 }, nextGraduationProgress: 10, affiliation: "Kings BJJ - Centro", branchId: "b1", category: "Adult" },
+];
+
+export const mockKidsStudents: Omit<User, 'role'>[] = [
+    { id: "k1", name: "Miguel Santos", email: "miguel@email.com", avatar: "https://placehold.co/128x128.png", belt: "Cinza", stripes: 2, attendance: { total: 50, lastMonth: 8 }, nextGraduationProgress: 40, affiliation: "Kings BJJ - Centro", branchId: "b1", category: "Kids" },
+    { id: "k2", name: "Sofia Lima", email: "sofia@email.com", avatar: "https://placehold.co/128x128.png", belt: "Amarela", stripes: 1, attendance: { total: 65, lastMonth: 12 }, nextGraduationProgress: 70, affiliation: "Kings BJJ - Norte", branchId: "b2", category: "Kids" },
+    { id: "k3", name: "Davi Oliveira", email: "davi@email.com", avatar: "https://placehold.co/128x128.png", belt: "Branca", stripes: 3, attendance: { total: 20, lastMonth: 10 }, nextGraduationProgress: 80, affiliation: "Kings BJJ - Centro", branchId: "b1", category: "Kids" },
+    { id: "k4", name: "Laura Pereira", email: "laura@email.com", avatar: "https://placehold.co/128x128.png", belt: "Laranja", stripes: 0, attendance: { total: 90, lastMonth: 14 }, nextGraduationProgress: 25, affiliation: "Kings BJJ - Norte", branchId: "b2", category: "Kids" },
+];
+
+export const mockAllStudents = [...mockAdultStudents, ...mockKidsStudents];
+
 
 export const mockTeamGrowth = [
   { month: "Fev", total: 35 },

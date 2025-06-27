@@ -27,7 +27,7 @@ import {
   beltColorsKids,
   beltInfo,
   beltInfoKids,
-  mockStudents,
+  mockAllStudents,
 } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 import { CheckCircle, GraduationCap } from "lucide-react";
@@ -124,6 +124,7 @@ const BeltListItem = ({
 };
 
 const GraduationPlan = () => {
+    const allBeltColors = { ...beltColors, ...beltColorsKids };
   return (
     <Card className="mt-8">
       <CardHeader>
@@ -146,8 +147,8 @@ const GraduationPlan = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {mockStudents.map((student) => {
-              const beltStyle = beltColors[student.belt] || beltColors.Branca;
+            {mockAllStudents.map((student) => {
+              const beltStyle = allBeltColors[student.belt as keyof typeof allBeltColors] || beltColors.Branca;
               return (
                 <TableRow key={student.id}>
                   <TableCell>
