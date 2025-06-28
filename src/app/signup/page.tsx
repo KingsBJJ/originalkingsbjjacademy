@@ -25,15 +25,28 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { mockBranches, allBelts, mockUsers } from "@/lib/mock-data";
 import { useToast } from "@/hooks/use-toast";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export default function SignUpPage() {
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("student");
+  const [category, setCategory] = useState("adulto");
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (category === "kids" && !termsAccepted) {
+        toast({
+            variant: "destructive",
+            title: "Termos não aceitos",
+            description: "Você deve aceitar o termo de responsabilidade para matricular uma criança.",
+        });
+        return;
+    }
+
     if (role === 'professor') {
       toast({
         title: "Solicitação Enviada",
@@ -149,7 +162,7 @@ export default function SignUpPage() {
 
             <div className="grid gap-2">
               <Label className="text-white/80">Categoria</Label>
-              <RadioGroup defaultValue="adulto" className="flex gap-4 pt-2">
+              <RadioGroup defaultValue="adulto" onValueChange={setCategory} className="flex gap-4 pt-2">
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="adulto" id="r-adulto" />
                   <Label htmlFor="r-adulto" className="text-white/80 font-normal">Adulto</Label>
@@ -160,6 +173,32 @@ export default function SignUpPage() {
                 </div>
               </RadioGroup>
             </div>
+
+            {category === 'kids' && (
+              <div className="items-top flex space-x-2 pt-2">
+                <Checkbox 
+                  id="terms" 
+                  checked={termsAccepted}
+                  onCheckedChange={(checked) => setTermsAccepted(checked as boolean)}
+                />
+                <div className="grid gap-1.5 leading-none">
+                  <label
+                    htmlFor="terms"
+                    className="text-sm font-medium leading-none text-white/80 peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    Eu li e concordo com o{" "}
+                    <Link href="/terms-of-service" target="_blank" className="underline hover:text-primary">
+                      termo de responsabilidade dos pais
+                    </Link>
+                    .
+                  </label>
+                  <p className="text-xs text-muted-foreground">
+                    Necessário para a matrícula de menores de idade.
+                  </p>
+                </div>
+              </div>
+            )}
+
 
             <Button type="submit" className="w-full">
               Criar conta
