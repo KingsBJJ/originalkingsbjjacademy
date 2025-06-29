@@ -1,6 +1,6 @@
 "use client";
 
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
@@ -35,6 +35,7 @@ import { useToast } from '@/hooks/use-toast';
 import { UserContext } from '../../client-layout';
 import { mockInstructors } from '@/lib/mock-data';
 import { ArrowLeft } from 'lucide-react';
+import { addBranch, type BranchData } from '@/services/branchService';
 
 const branchFormSchema = z.object({
   name: z.string().min(3, { message: 'O nome da filial deve ter pelo menos 3 caracteres.' }),
@@ -47,14 +48,14 @@ const branchFormSchema = z.object({
   instructor4: z.string().optional(),
 });
 
-type BranchFormValues = z.infer<typeof branchFormSchema>;
 
 export default function NewBranchPage() {
   const user = useContext(UserContext);
   const router = useRouter();
   const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const form = useForm<BranchFormValues>({
+  const form = useForm<BranchData>({
     resolver: zodResolver(branchFormSchema),
     defaultValues: {
       name: '',
@@ -64,13 +65,25 @@ export default function NewBranchPage() {
     },
   });
 
-  const onSubmit = (data: BranchFormValues) => {
-    console.log(data);
-    toast({
-      title: 'Filial Cadastrada!',
-      description: `A filial ${data.name} foi adicionada com sucesso.`,
-    });
-    router.push(`/dashboard/branches?role=${user?.role}`);
+  const onSubmit = async (data: BranchData) => {
+    setIsSubmitting(true);
+    try {
+      await addBranch(data);
+      toast({
+        title: 'Filial Cadastrada!',
+        description: `A filial ${data.name} foi adicionada com sucesso.`,
+      });
+      router.push(`/dashboard/branches?role=${user?.role}`);
+    } catch (error) {
+       toast({
+        variant: "destructive",
+        title: 'Erro ao Salvar',
+        description: 'Não foi possível cadastrar a filial. Verifique sua conexão e tente novamente.',
+      });
+      console.error(error);
+    } finally {
+        setIsSubmitting(false);
+    }
   };
 
   if (user?.role !== 'admin') {
@@ -264,10 +277,12 @@ export default function NewBranchPage() {
               </div>
               
               <div className="flex justify-end gap-2">
-                  <Button variant="outline" type="button" onClick={() => router.back()}>
+                  <Button variant="outline" type="button" onClick={() => router.back()} disabled={isSubmitting}>
                       Cancelar
                   </Button>
-                  <Button type="submit">Salvar Filial</Button>
+                  <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? 'Salvando...' : 'Salvar Filial'}
+                  </Button>
               </div>
             </form>
           </Form>
