@@ -43,7 +43,7 @@ const instructorFormSchema = z.object({
   affiliation: z.string({ required_error: 'Selecione uma filial.' }),
   belt: z.string({ required_error: 'Selecione uma graduação.' }),
   bio: z.string().optional(),
-  avatar: z.string().url({ message: 'Por favor, insira uma URL de imagem válida.' }).optional(),
+  avatar: z.string().optional(),
 });
 
 type InstructorFormValues = z.infer<typeof instructorFormSchema>;
@@ -201,7 +201,7 @@ export default function NewInstructorPage() {
                   name="avatar"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>URL da Foto (Avatar)</FormLabel>
+                      <FormLabel>URL da Foto (Opcional)</FormLabel>
                       <FormControl>
                         <Input placeholder="https://..." {...field} />
                       </FormControl>
