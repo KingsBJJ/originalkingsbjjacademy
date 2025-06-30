@@ -43,8 +43,8 @@ const instructorFormSchema = z.object({
   name: z.string().min(3, { message: 'O nome deve ter pelo menos 3 caracteres.' }),
   email: z.string().email({ message: 'Por favor, insira um email válido.' }),
   phone: z.string().min(10, { message: 'O telefone deve ter pelo menos 10 dígitos.' }),
-  affiliation: z.string({ required_error: 'Selecione uma filial.' }),
-  belt: z.string({ required_error: 'Selecione uma graduação.' }),
+  affiliation: z.string({ required_error: 'Selecione uma filial.' }).min(1, { message: 'Selecione uma filial.' }),
+  belt: z.string({ required_error: 'Selecione uma graduação.' }).min(1, { message: 'Selecione uma graduação.' }),
   stripes: z.coerce.number().int().min(0).max(7).optional(),
   bio: z.string().optional(),
   avatar: z.string().url({ message: 'URL inválida.' }).or(z.literal('')).optional(),
@@ -197,7 +197,7 @@ export default function NewInstructorPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Filial</FormLabel>
-                       <Select onValueChange={field.onChange} defaultValue={field.value}>
+                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Selecione a filial" />
@@ -223,7 +223,7 @@ export default function NewInstructorPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Graduação</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Selecione a graduação" />
