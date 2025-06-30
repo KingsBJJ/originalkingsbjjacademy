@@ -1,15 +1,12 @@
+
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Allow read/write access to the 'branches' and 'instructors' collections
-    // for any authenticated user. In a real app, you'd restrict this further.
-    match /branches/{branchId} {
-      allow read, write: if true; // Using `if true` for now for ease of testing
-    }
-
-    match /instructors/{instructorId} {
-      allow read, write: if true; // Using `if true` for now for ease of testing
+    // Permite leitura e escrita em toda a base de dados para a fase de desenvolvimento.
+    // Lembre-se de configurar regras mais seguras antes de ir para produção.
+    match /{document=**} {
+      allow read, write: if true;
     }
   }
 }
