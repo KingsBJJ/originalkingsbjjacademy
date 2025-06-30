@@ -81,6 +81,8 @@ export default function NewInstructorPage() {
       name: '',
       email: '',
       phone: '',
+      affiliation: '',
+      belt: '',
       bio: '',
       avatar: '',
       stripes: 0,
