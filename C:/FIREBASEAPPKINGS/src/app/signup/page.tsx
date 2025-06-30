@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -23,9 +23,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { mockBranches, allBelts, mockUsers } from "@/lib/mock-data";
+import { allBelts, mockUsers, type Branch } from "@/lib/mock-data";
 import { useToast } from "@/hooks/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
+import { getBranches } from "@/services/branchService";
 
 export default function SignUpPage() {
   const [email, setEmail] = useState("");
@@ -34,8 +35,26 @@ export default function SignUpPage() {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [selectedBelt, setSelectedBelt] = useState("");
   const [stripes, setStripes] = useState(0);
+  const [branches, setBranches] = useState<Branch[]>([]);
   const router = useRouter();
   const { toast } = useToast();
+
+  useEffect(() => {
+    async function fetchBranches() {
+        try {
+            const fetchedBranches = await getBranches();
+            setBranches(fetchedBranches);
+        } catch (error) {
+            console.error("Failed to fetch branches:", error);
+            toast({
+                variant: 'destructive',
+                title: 'Erro ao Carregar Filiais',
+                description: 'Não foi possível buscar a lista de filiais.',
+            });
+        }
+    }
+    fetchBranches();
+  }, [toast]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -137,11 +156,15 @@ export default function SignUpPage() {
                   <SelectValue placeholder="Selecione sua filial" />
                 </SelectTrigger>
                 <SelectContent>
-                  {mockBranches.map((branch) => (
-                    <SelectItem key={branch.id} value={branch.name}>
-                      {branch.name}
-                    </SelectItem>
-                  ))}
+                  {branches.length === 0 ? (
+                      <SelectItem value="loading" disabled>Carregando...</SelectItem>
+                  ) : (
+                    branches.map((branch) => (
+                        <SelectItem key={branch.id} value={branch.name}>
+                        {branch.name}
+                        </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
             </div>

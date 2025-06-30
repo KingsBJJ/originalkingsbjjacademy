@@ -1,6 +1,6 @@
 "use client";
 
-import { useContext, useState } from 'react';
+import { useContext, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
@@ -34,9 +34,10 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { UserContext } from '../../client-layout';
-import { allBelts, mockBranches } from '@/lib/mock-data';
+import { allBelts, type Branch } from '@/lib/mock-data';
 import { ArrowLeft } from 'lucide-react';
 import { addInstructor, type InstructorData } from '@/services/instructorService';
+import { getBranches } from '@/services/branchService';
 
 const instructorFormSchema = z.object({
   name: z.string().min(3, { message: 'O nome deve ter pelo menos 3 caracteres.' }),
@@ -55,6 +56,24 @@ export default function NewInstructorPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [branches, setBranches] = useState<Branch[]>([]);
+
+  useEffect(() => {
+    async function fetchBranches() {
+        try {
+            const fetchedBranches = await getBranches();
+            setBranches(fetchedBranches);
+        } catch (error) {
+            console.error("Failed to fetch branches:", error);
+            toast({
+                variant: 'destructive',
+                title: 'Erro ao Carregar Filiais',
+                description: 'Não foi possível buscar a lista de filiais. Tente novamente.',
+            });
+        }
+    }
+    fetchBranches();
+  }, [toast]);
 
   const form = useForm<InstructorData>({
     resolver: zodResolver(instructorFormSchema),
@@ -183,9 +202,13 @@ export default function NewInstructorPage() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {mockBranches.map((branch) => (
-                            <SelectItem key={branch.id} value={branch.name}>{branch.name}</SelectItem>
-                          ))}
+                          {branches.length === 0 ? (
+                            <SelectItem value="loading" disabled>Carregando filiais...</SelectItem>
+                          ) : (
+                            branches.map((branch) => (
+                                <SelectItem key={branch.id} value={branch.name}>{branch.name}</SelectItem>
+                            ))
+                          )}
                         </SelectContent>
                       </Select>
                       <FormMessage />
