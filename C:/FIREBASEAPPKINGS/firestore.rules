@@ -1,0 +1,19 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Regras mais específicas devem vir primeiro
+    match /branches/{branchId} {
+      allow read, write: if true; // Em produção, restrinja o acesso
+    }
+
+    match /instructors/{instructorId} {
+      allow read, write: if true; // Em produção, restrinja o acesso
+    }
+
+    // A regra geral de negação vem por último
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
