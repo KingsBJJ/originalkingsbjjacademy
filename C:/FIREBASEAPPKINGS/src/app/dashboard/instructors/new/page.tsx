@@ -1,6 +1,6 @@
 "use client";
 
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
@@ -9,6 +9,7 @@ import * as z from 'zod';
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -35,6 +36,7 @@ import { useToast } from '@/hooks/use-toast';
 import { UserContext } from '../../client-layout';
 import { allBelts, mockBranches } from '@/lib/mock-data';
 import { ArrowLeft } from 'lucide-react';
+import { addInstructor, type InstructorData } from '@/services/instructorService';
 
 const instructorFormSchema = z.object({
   name: z.string().min(3, { message: 'O nome deve ter pelo menos 3 caracteres.' }),
@@ -44,17 +46,17 @@ const instructorFormSchema = z.object({
   belt: z.string({ required_error: 'Selecione uma graduação.' }),
   stripes: z.coerce.number().int().min(0).max(7).optional(),
   bio: z.string().optional(),
-  avatar: z.string().optional(),
+  avatar: z.string().url({ message: 'URL inválida.' }).or(z.literal('')).optional(),
 });
 
-type InstructorFormValues = z.infer<typeof instructorFormSchema>;
 
 export default function NewInstructorPage() {
   const user = useContext(UserContext);
   const router = useRouter();
   const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const form = useForm<InstructorFormValues>({
+  const form = useForm<InstructorData>({
     resolver: zodResolver(instructorFormSchema),
     defaultValues: {
       name: '',
@@ -68,13 +70,25 @@ export default function NewInstructorPage() {
 
   const watchedBelt = form.watch('belt');
 
-  const onSubmit = (data: InstructorFormValues) => {
-    console.log(data);
-    toast({
-      title: 'Professor Cadastrado!',
-      description: `O professor ${data.name} foi adicionado com sucesso.`,
-    });
-    router.push(`/dashboard/instructors?role=${user?.role}`);
+  const onSubmit = async (data: InstructorData) => {
+    setIsSubmitting(true);
+     try {
+        await addInstructor(data);
+        toast({
+            title: 'Professor Cadastrado!',
+            description: `O professor ${data.name} foi adicionado com sucesso.`,
+        });
+        router.push(`/dashboard/instructors?role=${user?.role}`);
+    } catch (error) {
+        toast({
+            variant: 'destructive',
+            title: 'Erro ao Cadastrar',
+            description: 'Não foi possível cadastrar o professor. Verifique os dados e tente novamente.',
+        });
+        console.error(error);
+    } finally {
+        setIsSubmitting(false);
+    }
   };
 
   if (user?.role !== 'admin') {
@@ -208,7 +222,7 @@ export default function NewInstructorPage() {
                       <FormItem>
                         <FormLabel>Graus</FormLabel>
                         <FormControl>
-                          <Input type="number" min="0" max="7" placeholder="Nº de graus" {...field} />
+                          <Input type="number" min="0" max="7" placeholder="Nº de graus" {...field} onChange={event => field.onChange(+event.target.value)} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -220,10 +234,13 @@ export default function NewInstructorPage() {
                   name="avatar"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>URL da Foto (Opcional)</FormLabel>
+                      <FormLabel>URL da Foto</FormLabel>
                       <FormControl>
-                        <Input placeholder="https://..." {...field} />
+                        <Input placeholder="https://exemplo.com/foto.png" {...field} />
                       </FormControl>
+                      <FormDescription>
+                        Este campo é opcional.
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -247,10 +264,12 @@ export default function NewInstructorPage() {
                   )}
                 />
               <div className="flex justify-end gap-2">
-                  <Button variant="outline" type="button" onClick={() => router.back()}>
+                  <Button variant="outline" type="button" onClick={() => router.back()} disabled={isSubmitting}>
                       Cancelar
                   </Button>
-                  <Button type="submit">Salvar Professor</Button>
+                  <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? 'Salvando...' : 'Salvar Professor'}
+                  </Button>
               </div>
             </form>
           </Form>
