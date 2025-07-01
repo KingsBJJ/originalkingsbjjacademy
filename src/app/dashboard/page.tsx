@@ -223,6 +223,30 @@ const ProfessorDashboard = () => {
     mockClasses.find((c) => c.branchId === user.branchId) ||
     mockClasses[0];
 
+  const branchMetricsData = [
+    { metric: "Total de Alunos", value: mockAllStudents.filter(s => s.affiliation === user.affiliation).length, key: "total", unitPrefix: "", unitSuffix: "" },
+    { metric: "Novos Alunos (Mês)", value: 5, key: "new", unitPrefix: "+", unitSuffix: ""},
+    { metric: "Retenção", value: 96, key: "retention", unitPrefix: "", unitSuffix: "%" },
+  ];
+
+  const chartConfig = {
+      value: {
+        label: "Valor",
+      },
+      total: {
+        label: "Total de Alunos",
+        color: "hsl(var(--chart-1))",
+      },
+      new: {
+        label: "Novos Alunos (Mês)",
+        color: "hsl(var(--chart-2))",
+      },
+      retention: {
+        label: "Retenção",
+        color: "hsl(var(--chart-4))",
+      },
+  } satisfies ChartConfig;
+
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         <Card className="col-span-1 lg:col-span-1">
@@ -298,22 +322,46 @@ const ProfessorDashboard = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                <div className="rounded-lg border p-3 text-center">
-                    <p className="text-2xl font-bold">{mockAllStudents.filter(s => s.affiliation === user.affiliation).length}</p>
-                    <p className="text-xs text-muted-foreground">
-                        Total de Alunos
-                    </p>
-                </div>
-                <div className="rounded-lg border p-3 text-center">
-                    <p className="text-2xl font-bold">+5</p>
-                    <p className="text-xs text-muted-foreground">Novos Alunos (Mês)</p>
-                </div>
-                <div className="rounded-lg border p-3 text-center">
-                    <p className="text-2xl font-bold">96%</p>
-                    <p className="text-xs text-muted-foreground">Retenção</p>
-                </div>
-            </div>
+            <ChartContainer config={chartConfig} className="h-[150px] w-full">
+              <BarChart
+                accessibilityLayer
+                data={branchMetricsData}
+                layout="vertical"
+                margin={{
+                  left: 10,
+                  top: 10,
+                  bottom: 10,
+                }}
+              >
+                <CartesianGrid horizontal={false} />
+                <YAxis
+                  dataKey="metric"
+                  type="category"
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={10}
+                  width={120}
+                  tick={{ fontSize: 12 }}
+                />
+                <XAxis dataKey="value" type="number" hide />
+                <ChartTooltip
+                  cursor={false}
+                  content={<ChartTooltipContent hideLabel indicator="line" />}
+                />
+                <Bar dataKey="value" layout="vertical" radius={5}>
+                  <LabelList
+                    position="right"
+                    offset={8}
+                    className="fill-foreground font-semibold"
+                    fontSize={12}
+                    dataKey={(d: { value: number; unitPrefix: string; unitSuffix: string }) => `${d.unitPrefix}${d.value}${d.unitSuffix}`}
+                  />
+                  {branchMetricsData.map((entry) => (
+                    <Cell key={entry.metric} fill={`var(--color-${entry.key})`} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ChartContainer>
           </CardContent>
         </Card>
     </div>
