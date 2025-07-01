@@ -286,6 +286,36 @@ const ProfessorDashboard = () => {
             </div>
           </CardContent>
         </Card>
+        
+        <Card className="md:col-span-2 lg:col-span-3">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BarChartIcon />
+              <span>Estatísticas da sua Unidade</span>
+            </CardTitle>
+            <CardDescription>
+              Desempenho da unidade {user.affiliation}.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <div className="rounded-lg border p-3 text-center">
+                    <p className="text-2xl font-bold">{mockAllStudents.filter(s => s.affiliation === user.affiliation).length}</p>
+                    <p className="text-xs text-muted-foreground">
+                        Total de Alunos
+                    </p>
+                </div>
+                <div className="rounded-lg border p-3 text-center">
+                    <p className="text-2xl font-bold">+5</p>
+                    <p className="text-xs text-muted-foreground">Novos Alunos (Mês)</p>
+                </div>
+                <div className="rounded-lg border p-3 text-center">
+                    <p className="text-2xl font-bold">96%</p>
+                    <p className="text-xs text-muted-foreground">Retenção</p>
+                </div>
+            </div>
+          </CardContent>
+        </Card>
     </div>
   );
 };

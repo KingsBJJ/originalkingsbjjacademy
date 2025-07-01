@@ -42,6 +42,7 @@ const instructorFormSchema = z.object({
   phone: z.string().min(10, { message: 'O telefone deve ter pelo menos 10 dígitos.' }),
   affiliation: z.string({ required_error: 'Selecione uma filial.' }),
   belt: z.string({ required_error: 'Selecione uma graduação.' }),
+  stripes: z.coerce.number().int().min(0).max(6).optional(),
   bio: z.string().optional(),
   avatar: z.string().optional(),
 });
@@ -61,8 +62,11 @@ export default function NewInstructorPage() {
       phone: '',
       bio: '',
       avatar: '',
+      stripes: 0,
     },
   });
+
+  const watchedBelt = form.watch("belt");
 
   const onSubmit = (data: InstructorFormValues) => {
     console.log(data);
@@ -196,6 +200,28 @@ export default function NewInstructorPage() {
                     </FormItem>
                   )}
                 />
+                {(watchedBelt === 'Preta' || watchedBelt === 'Coral') && (
+                  <FormField
+                    control={form.control}
+                    name="stripes"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Graus na Faixa</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            min="0"
+                            max="6"
+                            placeholder="Nº de graus (0-6)"
+                            {...field}
+                            onChange={(e) => field.onChange(parseInt(e.target.value, 10) || 0)}
+                           />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
                  <FormField
                   control={form.control}
                   name="avatar"
