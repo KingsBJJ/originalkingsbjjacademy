@@ -265,6 +265,31 @@ const ProfessorDashboard = () => {
         <Card className="md:col-span-2 lg:col-span-3">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
+              <Medal />
+              <span>Seu Progresso de Graduação</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="font-medium">
+                  Faixa {user.belt}, {user.stripes} Graus
+                </span>
+                <span className="text-muted-foreground">
+                  {user.nextGraduationProgress}%
+                </span>
+              </div>
+              <Progress value={user.nextGraduationProgress} />
+              <p className="text-xs text-muted-foreground">
+                Seu progresso pessoal para o próximo grau/faixa.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="md:col-span-2 lg:col-span-3">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
               <BarChart2 />
               <span>Estatísticas da sua Unidade</span>
             </CardTitle>
