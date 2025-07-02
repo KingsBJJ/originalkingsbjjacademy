@@ -40,7 +40,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { getBranches, saveTermsAcceptance, type Branch } from "@/lib/firestoreService";
 
 
-function TermsDialog({ onAccept, disabled, isAccepted }: { onAccept: (parentName: string, childName: string) => void, disabled: boolean, isAccepted: boolean }) {
+function TermsDialog({ onAccept, isAccepted }: { onAccept: (parentName: string, childName: string) => void, isAccepted: boolean }) {
   const [parentName, setParentName] = useState('');
   const [childName, setChildName] = useState('');
   const [isOpen, setIsOpen] = useState(false);
@@ -55,7 +55,7 @@ function TermsDialog({ onAccept, disabled, isAccepted }: { onAccept: (parentName
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="link" type="button" className="text-primary p-0 h-auto shrink-0" disabled={disabled}>
+        <Button variant="link" type="button" className="text-primary p-0 h-auto shrink-0">
           {isAccepted ? 'Visualizar Termo' : 'Ler e Assinar'}
         </Button>
       </DialogTrigger>
@@ -351,16 +351,10 @@ export default function SignUpPage() {
                           )}
                       </div>
                       <TermsDialog 
-                        onAccept={handleAcceptTerms} 
-                        disabled={!affiliation}
+                        onAccept={handleAcceptTerms}
                         isAccepted={termsAccepted}
                       />
                   </div>
-                  {!affiliation && !termsAccepted && (
-                    <p className="text-xs text-muted-foreground px-1">
-                        Selecione uma filial para poder assinar o termo.
-                    </p>
-                  )}
                   {affiliation && !termsAccepted && (
                     <p className="text-xs text-muted-foreground px-1">
                         É obrigatório assinar o termo para matricular um menor.
