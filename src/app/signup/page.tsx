@@ -355,7 +355,7 @@ export default function SignUpPage() {
             )}
 
 
-            <Button type="submit" className="w-full">
+            <Button type="submit" className="w-full" disabled={category === 'kids' && !termsAccepted}>
               Criar conta
             </Button>
           </form>
