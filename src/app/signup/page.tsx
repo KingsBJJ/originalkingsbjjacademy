@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -26,6 +27,79 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { mockBranches, allBelts, mockUsers, allBeltsKids } from "@/lib/mock-data";
 import { useToast } from "@/hooks/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogDescription, 
+  DialogFooter,
+  DialogTrigger
+} from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
+
+function TermsDialog({ onAccept }: { onAccept: (parentName: string, childName: string) => void }) {
+  const [parentName, setParentName] = useState('');
+  const [childName, setChildName] = useState('');
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleAccept = () => {
+    if (parentName && childName) {
+      onAccept(parentName, childName);
+      setIsOpen(false);
+    }
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        <button type="button" className="underline hover:text-primary">
+          termo de responsabilidade dos pais
+        </button>
+      </DialogTrigger>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle className="text-2xl">Termo de Responsabilidade - Matrícula Infantil</DialogTitle>
+          <DialogDescription>
+            Leia atentamente, preencha os nomes e clique em "Concordar e Assinar" para prosseguir.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="grid gap-4 py-4">
+            <ScrollArea className="h-72 w-full rounded-md border p-4 text-sm">
+             <div className="space-y-4">
+                <p>
+                    Eu, <span className="font-bold">{parentName || '[NOME DO RESPONSÁVEL]'}</span>, portador(a) do RG/CPF [NÚMERO DO DOCUMENTO], na qualidade de responsável legal pelo(a) menor <span className="font-bold">{childName || '[NOME DO(A) MENOR]'}</span>, nascido(a) em [DATA DE NASCIMENTO DO(A) MENOR], autorizo sua participação nas aulas de Jiu-Jitsu Brasileiro oferecidas pela academia Kings BJJ.
+                </p>
+                <h3 className="font-bold text-lg pt-2">1. Reconhecimento dos Riscos</h3>
+                <p>
+                    Declaro estar ciente de que o Jiu-Jitsu Brasileiro é uma arte marcial e um esporte de contato que envolve riscos inerentes, incluindo, mas não se limitando a, lesões musculares, contusões, fraturas, luxações e outras lesões graves. Compreendo que tais riscos não podem ser totalmente eliminados, mesmo com o cumprimento de todas as normas de segurança.
+                </p>
+                <h3 className="font-bold text-lg pt-2">2. Condição de Saúde</h3>
+                <p>
+                    Atesto que o(a) menor encontra-se em plenas condições de saúde e apto(a) a participar das atividades físicas propostas. Comprometo-me a informar imediatamente à equipe da Kings BJJ sobre qualquer condição médica preexistente, alergia, ou qualquer outra restrição que possa afetar sua participação segura nas aulas.
+                </p>
+             </div>
+            </ScrollArea>
+             <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                    <Label htmlFor="parent-name">Nome do Responsável</Label>
+                    <Input id="parent-name" value={parentName} onChange={(e) => setParentName(e.target.value)} placeholder="Nome completo do responsável" />
+                </div>
+                <div className="grid gap-2">
+                    <Label htmlFor="child-name">Nome do(a) Menor</Label>
+                    <Input id="child-name" value={childName} onChange={(e) => setChildName(e.target.value)} placeholder="Nome completo do menor" />
+                </div>
+            </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setIsOpen(false)}>Cancelar</Button>
+          <Button onClick={handleAccept} disabled={!parentName || !childName}>Concordar e Assinar</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 
 export default function SignUpPage() {
   const [email, setEmail] = useState("");
@@ -40,6 +114,16 @@ export default function SignUpPage() {
     setCategory(newCategory);
     setBelt(""); // Reseta a faixa ao mudar de categoria
   };
+
+  const handleAcceptTerms = (parentName: string, childName: string) => {
+    console.log(`Termo aceito por ${parentName} para o(a) menor ${childName}. Enviando para o professor...`);
+    toast({
+        title: "Termo Assinado com Sucesso!",
+        description: "As informações foram enviadas ao professor responsável pela filial.",
+    });
+    setTermsAccepted(true);
+  };
+
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -201,6 +285,7 @@ export default function SignUpPage() {
                 <Checkbox 
                   id="terms" 
                   checked={termsAccepted}
+                  disabled={termsAccepted}
                   onCheckedChange={(checked) => setTermsAccepted(checked as boolean)}
                 />
                 <div className="grid gap-1.5 leading-none">
@@ -209,10 +294,7 @@ export default function SignUpPage() {
                     className="text-sm font-medium leading-none text-white/80 peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                   >
                     Eu li e concordo com o{" "}
-                    <Link href="/terms-of-service" target="_blank" className="underline hover:text-primary">
-                      termo de responsabilidade dos pais
-                    </Link>
-                    .
+                     <TermsDialog onAccept={handleAcceptTerms} />.
                   </label>
                   <p className="text-xs text-muted-foreground">
                     Necessário para a matrícula de menores de idade.
@@ -237,3 +319,4 @@ export default function SignUpPage() {
     </div>
   );
 }
+
