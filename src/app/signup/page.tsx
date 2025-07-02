@@ -23,7 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { mockBranches, allBelts, mockUsers } from "@/lib/mock-data";
+import { mockBranches, allBelts, mockUsers, allBeltsKids } from "@/lib/mock-data";
 import { useToast } from "@/hooks/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
 
@@ -35,6 +35,11 @@ export default function SignUpPage() {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
+
+  const handleCategoryChange = (newCategory: string) => {
+    setCategory(newCategory);
+    setBelt(""); // Reseta a faixa ao mudar de categoria
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,6 +62,8 @@ export default function SignUpPage() {
     // For simulation, we'll still navigate. In a real app, you'd wait for approval.
     router.push(`/dashboard?role=${role}`);
   };
+
+  const currentBeltList = category === 'adulto' ? allBelts : allBeltsKids;
 
   return (
     <div className="relative flex min-h-screen w-full items-center justify-center p-4">
@@ -145,6 +152,20 @@ export default function SignUpPage() {
               </Select>
             </div>
 
+             <div className="grid gap-2">
+              <Label className="text-white/80">Categoria</Label>
+              <RadioGroup defaultValue="adulto" onValueChange={handleCategoryChange} className="flex gap-4 pt-2">
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="adulto" id="r-adulto" />
+                  <Label htmlFor="r-adulto" className="text-white/80 font-normal">Adulto</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="kids" id="r-kids" />
+                  <Label htmlFor="r-kids" className="text-white/80 font-normal">Kids</Label>
+                </div>
+              </RadioGroup>
+            </div>
+
             <div className="grid gap-2">
               <Label htmlFor="belt" className="text-white/80">Graduação</Label>
               <Select onValueChange={setBelt} value={belt}>
@@ -152,9 +173,9 @@ export default function SignUpPage() {
                   <SelectValue placeholder="Selecione sua graduação" />
                 </SelectTrigger>
                 <SelectContent>
-                  {allBelts.map((belt) => (
-                    <SelectItem key={belt} value={belt}>
-                      {belt}
+                  {currentBeltList.map((beltOption) => (
+                    <SelectItem key={beltOption} value={beltOption}>
+                      {beltOption}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -174,20 +195,6 @@ export default function SignUpPage() {
                   />
                 </div>
               )}
-
-            <div className="grid gap-2">
-              <Label className="text-white/80">Categoria</Label>
-              <RadioGroup defaultValue="adulto" onValueChange={setCategory} className="flex gap-4 pt-2">
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="adulto" id="r-adulto" />
-                  <Label htmlFor="r-adulto" className="text-white/80 font-normal">Adulto</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="kids" id="r-kids" />
-                  <Label htmlFor="r-kids" className="text-white/80 font-normal">Kids</Label>
-                </div>
-              </RadioGroup>
-            </div>
 
             {category === 'kids' && (
               <div className="items-top flex space-x-2 pt-2">
