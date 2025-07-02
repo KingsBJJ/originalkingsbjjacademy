@@ -20,10 +20,8 @@ export default function BranchesPage() {
     return <div>Carregando...</div>;
   }
 
-  const displayedBranches =
-    user.role === "admin"
-      ? mockBranches
-      : mockBranches.filter((b) => b.id === user.branchId);
+  // Agora todos os usuários podem ver todas as filiais
+  const displayedBranches = mockBranches;
 
   return (
     <div className="grid gap-6">
