@@ -124,81 +124,92 @@ const BeltListItem = ({
 };
 
 const GraduationPlan = () => {
+    const user = useContext(UserContext);
     const allBeltColors = { ...beltColors, ...beltColorsKids };
-  return (
-    <Card className="mt-8">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <GraduationCap />
-          Plano de Graduação de Alunos
-        </CardTitle>
-        <CardDescription>
-          Acompanhe e promova o progresso dos alunos para a próxima graduação.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Aluno</TableHead>
-              <TableHead>Filial</TableHead>
-              <TableHead>Graduação Atual</TableHead>
-              <TableHead className="w-[250px]">Progresso para Próxima</TableHead>
-              <TableHead className="text-right">Ações</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {mockAllStudents.map((student) => {
-              const beltStyle = allBeltColors[student.belt as keyof typeof allBeltColors] || beltColors.Branca;
-              return (
-                <TableRow key={student.id}>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-9 w-9">
-                        <AvatarImage
-                          src={student.avatar}
-                          alt={student.name}
-                        />
-                        <AvatarFallback>{student.name[0]}</AvatarFallback>
-                      </Avatar>
-                      <p className="font-medium">{student.name}</p>
-                    </div>
-                  </TableCell>
-                  <TableCell>{student.affiliation}</TableCell>
-                  <TableCell>
-                    <Badge
-                      className={cn(
-                        "text-xs font-semibold",
-                        beltStyle.bg,
-                        beltStyle.text
-                      )}
-                    >
-                      {student.belt}
-                      {(student.belt === 'Preta' || student.belt === 'Coral') && student.stripes > 0 && ` - ${student.stripes}º Grau`}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <Progress
-                        value={student.nextGraduationProgress}
-                        className="h-2"
-                      />
-                      <span className="text-xs font-medium text-muted-foreground">
-                        {student.nextGraduationProgress}%
-                      </span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button size="sm">Promover</Button>
-                  </TableCell>
+    
+    if (!user) return null;
+
+    const displayedStudents = user.role === 'admin'
+        ? mockAllStudents
+        : mockAllStudents.filter(s => s.affiliation === user.affiliation);
+
+    return (
+        <Card className="mt-8">
+        <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+            <GraduationCap />
+            Plano de Graduação de Alunos
+            </CardTitle>
+            <CardDescription>
+            {user.role === 'admin'
+                ? 'Acompanhe e promova o progresso dos alunos para a próxima graduação.'
+                : 'Acompanhe e promova o progresso dos alunos da sua filial.'
+            }
+            </CardDescription>
+        </CardHeader>
+        <CardContent>
+            <Table>
+            <TableHeader>
+                <TableRow>
+                <TableHead>Aluno</TableHead>
+                <TableHead>Filial</TableHead>
+                <TableHead>Graduação Atual</TableHead>
+                <TableHead className="w-[250px]">Progresso para Próxima</TableHead>
+                <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-      </CardContent>
-    </Card>
-  );
+            </TableHeader>
+            <TableBody>
+                {displayedStudents.map((student) => {
+                const beltStyle = allBeltColors[student.belt as keyof typeof allBeltColors] || beltColors.Branca;
+                return (
+                    <TableRow key={student.id}>
+                    <TableCell>
+                        <div className="flex items-center gap-3">
+                        <Avatar className="h-9 w-9">
+                            <AvatarImage
+                            src={student.avatar}
+                            alt={student.name}
+                            />
+                            <AvatarFallback>{student.name[0]}</AvatarFallback>
+                        </Avatar>
+                        <p className="font-medium">{student.name}</p>
+                        </div>
+                    </TableCell>
+                    <TableCell>{student.affiliation}</TableCell>
+                    <TableCell>
+                        <Badge
+                        className={cn(
+                            "text-xs font-semibold",
+                            beltStyle.bg,
+                            beltStyle.text
+                        )}
+                        >
+                        {student.belt}
+                        {(student.belt === 'Preta' || student.belt === 'Coral') && student.stripes > 0 && ` - ${student.stripes}º Grau`}
+                        </Badge>
+                    </TableCell>
+                    <TableCell>
+                        <div className="flex items-center gap-3">
+                        <Progress
+                            value={student.nextGraduationProgress}
+                            className="h-2"
+                        />
+                        <span className="text-xs font-medium text-muted-foreground">
+                            {student.nextGraduationProgress}%
+                        </span>
+                        </div>
+                    </TableCell>
+                    <TableCell className="text-right">
+                        <Button size="sm">Promover</Button>
+                    </TableCell>
+                    </TableRow>
+                );
+                })}
+            </TableBody>
+            </Table>
+        </CardContent>
+        </Card>
+    );
 };
 
 export default function RankingsPage() {

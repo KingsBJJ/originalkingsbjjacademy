@@ -1,6 +1,7 @@
 "use client";
 
 import { useContext } from 'react';
+import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -36,13 +37,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 const allBeltColors = { ...beltColors, ...beltColorsKids };
 type Student = Omit<StudentUser, 'role'>;
 
-const StudentTable = ({ students }: { students: Student[] }) => (
+const StudentTable = ({ students, userRole }: { students: Student[], userRole: 'admin' | 'professor' | 'student' }) => {
+    const title = userRole === 'admin' ? "Lista de Alunos" : "Alunos da sua Filial";
+    const description = userRole === 'admin' 
+        ? `Total de ${students.length} alunos cadastrados.`
+        : `Total de ${students.length} alunos na sua filial.`;
+
+    return (
     <Card>
       <CardHeader>
-        <CardTitle>Lista de Alunos</CardTitle>
-        <CardDescription>
-          Total de {students.length} alunos cadastrados.
-        </CardDescription>
+        <CardTitle>{title}</CardTitle>
+        <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent>
         <Table>
@@ -102,13 +107,13 @@ const StudentTable = ({ students }: { students: Student[] }) => (
         </Table>
       </CardContent>
     </Card>
-);
+)};
 
 
 export default function ManageStudentsPage() {
   const user = useContext(UserContext);
 
-  if (user?.role !== 'admin') {
+  if (!user || user.role === 'student') {
     return (
       <div className="flex items-center justify-center h-full">
         <Card className="w-full max-w-md">
@@ -119,31 +124,45 @@ export default function ManageStudentsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <p>Esta área é restrita a administradores.</p>
+            <p>Esta área é restrita a administradores e professores.</p>
+             <Button asChild className="mt-4">
+              <Link href={`/dashboard?role=${user?.role || 'student'}`}>Voltar ao Painel</Link>
+            </Button>
           </CardContent>
         </Card>
       </div>
     );
   }
 
+  const adultStudents = user.role === 'admin'
+    ? mockAdultStudents
+    : mockAdultStudents.filter(s => s.affiliation === user.affiliation);
+  
+  const kidsStudents = user.role === 'admin'
+    ? mockKidsStudents
+    : mockKidsStudents.filter(s => s.affiliation === user.affiliation);
+
   return (
     <div className="grid gap-6">
        <div>
         <h1 className="text-3xl font-bold tracking-tight">Alunos</h1>
         <p className="text-muted-foreground">
-          Visualize e gerencie todos os alunos do sistema.
+          {user.role === 'admin' 
+            ? "Visualize e gerencie todos os alunos do sistema."
+            : "Visualize e gerencie os alunos da sua filial."
+          }
         </p>
       </div>
        <Tabs defaultValue="adults" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="adults">Adultos ({mockAdultStudents.length})</TabsTrigger>
-          <TabsTrigger value="kids">Kids ({mockKidsStudents.length})</TabsTrigger>
+          <TabsTrigger value="adults">Adultos ({adultStudents.length})</TabsTrigger>
+          <TabsTrigger value="kids">Kids ({kidsStudents.length})</TabsTrigger>
         </TabsList>
         <TabsContent value="adults" className="mt-4">
-          <StudentTable students={mockAdultStudents} />
+          <StudentTable students={adultStudents} userRole={user.role} />
         </TabsContent>
         <TabsContent value="kids" className="mt-4">
-          <StudentTable students={mockKidsStudents} />
+          <StudentTable students={kidsStudents} userRole={user.role} />
         </TabsContent>
       </Tabs>
     </div>
