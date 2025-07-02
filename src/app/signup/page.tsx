@@ -26,7 +26,7 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { allBelts, mockUsers, allBeltsKids } from "@/lib/mock-data";
 import { useToast } from "@/hooks/use-toast";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Check } from "lucide-react";
 import { 
   Dialog, 
   DialogContent, 
@@ -40,7 +40,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { getBranches, saveTermsAcceptance, type Branch } from "@/lib/firestoreService";
 
 
-function TermsDialog({ onAccept, disabled }: { onAccept: (parentName: string, childName: string) => void, disabled: boolean }) {
+function TermsDialog({ onAccept, disabled, isAccepted }: { onAccept: (parentName: string, childName: string) => void, disabled: boolean, isAccepted: boolean }) {
   const [parentName, setParentName] = useState('');
   const [childName, setChildName] = useState('');
   const [isOpen, setIsOpen] = useState(false);
@@ -55,9 +55,9 @@ function TermsDialog({ onAccept, disabled }: { onAccept: (parentName: string, ch
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <button type="button" className="underline hover:text-primary disabled:text-muted-foreground disabled:no-underline" disabled={disabled}>
-          termo de responsabilidade dos pais
-        </button>
+        <Button variant="link" type="button" className="text-primary p-0 h-auto shrink-0" disabled={disabled}>
+          {isAccepted ? 'Visualizar Termo' : 'Ler e Assinar'}
+        </Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
@@ -95,7 +95,9 @@ function TermsDialog({ onAccept, disabled }: { onAccept: (parentName: string, ch
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => setIsOpen(false)}>Cancelar</Button>
-          <Button onClick={handleAccept} disabled={!parentName || !childName}>Concordar e Assinar</Button>
+          <Button onClick={handleAccept} disabled={!parentName || !childName || isAccepted}>
+            {isAccepted ? 'Termo já assinado' : 'Concordar e Assinar'}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -332,25 +334,32 @@ export default function SignUpPage() {
               )}
 
             {category === 'kids' && (
-              <div className="items-top flex space-x-2 pt-2">
-                <Checkbox 
-                  id="terms" 
-                  checked={termsAccepted}
-                  disabled={termsAccepted}
-                  onCheckedChange={(checked) => setTermsAccepted(checked as boolean)}
-                />
-                <div className="grid gap-1.5 leading-none">
-                  <label
-                    htmlFor="terms"
-                    className="text-sm font-medium leading-none text-white/80 peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  >
-                    Eu li e concordo com o{" "}
-                     <TermsDialog onAccept={handleAcceptTerms} disabled={!affiliation} />.
-                  </label>
-                  <p className="text-xs text-muted-foreground">
-                    Necessário para a matrícula de menores de idade.
-                  </p>
-                </div>
+              <div className="grid gap-2 pt-2">
+                  <Label className="text-white/80">Termo de Responsabilidade</Label>
+                  <div className="flex items-center rounded-md border border-input bg-white/5 p-3">
+                      <div className="flex-1">
+                          {termsAccepted ? (
+                              <div className="flex items-center gap-2 text-green-400">
+                                  <Check className="h-4 w-4" />
+                                  <p className="text-sm font-semibold">Termo assinado.</p>
+                              </div>
+                          ) : (
+                              <p className="text-sm text-muted-foreground">
+                                  Assinatura pendente.
+                              </p>
+                          )}
+                      </div>
+                      <TermsDialog 
+                        onAccept={handleAcceptTerms} 
+                        disabled={!affiliation}
+                        isAccepted={termsAccepted}
+                      />
+                  </div>
+                  {!termsAccepted && (
+                    <p className="text-xs text-muted-foreground px-1">
+                        É obrigatório assinar o termo para matricular um menor.
+                    </p>
+                  )}
               </div>
             )}
 
