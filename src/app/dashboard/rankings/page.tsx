@@ -172,7 +172,7 @@ const GraduationPlan = () => {
                       )}
                     >
                       {student.belt}
-                      {student.stripes > 0 && ` - ${student.stripes} grau(s)`}
+                      {(student.belt === 'Preta' || student.belt === 'Coral') && student.stripes > 0 && ` - ${student.stripes}º Grau`}
                     </Badge>
                   </TableCell>
                   <TableCell>
