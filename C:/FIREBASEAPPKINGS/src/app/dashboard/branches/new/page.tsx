@@ -106,7 +106,7 @@ export default function NewBranchPage() {
   const onSubmit = async (data: BranchFormValues) => {
     setIsSubmitting(true);
     try {
-      await addBranch(data);
+      await addBranch(data as BranchData);
       toast({
         title: 'Filial Cadastrada!',
         description: `A filial ${data.name} foi adicionada com sucesso.`,
