@@ -224,8 +224,8 @@ const ProfessorDashboard = () => {
     mockClasses[0];
 
   const branchMetricsData = [
-    { metric: "Total de Alunos", value: mockAllStudents.filter(s => s.affiliation === user.affiliation).length, key: "total", unitPrefix: "", unitSuffix: "" },
-    { metric: "Novos Alunos (Mês)", value: 5, key: "new", unitPrefix: "+", unitSuffix: ""},
+    { metric: "Total", value: mockAllStudents.filter(s => s.affiliation === user.affiliation).length, key: "total", unitPrefix: "", unitSuffix: "" },
+    { metric: "Novos", value: 5, key: "new", unitPrefix: "+", unitSuffix: ""},
     { metric: "Retenção", value: 96, key: "retention", unitPrefix: "", unitSuffix: "%" },
   ];
 
@@ -322,35 +322,26 @@ const ProfessorDashboard = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <ChartContainer config={chartConfig} className="h-[150px] w-full">
-              <BarChart
-                accessibilityLayer
-                data={branchMetricsData}
-                layout="vertical"
-                margin={{
-                  left: 10,
-                  top: 10,
-                  bottom: 10,
-                }}
-              >
-                <CartesianGrid horizontal={false} />
-                <YAxis
+             <ChartContainer config={chartConfig} className="h-[250px] w-full">
+              <BarChart accessibilityLayer data={branchMetricsData}>
+                <CartesianGrid vertical={false} />
+                <XAxis
                   dataKey="metric"
-                  type="category"
                   tickLine={false}
                   axisLine={false}
                   tickMargin={10}
-                  width={120}
                   tick={{ fontSize: 12 }}
                 />
-                <XAxis dataKey="value" type="number" hide />
+                <YAxis
+                  tickFormatter={(value) => `${value}`}
+                />
                 <ChartTooltip
                   cursor={false}
-                  content={<ChartTooltipContent hideLabel indicator="line" />}
+                  content={<ChartTooltipContent hideLabel />}
                 />
-                <Bar dataKey="value" layout="vertical" radius={5}>
+                <Bar dataKey="value" radius={[8, 8, 0, 0]}>
                   <LabelList
-                    position="right"
+                    position="top"
                     offset={8}
                     className="fill-foreground font-semibold"
                     fontSize={12}
