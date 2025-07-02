@@ -6,8 +6,15 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ArrowLeft } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
 
 export default function TermsOfServicePage() {
+  const searchParams = useSearchParams();
+  const role = searchParams.get('role');
+
+  const backHref = role ? `/dashboard?role=${role}` : '/signup';
+  const backText = role ? 'Voltar para o Painel' : 'Voltar para o Cadastro';
+
   return (
     <div className="relative flex min-h-screen w-full items-center justify-center p-4">
        <Image
@@ -60,9 +67,9 @@ export default function TermsOfServicePage() {
           </ScrollArea>
            <div className="mt-6 flex justify-end gap-2">
             <Button variant="outline" asChild>
-                <Link href="/signup">
+                <Link href={backHref}>
                     <ArrowLeft className="mr-2 h-4 w-4" />
-                    Voltar para o Cadastro
+                    {backText}
                 </Link>
             </Button>
           </div>

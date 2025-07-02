@@ -58,7 +58,7 @@ const studentNavItems: NavItem[] = [
   { href: "/dashboard/check-in", icon: QrCode, label: "Check-in" },
   { href: "/dashboard/branches", icon: MapPin, label: "Filiais" },
   { href: "/dashboard/rankings", icon: Award, label: "Graduações" },
-  { href: "/terms-of-service", icon: FileText, label: "Termo de Resp.", external: true },
+  { href: "/terms-of-service", icon: FileText, label: "Termo de Resp." },
 ];
 
 const professorNavItems: NavItem[] = [
@@ -69,7 +69,7 @@ const professorNavItems: NavItem[] = [
   { href: "/dashboard/instructors", icon: Users, label: "Professores" },
   { href: "/dashboard/rankings", icon: Award, label: "Graduações" },
   { href: "/dashboard/branches", icon: MapPin, label: "Filiais" },
-  { href: "/terms-of-service", icon: FileText, label: "Termo de Resp.", external: true },
+  { href: "/terms-of-service", icon: FileText, label: "Termo de Resp." },
 ];
 
 const adminNavItems: NavItem[] = [
@@ -81,7 +81,7 @@ const adminNavItems: NavItem[] = [
   { href: "/dashboard/manage-students", icon: Shield, label: "Alunos" },
   { href: "/dashboard/rankings", icon: Award, label: "Graduações" },
   { href: "/dashboard/branches", icon: MapPin, label: "Filiais" },
-  { href: "/terms-of-service", icon: FileText, label: "Termo de Resp.", external: true },
+  { href: "/terms-of-service", icon: FileText, label: "Termo de Resp." },
 ];
 
 
