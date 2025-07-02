@@ -30,6 +30,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 export default function SignUpPage() {
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("student");
+  const [belt, setBelt] = useState("");
   const [category, setCategory] = useState("adulto");
   const [termsAccepted, setTermsAccepted] = useState(false);
   const router = useRouter();
@@ -146,7 +147,7 @@ export default function SignUpPage() {
 
             <div className="grid gap-2">
               <Label htmlFor="belt" className="text-white/80">Graduação</Label>
-              <Select>
+              <Select onValueChange={setBelt} value={belt}>
                 <SelectTrigger id="belt" className="bg-white/5 border-white/20 text-white">
                   <SelectValue placeholder="Selecione sua graduação" />
                 </SelectTrigger>
@@ -159,6 +160,20 @@ export default function SignUpPage() {
                 </SelectContent>
               </Select>
             </div>
+            
+            {(belt === "Preta" || belt === "Coral") && (
+                <div className="grid gap-2">
+                  <Label htmlFor="stripes" className="text-white/80">Graus na Faixa</Label>
+                  <Input
+                    id="stripes"
+                    type="number"
+                    min="0"
+                    max="6"
+                    placeholder="Nº de graus (0-6)"
+                    className="bg-white/5 border-white/20 text-white placeholder:text-white/50"
+                  />
+                </div>
+              )}
 
             <div className="grid gap-2">
               <Label className="text-white/80">Categoria</Label>
