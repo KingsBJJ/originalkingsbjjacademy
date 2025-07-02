@@ -34,6 +34,7 @@ import {
   Shield,
   QrCode,
   Calendar,
+  FileText,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -42,7 +43,14 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 
-const studentNavItems = [
+type NavItem = {
+  href: string;
+  icon: React.ElementType;
+  label: string;
+  external?: boolean;
+};
+
+const studentNavItems: NavItem[] = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Painel" },
   { href: "/dashboard/notifications", icon: Bell, label: "Notificações" },
   { href: "/dashboard/profile", icon: UserIcon, label: "Perfil" },
@@ -50,9 +58,10 @@ const studentNavItems = [
   { href: "/dashboard/check-in", icon: QrCode, label: "Check-in" },
   { href: "/dashboard/branches", icon: MapPin, label: "Filiais" },
   { href: "/dashboard/rankings", icon: Award, label: "Graduações" },
+  { href: "/terms-of-service", icon: FileText, label: "Termo de Resp.", external: true },
 ];
 
-const professorNavItems = [
+const professorNavItems: NavItem[] = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Painel" },
   { href: "/dashboard/notifications", icon: Bell, label: "Notificações" },
   { href: "/dashboard/schedule", icon: Calendar, label: "Horários" },
@@ -60,9 +69,10 @@ const professorNavItems = [
   { href: "/dashboard/instructors", icon: Users, label: "Professores" },
   { href: "/dashboard/rankings", icon: Award, label: "Graduações" },
   { href: "/dashboard/branches", icon: MapPin, label: "Filiais" },
+  { href: "/terms-of-service", icon: FileText, label: "Termo de Resp.", external: true },
 ];
 
-const adminNavItems = [
+const adminNavItems: NavItem[] = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Painel" },
   { href: "/dashboard/notifications", icon: Bell, label: "Notificações" },
   { href: "/dashboard/class-qr", icon: QrCode, label: "QR Code Universal" },
@@ -71,6 +81,7 @@ const adminNavItems = [
   { href: "/dashboard/manage-students", icon: Shield, label: "Alunos" },
   { href: "/dashboard/rankings", icon: Award, label: "Graduações" },
   { href: "/dashboard/branches", icon: MapPin, label: "Filiais" },
+  { href: "/terms-of-service", icon: FileText, label: "Termo de Resp.", external: true },
 ];
 
 
@@ -90,7 +101,7 @@ export default function DashboardClientLayout({
     return mockUsers[validRole];
   }, [role]);
 
-  const navItems = useMemo(() => {
+  const navItems: NavItem[] = useMemo(() => {
     if (user.role === 'admin') {
       return adminNavItems;
     }
@@ -118,14 +129,18 @@ export default function DashboardClientLayout({
                 <SidebarMenuItem key={item.href}>
                   <SidebarMenuButton
                     asChild
-                    isActive={pathname === item.href}
+                    isActive={!item.external && pathname === item.href}
                     tooltip={{
                       children: item.label,
                       side: "right",
                       align: "center",
                     }}
                   >
-                    <Link href={getHref(item.href)}>
+                    <Link
+                      href={item.external ? item.href : getHref(item.href)}
+                      target={item.external ? "_blank" : undefined}
+                      rel={item.external ? "noopener noreferrer" : undefined}
+                    >
                       <item.icon />
                       <span>{item.label}</span>
                     </Link>
@@ -159,12 +174,11 @@ export default function DashboardClientLayout({
                 {navItems.find(item => item.href === pathname)?.label || 'Painel'}
               </h1>
                <div className="flex items-center gap-4">
-                {(user.role === 'admin' || user.role === 'professor') && (
-                  <Popover>
+                 <Popover>
                     <PopoverTrigger asChild>
                       <Button variant="ghost" size="icon" className="relative rounded-full">
                         <Bell className="h-5 w-5" />
-                         {mockAnnouncements.length > 0 && (
+                         {mockAnnouncements.filter(a => !a.branchId || a.branchId === user.branchId).length > 0 && (
                             <span className="absolute top-1.5 right-1.5 flex h-2.5 w-2.5">
                               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
                               <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
@@ -176,10 +190,10 @@ export default function DashboardClientLayout({
                     <PopoverContent align="end" className="w-96 p-0">
                       <div className="flex items-center justify-between border-b p-4">
                         <h3 className="font-semibold">Recados Recentes</h3>
-                        <Badge variant="secondary">{mockAnnouncements.length}</Badge>
+                        <Badge variant="secondary">{mockAnnouncements.filter(a => !a.branchId || a.branchId === user.branchId).length}</Badge>
                       </div>
                       <div className="max-h-80 overflow-y-auto">
-                         {mockAnnouncements.length > 0 ? mockAnnouncements.slice(0, 3).map((announcement) => (
+                         {mockAnnouncements.filter(a => !a.branchId || a.branchId === user.branchId).length > 0 ? mockAnnouncements.slice(0, 3).map((announcement) => (
                           <Link key={announcement.id} href={getHref('/dashboard/notifications')} className="block">
                             <div className="flex items-start gap-3 border-b p-4 text-sm hover:bg-muted/50 last:border-b-0">
                                 <Avatar className="h-8 w-8">
@@ -208,7 +222,6 @@ export default function DashboardClientLayout({
                       </div>
                     </PopoverContent>
                   </Popover>
-                )}
                 <div className="text-sm font-medium">
                     <span className="text-muted-foreground">Perfil: </span>
                     <span className="capitalize font-semibold text-primary">{user.role}</span>
