@@ -39,6 +39,28 @@ export type Instructor = {
   phone: string;
 };
 
+export type Branch = {
+  id: string;
+  name: string;
+  address: string;
+  phone: string;
+  hours: string;
+  responsible: string;
+  instructor2?: string;
+  instructor3?: string;
+  instructor4?: string;
+  schedule?: ClassScheduleItem[];
+};
+
+export type ClassScheduleItem = {
+  name: string;
+  day: string;
+  time: string;
+  instructor: string;
+  category: 'Adults' | 'Kids';
+};
+
+
 export type Announcement = {
   id: string;
   title: string;
@@ -208,15 +230,12 @@ export const mockInstructors: Instructor[] = [
   { id: "i5", name: "Prof. Royler Gracie", avatar: "https://placehold.co/128x128.png", belt: "Preta", stripes: 7, bio: "Mestre em levar a luta para o chão e aplicar finalizações precisas.", affiliation: "Kings BJJ - Sul", email: "royler@kingsbjj.com", phone: "(55) 5555-5555" },
 ];
 
-<<<<<<< HEAD
-=======
 export const mockBranches: Branch[] = [
   { id: "b1", name: "Kings BJJ - Centro", address: "Rua Principal 123, Cidade, BR", phone: "(55) 1234-5678", hours: "Seg-Sáb, 9h - 21h", responsible: "Prof. Rickson Gracie" },
   { id: "b2", name: "Kings BJJ - Norte", address: "Avenida Norte 456, Cidade, BR", phone: "(55) 8765-4321", hours: "Seg-Sex, 10h - 20h", responsible: "Prof. Fabio Gurgel" },
   { id: "b3", name: "Kings BJJ - Sul", address: "Avenida Sul 789, Cidade, BR", phone: "(55) 9876-5432", hours: "Seg-Sex, 8h - 22h", responsible: "Prof. Royler Gracie" },
 ];
 
->>>>>>> 1739ce70e7b93a4fc13b880a4d6169160629b4e6
 export const mockAdultStudents: Omit<User, 'role'>[] = [
     { id: "s1", name: "Maria Silva", email: "maria@email.com", avatar: "https://placehold.co/128x128.png", belt: "Azul", stripes: 2, attendance: { total: 80, lastMonth: 10 }, nextGraduationProgress: 60, affiliation: "Kings BJJ - Centro", branchId: "b1", category: "Adult" },
     { id: "s2", name: "João Pereira", email: "joao@email.com", avatar: "https://placehold.co/128x128.png", belt: "Branca", stripes: 4, attendance: { total: 40, lastMonth: 15 }, nextGraduationProgress: 90, affiliation: "Kings BJJ - Centro", branchId: "b1", category: "Adult" },

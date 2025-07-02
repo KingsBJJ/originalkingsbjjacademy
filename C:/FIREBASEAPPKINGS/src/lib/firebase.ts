@@ -1,11 +1,8 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 
-<<<<<<< HEAD
 // As credenciais do Firebase são configuradas no ambiente de hospedagem.
 // Não é necessário preencher estes valores manualmente.
-=======
->>>>>>> 1739ce70e7b93a4fc13b880a4d6169160629b4e6
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -15,16 +12,8 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-<<<<<<< HEAD
 // Inicializa o Firebase
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const db = getFirestore(app);
 
 export { app, db };
-=======
-// Initialize Firebase
-const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-export { db, app };
->>>>>>> 1739ce70e7b93a4fc13b880a4d6169160629b4e6

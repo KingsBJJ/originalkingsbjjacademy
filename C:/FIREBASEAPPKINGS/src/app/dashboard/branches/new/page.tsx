@@ -1,6 +1,6 @@
 "use client";
 
-import { useContext, useState } from 'react';
+import { useContext, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useForm, useFieldArray } from 'react-hook-form';
@@ -33,10 +33,9 @@ import {
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { UserContext } from '../../client-layout';
-import { mockInstructors } from '@/lib/mock-data';
-<<<<<<< HEAD
 import { ArrowLeft, PlusCircle, Trash2 } from 'lucide-react';
-import { addBranch } from '@/lib/firestoreService';
+import { addBranch, type BranchData } from '@/services/branchService';
+import { getInstructors, type Instructor } from '@/services/instructorService';
 
 const classScheduleSchema = z.object({
   name: z.string().min(1, { message: 'O nome da aula é obrigatório.' }),
@@ -45,89 +44,83 @@ const classScheduleSchema = z.object({
   instructor: z.string().min(1, { message: 'Selecione um instrutor.' }),
   category: z.enum(['Adults', 'Kids'], { required_error: 'Selecione a categoria.' }),
 });
-=======
-import { ArrowLeft } from 'lucide-react';
-import { addBranch, type BranchData } from '@/services/branchService';
->>>>>>> 1739ce70e7b93a4fc13b880a4d6169160629b4e6
 
 const branchFormSchema = z.object({
   name: z.string().min(3, { message: 'O nome da filial deve ter pelo menos 3 caracteres.' }),
   address: z.string().min(10, { message: 'O endereço deve ter pelo menos 10 caracteres.' }),
   phone: z.string().min(10, { message: 'O telefone deve ter pelo menos 10 dígitos.' }),
-  responsible: z.string({ required_error: 'Selecione um responsável.' }).min(1, 'Selecione um responsável.'),
+  hours: z.string().min(5, { message: 'Insira um horário de funcionamento válido.' }),
+  responsible: z.string({ required_error: 'Selecione um responsável.' }).min(1, { message: 'Selecione um responsável.' }),
   instructor2: z.string().optional(),
   instructor3: z.string().optional(),
   instructor4: z.string().optional(),
   schedule: z.array(classScheduleSchema).optional(),
 });
 
+type BranchFormValues = z.infer<typeof branchFormSchema>;
 
 export default function NewBranchPage() {
   const user = useContext(UserContext);
   const router = useRouter();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [instructors, setInstructors] = useState<Instructor[]>([]);
 
-  const form = useForm<BranchData>({
+  useEffect(() => {
+    async function fetchInstructors() {
+      try {
+        const fetchedInstructors = await getInstructors();
+        setInstructors(fetchedInstructors);
+      } catch (error) {
+        console.error("Failed to fetch instructors:", error);
+        toast({
+          variant: 'destructive',
+          title: 'Erro ao Carregar Professores',
+          description: 'Não foi possível buscar a lista de professores. Tente novamente.',
+        });
+      }
+    }
+    fetchInstructors();
+  }, [toast]);
+
+  const form = useForm<BranchFormValues>({
     resolver: zodResolver(branchFormSchema),
     defaultValues: {
       name: '',
       address: '',
       phone: '',
+      hours: '',
+      responsible: '',
+      instructor2: '',
+      instructor3: '',
+      instructor4: '',
       schedule: [],
     },
   });
 
-<<<<<<< HEAD
   const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: "schedule",
   });
 
   const onSubmit = async (data: BranchFormValues) => {
-    try {
-      const { responsible, instructor2, instructor3, instructor4, ...rest } = data;
-      const additionalInstructors = [instructor2, instructor3, instructor4].filter(
-        (instructor) => instructor && instructor.trim() !== ''
-      );
-
-      const branchData = {
-        ...rest,
-        responsible,
-        additionalInstructors,
-      };
-
-      await addBranch(branchData);
-
-=======
-  const onSubmit = async (data: BranchData) => {
     setIsSubmitting(true);
     try {
       await addBranch(data);
->>>>>>> 1739ce70e7b93a4fc13b880a4d6169160629b4e6
       toast({
         title: 'Filial Cadastrada!',
         description: `A filial ${data.name} foi adicionada com sucesso.`,
       });
       router.push(`/dashboard/branches?role=${user?.role}`);
     } catch (error) {
-<<<<<<< HEAD
-      console.error("Failed to add branch:", error);
-      toast({
-        variant: "destructive",
-        title: 'Erro ao cadastrar',
-        description: 'Não foi possível adicionar a filial. Tente novamente.',
-      });
-=======
        toast({
         variant: "destructive",
         title: 'Erro ao Salvar',
-        description: 'Não foi possível cadastrar a filial. Verifique sua conexão e tente novamente.',
+        description: 'Não foi possível cadastrar a filial. Verifique os dados e tente novamente.',
       });
       console.error(error);
     } finally {
         setIsSubmitting(false);
->>>>>>> 1739ce70e7b93a4fc13b880a4d6169160629b4e6
     }
   };
 
@@ -150,6 +143,15 @@ export default function NewBranchPage() {
         </Card>
       </div>
     );
+  }
+
+  const renderInstructorOptions = () => {
+    if (instructors.length === 0) {
+      return <SelectItem value="loading" disabled>Carregando...</SelectItem>;
+    }
+    return instructors.map((instructor) => (
+      <SelectItem key={instructor.id} value={instructor.name}>{instructor.name}</SelectItem>
+    ));
   }
 
   return (
@@ -190,16 +192,14 @@ export default function NewBranchPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Professor Responsável</FormLabel>
-                       <Select onValueChange={field.onChange} defaultValue={field.value}>
+                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Selecione um professor" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {mockInstructors.map((instructor) => (
-                            <SelectItem key={instructor.id} value={instructor.name}>{instructor.name}</SelectItem>
-                          ))}
+                          {renderInstructorOptions()}
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -216,16 +216,14 @@ export default function NewBranchPage() {
                       name="instructor2"
                       render={({ field }) => (
                         <FormItem>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
                               <SelectTrigger>
                                 <SelectValue placeholder="2º Professor" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              {mockInstructors.map((instructor) => (
-                                <SelectItem key={instructor.id} value={instructor.name}>{instructor.name}</SelectItem>
-                              ))}
+                              {renderInstructorOptions()}
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -237,16 +235,14 @@ export default function NewBranchPage() {
                       name="instructor3"
                       render={({ field }) => (
                         <FormItem>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
                               <SelectTrigger>
                                 <SelectValue placeholder="3º Professor" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              {mockInstructors.map((instructor) => (
-                                <SelectItem key={instructor.id} value={instructor.name}>{instructor.name}</SelectItem>
-                              ))}
+                              {renderInstructorOptions()}
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -258,16 +254,14 @@ export default function NewBranchPage() {
                       name="instructor4"
                       render={({ field }) => (
                         <FormItem>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                           <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
                               <SelectTrigger>
                                 <SelectValue placeholder="4º Professor" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              {mockInstructors.map((instructor) => (
-                                <SelectItem key={instructor.id} value={instructor.name}>{instructor.name}</SelectItem>
-                              ))}
+                             {renderInstructorOptions()}
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -306,9 +300,22 @@ export default function NewBranchPage() {
                     </FormItem>
                   )}
                 />
+                  <FormField
+                  control={form.control}
+                  name="hours"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Horário de Funcionamento</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Seg-Sex, 9h às 21h" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
 
-              {/* Schedule Section */}
+               {/* Schedule Section */}
               <div className="space-y-4 rounded-lg border p-4">
                   <div className="flex items-center justify-between">
                       <div>
@@ -338,10 +345,10 @@ export default function NewBranchPage() {
                                 <FormItem><FormLabel>Horário</FormLabel><FormControl><Input placeholder="18:00 - 19:00" {...field} /></FormControl><FormMessage /></FormItem>
                             )} />
                             <FormField control={form.control} name={`schedule.${index}.instructor`} render={({ field }) => (
-                                <FormItem><FormLabel>Professor</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Selecione"/></SelectTrigger></FormControl><SelectContent>{mockInstructors.map(i => <SelectItem key={i.id} value={i.name}>{i.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                                <FormItem><FormLabel>Professor</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Selecione"/></SelectTrigger></FormControl><SelectContent>{renderInstructorOptions()}</SelectContent></Select><FormMessage /></FormItem>
                             )} />
                             <FormField control={form.control} name={`schedule.${index}.category`} render={({ field }) => (
-                                <FormItem><FormLabel>Categoria</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl><SelectContent><SelectItem value="Adults">Adultos</SelectItem><SelectItem value="Kids">Kids</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                                <FormItem><FormLabel>Categoria</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Selecione"/></SelectTrigger></FormControl><SelectContent><SelectItem value="Adults">Adultos</SelectItem><SelectItem value="Kids">Kids</SelectItem></SelectContent></Select><FormMessage /></FormItem>
                             )} />
                             <Button type="button" variant="destructive" size="icon" onClick={() => remove(index)}>
                                 <Trash2 className="h-4 w-4" /><span className="sr-only">Remover</span>
@@ -358,13 +365,8 @@ export default function NewBranchPage() {
                   <Button variant="outline" type="button" onClick={() => router.back()} disabled={isSubmitting}>
                       Cancelar
                   </Button>
-<<<<<<< HEAD
-                  <Button type="submit" disabled={form.formState.isSubmitting}>
-                    {form.formState.isSubmitting ? 'Salvando...' : 'Salvar Filial'}
-=======
                   <Button type="submit" disabled={isSubmitting}>
                     {isSubmitting ? 'Salvando...' : 'Salvar Filial'}
->>>>>>> 1739ce70e7b93a4fc13b880a4d6169160629b4e6
                   </Button>
               </div>
             </form>

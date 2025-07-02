@@ -7,15 +7,15 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
+  CardDescription
 } from "@/components/ui/card";
-<<<<<<< HEAD
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion"
-import { Clock, MapPin, Phone, User as UserIcon, PlusCircle, MoreVertical } from "lucide-react";
+import { Clock, MapPin, Phone, User as UserIcon, PlusCircle, MoreVertical, AlertCircle } from "lucide-react";
 import { UserContext } from "../client-layout";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,7 +26,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Skeleton } from "@/components/ui/skeleton";
-import { getBranches, deleteBranch, type Branch } from "@/lib/firestoreService";
+import { getBranches, deleteBranch, type Branch } from "@/services/branchService";
 import { useToast } from "@/hooks/use-toast";
 import {
   AlertDialog,
@@ -39,6 +39,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+
 
 const BranchCardSkeleton = () => (
   <Card>
@@ -65,49 +67,12 @@ const BranchCardSkeleton = () => (
     </CardContent>
   </Card>
 );
-=======
-import { Clock, MapPin, Phone, User as UserIcon, PlusCircle, AlertCircle } from "lucide-react";
-import { UserContext } from "../client-layout";
-import { Button } from "@/components/ui/button";
-import { getBranches } from "@/services/branchService";
-import type { Branch } from "@/lib/mock-data";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-
-
-const BranchSkeleton = () => (
-    <Card>
-        <CardHeader>
-            <Skeleton className="h-6 w-1/2" />
-        </CardHeader>
-        <CardContent className="space-y-3">
-             <div className="flex items-center gap-3">
-                <Skeleton className="h-4 w-4 rounded-full" />
-                <Skeleton className="h-4 w-3/4" />
-            </div>
-             <div className="flex items-center gap-3">
-                <Skeleton className="h-4 w-4 rounded-full" />
-                <Skeleton className="h-4 w-1/2" />
-            </div>
-             <div className="flex items-center gap-3">
-                <Skeleton className="h-4 w-4 rounded-full" />
-                <Skeleton className="h-4 w-1/2" />
-            </div>
-            <div className="flex items-center gap-3">
-                <Skeleton className="h-4 w-4 rounded-full" />
-                <Skeleton className="h-4 w-1/3" />
-            </div>
-        </CardContent>
-    </Card>
-)
-
->>>>>>> 1739ce70e7b93a4fc13b880a4d6169160629b4e6
 
 export default function BranchesPage() {
   const user = useContext(UserContext);
   const [branches, setBranches] = useState<Branch[]>([]);
-<<<<<<< HEAD
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [branchToDelete, setBranchToDelete] = useState<Branch | null>(null);
   const { toast } = useToast();
@@ -115,22 +80,20 @@ export default function BranchesPage() {
   useEffect(() => {
     const fetchBranches = async () => {
       try {
+        setLoading(true);
+        setError(null);
         const fetchedBranches = await getBranches();
         setBranches(fetchedBranches);
       } catch (error) {
         console.error("Failed to fetch branches:", error);
-        toast({
-          variant: "destructive",
-          title: "Erro ao carregar filiais",
-          description: "Não foi possível buscar os dados das filiais. Tente novamente mais tarde.",
-        });
+        setError("Não foi possível carregar as filiais. Verifique sua conexão e tente novamente.");
       } finally {
         setLoading(false);
       }
     };
 
     fetchBranches();
-  }, [toast]);
+  }, []);
 
   const handleDeleteClick = (branch: Branch) => {
     setBranchToDelete(branch);
@@ -158,54 +121,11 @@ export default function BranchesPage() {
       setBranchToDelete(null);
     }
   };
-=======
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function fetchBranches() {
-      try {
-        setIsLoading(true);
-        setError(null);
-        const fetchedBranches = await getBranches();
-        setBranches(fetchedBranches);
-      } catch (err) {
-        setError("Não foi possível carregar as filiais. Verifique sua conexão com o Firebase.");
-        console.error(err);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    fetchBranches();
-  }, []);
-
->>>>>>> 1739ce70e7b93a4fc13b880a4d6169160629b4e6
 
   if (!user) {
-    return (
-      <div className="grid gap-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <Skeleton className="h-9 w-72 mb-2" />
-            <Skeleton className="h-5 w-96" />
-          </div>
-        </div>
-        <div className="space-y-4">
-          <BranchCardSkeleton />
-          <BranchCardSkeleton />
-        </div>
-      </div>
-    );
+    return <BranchCardSkeleton/>;
   }
-
-<<<<<<< HEAD
-=======
-  const displayedBranches =
-    user.role === "admin"
-      ? branches
-      : branches.filter((b) => b.id === user.branchId);
-
->>>>>>> 1739ce70e7b93a4fc13b880a4d6169160629b4e6
+  
   return (
     <>
       <div className="grid gap-6">
@@ -226,7 +146,14 @@ export default function BranchesPage() {
           )}
         </div>
 
-<<<<<<< HEAD
+        {error && (
+            <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Erro de Conexão</AlertTitle>
+                <AlertDescription>{error}</AlertDescription>
+            </Alert>
+        )}
+
         <div className="space-y-4">
           {loading ? (
             <>
@@ -237,7 +164,10 @@ export default function BranchesPage() {
             branches.map((branch) => (
               <Card key={branch.id}>
                 <CardHeader className="flex flex-row items-start justify-between">
-                  <CardTitle>{branch.name}</CardTitle>
+                    <div>
+                        <CardTitle>{branch.name}</CardTitle>
+                        <CardDescription>{branch.address}</CardDescription>
+                    </div>
                   {user.role === 'admin' && (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -259,12 +189,12 @@ export default function BranchesPage() {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="flex items-center gap-3 text-sm">
-                    <MapPin className="h-4 w-4 text-primary" />
-                    <span className="text-muted-foreground">{branch.address}</span>
-                  </div>
-                  <div className="flex items-center gap-3 text-sm">
                     <Phone className="h-4 w-4 text-primary" />
                     <span className="text-muted-foreground">{branch.phone}</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-sm">
+                    <Clock className="h-4 w-4 text-primary" />
+                    <span className="text-muted-foreground">{branch.hours}</span>
                   </div>
                   <div className="flex items-center gap-3 text-sm">
                     <UserIcon className="h-4 w-4 text-primary" />
@@ -274,8 +204,8 @@ export default function BranchesPage() {
                    {branch.schedule && branch.schedule.length > 0 && (
                       <Accordion type="single" collapsible className="w-full">
                         <AccordionItem value="item-1" className="border-b-0">
-                          <AccordionTrigger className="p-0 hover:no-underline">
-                             <div className="flex items-center gap-3 text-sm font-normal">
+                          <AccordionTrigger className="p-0 hover:no-underline text-sm font-medium">
+                             <div className="flex items-center gap-3">
                                 <Clock className="h-4 w-4 text-primary" />
                                 <span>Ver Horários das Aulas</span>
                               </div>
@@ -307,58 +237,6 @@ export default function BranchesPage() {
             </Card>
           )}
         </div>
-=======
-       {error && (
-            <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertTitle>Erro de Conexão</AlertTitle>
-                <AlertDescription>
-                    {error} Certifique-se de que suas credenciais do Firebase estão corretas no arquivo `.env.local`.
-                </AlertDescription>
-            </Alert>
-        )}
-
-      <div className="space-y-4">
-        {isLoading ? (
-            <>
-                <BranchSkeleton />
-                <BranchSkeleton />
-            </>
-        ) : displayedBranches.length > 0 ? (
-          displayedBranches.map((branch) => (
-            <Card key={branch.id}>
-              <CardHeader>
-                <CardTitle>{branch.name}</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center gap-3 text-sm">
-                  <MapPin className="h-4 w-4 text-primary" />
-                  <span className="text-muted-foreground">{branch.address}</span>
-                </div>
-                <div className="flex items-center gap-3 text-sm">
-                  <Phone className="h-4 w-4 text-primary" />
-                  <span className="text-muted-foreground">{branch.phone}</span>
-                </div>
-                <div className="flex items-center gap-3 text-sm">
-                  <Clock className="h-4 w-4 text-primary" />
-                  <span className="text-muted-foreground">{branch.hours}</span>
-                </div>
-                <div className="flex items-center gap-3 text-sm">
-                  <UserIcon className="h-4 w-4 text-primary" />
-                  <span className="font-medium">Responsável:</span>
-                  <span className="text-muted-foreground">{branch.responsible}</span>
-                </div>
-              </CardContent>
-            </Card>
-          ))
-        ) : (
-            <Card>
-                <CardContent className="pt-6 text-center text-muted-foreground">
-                   Nenhuma filial encontrada. Comece adicionando uma nova filial.
-                </CardContent>
-            </Card>
-        )}
->>>>>>> 1739ce70e7b93a4fc13b880a4d6169160629b4e6
       </div>
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
@@ -371,7 +249,7 @@ export default function BranchesPage() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteConfirm}>Continuar</AlertDialogAction>
+            <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive hover:bg-destructive/90">Continuar</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
