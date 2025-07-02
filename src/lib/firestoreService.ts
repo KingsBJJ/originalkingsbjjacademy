@@ -8,11 +8,11 @@ export type Branch = {
   phone: string;
   hours: string;
   responsible: string;
-  instructors?: string[];
+  additionalInstructors?: string[];
 };
 
 export type TermsAcceptance = {
-  id: string;
+  id:string;
   parentName: string;
   childName: string;
   branchId: string;
@@ -43,7 +43,7 @@ export const addBranch = async (branchData: Omit<Branch, 'id'>) => {
     return await addDoc(branchesCollection, branchData);
 }
 
-export const updateBranch = async (id: string, branchData: Partial<Branch>) => {
+export const updateBranch = async (id: string, branchData: Partial<Omit<Branch, 'id'>>) => {
     const docRef = doc(db, 'branches', id);
     return await updateDoc(docRef, branchData);
 }
