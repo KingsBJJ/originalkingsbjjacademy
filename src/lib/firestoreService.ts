@@ -3,7 +3,7 @@ import { collection, getDocs, doc, getDoc, addDoc, updateDoc, deleteDoc, query, 
 
 export type ClassScheduleItem = {
   name: string;
-  day: 'Segunda' | 'Terça' | 'Quarta' | 'Quinta' | 'Sexta' | 'Sábado' | 'Domingo';
+  day: string;
   time: string;
   instructor: string;
   category: 'Adults' | 'Kids';

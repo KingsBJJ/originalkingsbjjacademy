@@ -39,7 +39,7 @@ import { addBranch } from '@/lib/firestoreService';
 
 const classScheduleSchema = z.object({
   name: z.string().min(1, { message: 'O nome da aula é obrigatório.' }),
-  day: z.enum(['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo']),
+  day: z.string().min(1, { message: 'O dia da semana é obrigatório.' }),
   time: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)\s*-\s*([01]\d|2[0-3]):([0-5]\d)$/, { message: 'Use o formato HH:mm - HH:mm.' }),
   instructor: z.string().min(1, { message: 'Selecione um instrutor.' }),
   category: z.enum(['Adults', 'Kids'], { required_error: 'Selecione a categoria.' }),
@@ -57,8 +57,6 @@ const branchFormSchema = z.object({
 });
 
 type BranchFormValues = z.infer<typeof branchFormSchema>;
-
-const weekDays = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
 
 export default function NewBranchPage() {
   const user = useContext(UserContext);
@@ -298,7 +296,7 @@ export default function NewBranchPage() {
                           type="button"
                           variant="outline"
                           size="sm"
-                          onClick={() => append({ name: '', day: 'Segunda', time: '', instructor: '', category: 'Adults' })}
+                          onClick={() => append({ name: '', day: '', time: '', instructor: '', category: 'Adults' })}
                       >
                           <PlusCircle className="mr-2 h-4 w-4" />
                           Adicionar Horário
@@ -306,12 +304,12 @@ export default function NewBranchPage() {
                   </div>
                   <div className="space-y-4">
                     {fields.map((field, index) => (
-                        <div key={field.id} className="grid grid-cols-1 md:grid-cols-[2fr,1fr,1fr,2fr,1fr,auto] gap-2 items-end border-t pt-4">
+                        <div key={field.id} className="grid grid-cols-1 md:grid-cols-[2fr,1.5fr,1fr,2fr,1fr,auto] gap-2 items-end border-t pt-4">
                             <FormField control={form.control} name={`schedule.${index}.name`} render={({ field }) => (
                                 <FormItem><FormLabel>Aula</FormLabel><FormControl><Input placeholder="Ex: Fundamentos" {...field} /></FormControl><FormMessage /></FormItem>
                             )} />
                             <FormField control={form.control} name={`schedule.${index}.day`} render={({ field }) => (
-                                <FormItem><FormLabel>Dia</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl><SelectContent>{weekDays.map(day => <SelectItem key={day} value={day}>{day}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                                <FormItem><FormLabel>Dia(s)</FormLabel><FormControl><Input placeholder="Ex: Seg/Qua/Sex" {...field} /></FormControl><FormMessage /></FormItem>
                             )} />
                             <FormField control={form.control} name={`schedule.${index}.time`} render={({ field }) => (
                                 <FormItem><FormLabel>Horário</FormLabel><FormControl><Input placeholder="18:00 - 19:00" {...field} /></FormControl><FormMessage /></FormItem>
