@@ -3,7 +3,7 @@
 import { useContext } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useForm } from 'react-hook-form';
+import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import {
@@ -34,21 +34,31 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { UserContext } from '../../client-layout';
 import { mockInstructors } from '@/lib/mock-data';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, PlusCircle, Trash2 } from 'lucide-react';
 import { addBranch } from '@/lib/firestoreService';
+
+const classScheduleSchema = z.object({
+  name: z.string().min(1, { message: 'O nome da aula é obrigatório.' }),
+  day: z.enum(['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo']),
+  time: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)\s*-\s*([01]\d|2[0-3]):([0-5]\d)$/, { message: 'Use o formato HH:mm - HH:mm.' }),
+  instructor: z.string().min(1, { message: 'Selecione um instrutor.' }),
+  category: z.enum(['Adults', 'Kids'], { required_error: 'Selecione a categoria.' }),
+});
 
 const branchFormSchema = z.object({
   name: z.string().min(3, { message: 'O nome da filial deve ter pelo menos 3 caracteres.' }),
   address: z.string().min(10, { message: 'O endereço deve ter pelo menos 10 caracteres.' }),
   phone: z.string().min(10, { message: 'O telefone deve ter pelo menos 10 dígitos.' }),
-  hours: z.string().min(5, { message: 'Insira um horário de funcionamento válido.' }),
   responsible: z.string({ required_error: 'Selecione um responsável.' }).min(1, 'Selecione um responsável.'),
   instructor2: z.string().optional(),
   instructor3: z.string().optional(),
   instructor4: z.string().optional(),
+  schedule: z.array(classScheduleSchema).optional(),
 });
 
 type BranchFormValues = z.infer<typeof branchFormSchema>;
+
+const weekDays = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
 
 export default function NewBranchPage() {
   const user = useContext(UserContext);
@@ -61,8 +71,13 @@ export default function NewBranchPage() {
       name: '',
       address: '',
       phone: '',
-      hours: '',
+      schedule: [],
     },
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "schedule",
   });
 
   const onSubmit = async (data: BranchFormValues) => {
@@ -270,19 +285,52 @@ export default function NewBranchPage() {
                     </FormItem>
                   )}
                 />
-                  <FormField
-                  control={form.control}
-                  name="hours"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Horário de Funcionamento</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Seg-Sex, 9h às 21h" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
+              </div>
+
+              {/* Schedule Section */}
+              <div className="space-y-4 rounded-lg border p-4">
+                  <div className="flex items-center justify-between">
+                      <div>
+                          <h3 className="font-semibold">Horários das Aulas</h3>
+                          <p className="text-sm text-muted-foreground">Adicione as aulas e seus horários para esta filial.</p>
+                      </div>
+                      <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => append({ name: '', day: 'Segunda', time: '', instructor: '', category: 'Adults' })}
+                      >
+                          <PlusCircle className="mr-2 h-4 w-4" />
+                          Adicionar Horário
+                      </Button>
+                  </div>
+                  <div className="space-y-4">
+                    {fields.map((field, index) => (
+                        <div key={field.id} className="grid grid-cols-1 md:grid-cols-[2fr,1fr,1fr,2fr,1fr,auto] gap-2 items-end border-t pt-4">
+                            <FormField control={form.control} name={`schedule.${index}.name`} render={({ field }) => (
+                                <FormItem><FormLabel>Aula</FormLabel><FormControl><Input placeholder="Ex: Fundamentos" {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
+                            <FormField control={form.control} name={`schedule.${index}.day`} render={({ field }) => (
+                                <FormItem><FormLabel>Dia</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl><SelectContent>{weekDays.map(day => <SelectItem key={day} value={day}>{day}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                            )} />
+                            <FormField control={form.control} name={`schedule.${index}.time`} render={({ field }) => (
+                                <FormItem><FormLabel>Horário</FormLabel><FormControl><Input placeholder="18:00 - 19:00" {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
+                            <FormField control={form.control} name={`schedule.${index}.instructor`} render={({ field }) => (
+                                <FormItem><FormLabel>Professor</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Selecione"/></SelectTrigger></FormControl><SelectContent>{mockInstructors.map(i => <SelectItem key={i.id} value={i.name}>{i.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                            )} />
+                            <FormField control={form.control} name={`schedule.${index}.category`} render={({ field }) => (
+                                <FormItem><FormLabel>Categoria</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl><SelectContent><SelectItem value="Adults">Adultos</SelectItem><SelectItem value="Kids">Kids</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                            )} />
+                            <Button type="button" variant="destructive" size="icon" onClick={() => remove(index)}>
+                                <Trash2 className="h-4 w-4" /><span className="sr-only">Remover</span>
+                            </Button>
+                        </div>
+                    ))}
+                  </div>
+                  {fields.length === 0 && (
+                      <p className="text-center text-sm text-muted-foreground py-4">Nenhum horário adicionado.</p>
                   )}
-                />
               </div>
               
               <div className="flex justify-end gap-2">

@@ -1,14 +1,22 @@
 import { db } from './firebase';
 import { collection, getDocs, doc, getDoc, addDoc, updateDoc, deleteDoc, query, orderBy, where, serverTimestamp } from 'firebase/firestore';
 
+export type ClassScheduleItem = {
+  name: string;
+  day: 'Segunda' | 'Terça' | 'Quarta' | 'Quinta' | 'Sexta' | 'Sábado' | 'Domingo';
+  time: string;
+  instructor: string;
+  category: 'Adults' | 'Kids';
+};
+
 export type Branch = {
   id: string;
   name: string;
   address: string;
   phone: string;
-  hours: string;
   responsible: string;
   additionalInstructors?: string[];
+  schedule?: ClassScheduleItem[];
 };
 
 export type TermsAcceptance = {

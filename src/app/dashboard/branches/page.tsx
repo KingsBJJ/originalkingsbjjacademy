@@ -8,6 +8,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
 import { Clock, MapPin, Phone, User as UserIcon, PlusCircle, MoreVertical } from "lucide-react";
 import { UserContext } from "../client-layout";
 import { Button } from "@/components/ui/button";
@@ -31,6 +37,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
 
 const BranchCardSkeleton = () => (
   <Card>
@@ -48,11 +55,11 @@ const BranchCardSkeleton = () => (
       </div>
       <div className="flex items-center gap-3">
         <Skeleton className="h-4 w-4 rounded-full" />
-        <Skeleton className="h-4 w-1/2" />
+        <Skeleton className="h-4 w-1/3" />
       </div>
       <div className="flex items-center gap-3">
         <Skeleton className="h-4 w-4 rounded-full" />
-        <Skeleton className="h-4 w-1/3" />
+        <Skeleton className="h-4 w-1/2" />
       </div>
     </CardContent>
   </Card>
@@ -190,14 +197,35 @@ export default function BranchesPage() {
                     <span className="text-muted-foreground">{branch.phone}</span>
                   </div>
                   <div className="flex items-center gap-3 text-sm">
-                    <Clock className="h-4 w-4 text-primary" />
-                    <span className="text-muted-foreground">{branch.hours}</span>
-                  </div>
-                  <div className="flex items-center gap-3 text-sm">
                     <UserIcon className="h-4 w-4 text-primary" />
                     <span className="font-medium">Responsável:</span>
                     <span className="text-muted-foreground">{branch.responsible}</span>
                   </div>
+                   {branch.schedule && branch.schedule.length > 0 && (
+                      <Accordion type="single" collapsible className="w-full">
+                        <AccordionItem value="item-1" className="border-b-0">
+                          <AccordionTrigger className="p-0 hover:no-underline">
+                             <div className="flex items-center gap-3 text-sm font-normal">
+                                <Clock className="h-4 w-4 text-primary" />
+                                <span>Ver Horários das Aulas</span>
+                              </div>
+                          </AccordionTrigger>
+                          <AccordionContent className="pt-2">
+                             <div className="space-y-2 rounded-md border p-2">
+                                {branch.schedule.map((item, index) => (
+                                    <div key={index} className="flex items-center justify-between text-xs p-2 rounded-md bg-muted/50">
+                                        <div>
+                                            <p className="font-medium">{item.name} <Badge variant="secondary" className="ml-1">{item.category === 'Adults' ? 'Adulto' : 'Kids'}</Badge></p>
+                                            <p className="text-muted-foreground">{item.day}, {item.time}</p>
+                                        </div>
+                                        <p className="text-muted-foreground">{item.instructor}</p>
+                                    </div>
+                                ))}
+                            </div>
+                          </AccordionContent>
+                        </AccordionItem>
+                      </Accordion>
+                   )}
                 </CardContent>
               </Card>
             ))
