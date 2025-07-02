@@ -137,6 +137,7 @@ export default function SignUpPage() {
   const handleCategoryChange = (newCategory: string) => {
     setCategory(newCategory);
     setBelt(""); // Reseta a faixa ao mudar de categoria
+    setTermsAccepted(false); // Reseta o termo ao mudar a categoria
   };
 
   const handleAcceptTerms = async (parentName: string, childName: string) => {
@@ -355,7 +356,12 @@ export default function SignUpPage() {
                         isAccepted={termsAccepted}
                       />
                   </div>
-                  {!termsAccepted && (
+                  {!affiliation && !termsAccepted && (
+                    <p className="text-xs text-muted-foreground px-1">
+                        Selecione uma filial para poder assinar o termo.
+                    </p>
+                  )}
+                  {affiliation && !termsAccepted && (
                     <p className="text-xs text-muted-foreground px-1">
                         É obrigatório assinar o termo para matricular um menor.
                     </p>
