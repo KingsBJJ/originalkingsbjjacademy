@@ -141,6 +141,7 @@ const GraduationPlan = () => {
           <TableHeader>
             <TableRow>
               <TableHead>Aluno</TableHead>
+              <TableHead>Filial</TableHead>
               <TableHead>Graduação Atual</TableHead>
               <TableHead className="w-[250px]">Progresso para Próxima</TableHead>
               <TableHead className="text-right">Ações</TableHead>
@@ -163,6 +164,7 @@ const GraduationPlan = () => {
                       <p className="font-medium">{student.name}</p>
                     </div>
                   </TableCell>
+                  <TableCell>{student.affiliation}</TableCell>
                   <TableCell>
                     <Badge
                       className={cn(
