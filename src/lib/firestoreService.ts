@@ -1,5 +1,5 @@
 import { db } from './firebase';
-import { collection, getDocs, doc, getDoc, addDoc, updateDoc, deleteDoc, query, orderBy } from 'firebase/firestore';
+import { collection, getDocs, doc, getDoc, addDoc, updateDoc, deleteDoc, query, orderBy, where, serverTimestamp } from 'firebase/firestore';
 
 export type Branch = {
   id: string;
@@ -8,9 +8,21 @@ export type Branch = {
   phone: string;
   hours: string;
   responsible: string;
+  instructors?: string[];
 };
 
+export type TermsAcceptance = {
+  id: string;
+  parentName: string;
+  childName: string;
+  branchId: string;
+  branchName: string;
+  acceptedAt: any; // Firestore timestamp
+};
+
+
 const branchesCollection = collection(db, 'branches');
+const termsAcceptancesCollection = collection(db, 'termsAcceptances');
 
 export const getBranches = async (): Promise<Branch[]> => {
   const q = query(branchesCollection, orderBy("name"));
@@ -18,4 +30,37 @@ export const getBranches = async (): Promise<Branch[]> => {
   return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Branch));
 };
 
-// Funções de criar, editar e deletar serão implementadas em seguida.
+export const getBranch = async (id: string): Promise<Branch | null> => {
+    const docRef = doc(db, 'branches', id);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+        return { id: docSnap.id, ...docSnap.data() } as Branch;
+    }
+    return null;
+}
+
+export const addBranch = async (branchData: Omit<Branch, 'id'>) => {
+    return await addDoc(branchesCollection, branchData);
+}
+
+export const updateBranch = async (id: string, branchData: Partial<Branch>) => {
+    const docRef = doc(db, 'branches', id);
+    return await updateDoc(docRef, branchData);
+}
+
+export const deleteBranch = async (id: string) => {
+    const docRef = doc(db, 'branches', id);
+    return await deleteDoc(docRef);
+}
+
+export const saveTermsAcceptance = async (data: { parentName: string, childName: string, branchId: string, branchName: string }) => {
+  try {
+    await addDoc(termsAcceptancesCollection, {
+      ...data,
+      acceptedAt: serverTimestamp(),
+    });
+  } catch (error) {
+    console.error("Error saving terms acceptance: ", error);
+    throw new Error("Não foi possível salvar o termo de responsabilidade.");
+  }
+};

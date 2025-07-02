@@ -2,7 +2,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -24,7 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { mockBranches, allBelts, mockUsers, allBeltsKids } from "@/lib/mock-data";
+import { allBelts, mockUsers, allBeltsKids } from "@/lib/mock-data";
 import { useToast } from "@/hooks/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
 import { 
@@ -37,8 +37,10 @@ import {
   DialogTrigger
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { getBranches, saveTermsAcceptance, type Branch } from "@/lib/firestoreService";
 
-function TermsDialog({ onAccept }: { onAccept: (parentName: string, childName: string) => void }) {
+
+function TermsDialog({ onAccept, disabled }: { onAccept: (parentName: string, childName: string) => void, disabled: boolean }) {
   const [parentName, setParentName] = useState('');
   const [childName, setChildName] = useState('');
   const [isOpen, setIsOpen] = useState(false);
@@ -53,7 +55,7 @@ function TermsDialog({ onAccept }: { onAccept: (parentName: string, childName: s
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <button type="button" className="underline hover:text-primary">
+        <button type="button" className="underline hover:text-primary disabled:text-muted-foreground disabled:no-underline" disabled={disabled}>
           termo de responsabilidade dos pais
         </button>
       </DialogTrigger>
@@ -107,21 +109,70 @@ export default function SignUpPage() {
   const [belt, setBelt] = useState("");
   const [category, setCategory] = useState("adulto");
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const [branches, setBranches] = useState<Branch[]>([]);
+  const [affiliation, setAffiliation] = useState("");
   const router = useRouter();
   const { toast } = useToast();
+
+  useEffect(() => {
+    const fetchBranchesData = async () => {
+        try {
+            const fetchedBranches = await getBranches();
+            setBranches(fetchedBranches);
+        } catch (error) {
+            console.error("Failed to fetch branches:", error);
+            toast({
+                variant: "destructive",
+                title: "Erro ao carregar filiais",
+                description: "Não foi possível buscar os dados das filiais.",
+            });
+        }
+    };
+    fetchBranchesData();
+  }, [toast]);
+
 
   const handleCategoryChange = (newCategory: string) => {
     setCategory(newCategory);
     setBelt(""); // Reseta a faixa ao mudar de categoria
   };
 
-  const handleAcceptTerms = (parentName: string, childName: string) => {
-    console.log(`Termo aceito por ${parentName} para o(a) menor ${childName}. Enviando para o professor...`);
-    toast({
-        title: "Termo Assinado com Sucesso!",
-        description: "As informações foram enviadas ao professor responsável pela filial.",
-    });
-    setTermsAccepted(true);
+  const handleAcceptTerms = async (parentName: string, childName: string) => {
+    if (!affiliation) {
+        toast({
+            variant: "destructive",
+            title: "Filial não selecionada",
+            description: "Por favor, selecione uma filial antes de assinar o termo.",
+        });
+        return;
+    }
+    
+    try {
+        const selectedBranch = branches.find(b => b.id === affiliation);
+        if (!selectedBranch) throw new Error("Filial selecionada não encontrada.");
+
+        await saveTermsAcceptance({
+            parentName,
+            childName,
+            branchId: selectedBranch.id,
+            branchName: selectedBranch.name,
+        });
+
+        toast({
+            title: "Termo Assinado com Sucesso!",
+            description: "As informações foram salvas e enviadas ao professor responsável.",
+        });
+        setTermsAccepted(true);
+
+    } catch (error) {
+        console.error("Failed to accept terms:", error);
+        toast({
+            variant: "destructive",
+            title: "Erro ao Salvar Termo",
+            description: "Não foi possível salvar o termo. Tente novamente.",
+        });
+        setTermsAccepted(false);
+    }
   };
 
 
@@ -222,13 +273,13 @@ export default function SignUpPage() {
 
             <div className="grid gap-2">
               <Label htmlFor="affiliation" className="text-white/80">Filial</Label>
-              <Select>
+              <Select onValueChange={setAffiliation} value={affiliation}>
                 <SelectTrigger id="affiliation" className="bg-white/5 border-white/20 text-white">
                   <SelectValue placeholder="Selecione sua filial" />
                 </SelectTrigger>
                 <SelectContent>
-                  {mockBranches.map((branch) => (
-                    <SelectItem key={branch.id} value={branch.name}>
+                  {branches.map((branch) => (
+                    <SelectItem key={branch.id} value={branch.id}>
                       {branch.name}
                     </SelectItem>
                   ))}
@@ -294,7 +345,7 @@ export default function SignUpPage() {
                     className="text-sm font-medium leading-none text-white/80 peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                   >
                     Eu li e concordo com o{" "}
-                     <TermsDialog onAccept={handleAcceptTerms} />.
+                     <TermsDialog onAccept={handleAcceptTerms} disabled={!affiliation} />.
                   </label>
                   <p className="text-xs text-muted-foreground">
                     Necessário para a matrícula de menores de idade.
@@ -319,4 +370,3 @@ export default function SignUpPage() {
     </div>
   );
 }
-
