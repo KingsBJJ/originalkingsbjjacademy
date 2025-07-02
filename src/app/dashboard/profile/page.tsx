@@ -20,77 +20,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { mockAttendanceHistory, beltColors, mockAnnouncements } from "@/lib/mock-data";
+import { mockAttendanceHistory, beltColors } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
-import { Medal, Send } from "lucide-react";
+import { Medal, Trophy, BookOpen, Sparkles } from "lucide-react";
 import { UserContext } from "../client-layout";
-import * as z from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
-
-// Form schema for notifications
-const notificationFormSchema = z.object({
-    title: z.string().min(5, { message: "O título deve ter pelo menos 5 caracteres." }),
-    content: z.string().min(10, { message: "O conteúdo deve ter pelo menos 10 caracteres." }),
-});
-type NotificationFormValues = z.infer<typeof notificationFormSchema>;
-
-// The form component for notifications
-function NotificationForm() {
-    const { toast } = useToast();
-    const form = useForm<NotificationFormValues>({
-        resolver: zodResolver(notificationFormSchema),
-        defaultValues: { title: "", content: "" }
-    });
-
-    const onSubmit = (data: NotificationFormValues) => {
-        console.log("Nova notificação:", data);
-        toast({
-            title: "Notificação Enviada!",
-            description: "Seu recado foi publicado para todos os membros.",
-        });
-        form.reset();
-    };
-
-    return (
-        <Card>
-            <CardHeader>
-                <CardTitle>Enviar um Novo Recado</CardTitle>
-                <CardDescription>Escreva uma notificação que aparecerá no mural.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                        <FormField control={form.control} name="title" render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Título</FormLabel>
-                                <FormControl><Input placeholder="Ex: Lembrete sobre o Seminário" {...field} /></FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )} />
-                        <FormField control={form.control} name="content" render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Mensagem</FormLabel>
-                                <FormControl><Textarea placeholder="Detalhes do evento, notícia, etc." className="resize-y" {...field} /></FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )} />
-                        <div className="flex justify-end">
-                            <Button type="submit">
-                                <Send className="mr-2 h-4 w-4" />
-                                Publicar Recado
-                            </Button>
-                        </div>
-                    </form>
-                </Form>
-            </CardContent>
-        </Card>
-    );
-}
 
 
 export default function ProfilePage() {
@@ -240,42 +173,42 @@ export default function ProfilePage() {
             </CardContent>
           </Card>
       ) : (
-        <div className="space-y-6">
-          <NotificationForm />
-          <Card>
-            <CardHeader>
-                <CardTitle>Mural de Recados Recentes</CardTitle>
-                <CardDescription>
-                    Os últimos recados publicados para a equipe.
-                </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-                {mockAnnouncements.map((announcement) => (
-                    <Card key={announcement.id} className="transition-colors hover:bg-muted/50">
-                        <CardHeader>
-                            <div className="flex items-start justify-between gap-4">
-                                <div className="space-y-1.5">
-                                    <CardTitle>{announcement.title}</CardTitle>
-                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                        <Avatar className="h-6 w-6">
-                                            <AvatarImage src={announcement.authorAvatar} alt={announcement.author} />
-                                            <AvatarFallback>{announcement.author.charAt(0)}</AvatarFallback>
-                                        </Avatar>
-                                        <span>{announcement.author}</span>
-                                        <span>&middot;</span>
-                                        <span>{announcement.timestamp}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="whitespace-pre-wrap text-sm text-muted-foreground">{announcement.content}</p>
-                        </CardContent>
-                    </Card>
-                ))}
-            </CardContent>
-        </Card>
-       </div>
+        <Card>
+          <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                  <Trophy className="h-5 w-5" />
+                  Qualificações e Conquistas
+              </CardTitle>
+              <CardDescription>
+                  Resumo da jornada e especialidades do professor.
+              </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+              <div>
+                  <h4 className="font-semibold mb-2 flex items-center gap-2"><BookOpen className="h-4 w-4 text-primary" /> Biografia</h4>
+                  <p className="text-sm text-muted-foreground pl-6 border-l-2 border-primary/20 ml-2">
+                      Com mais de 20 anos de dedicação ao Jiu-Jitsu, Professor {user.name.split(' ')[1]} é faixa preta {user.stripes}º grau, reconhecido por sua técnica refinada e didática excepcional. Sua jornada é marcada por inúmeros títulos e, principalmente, pela formação de centenas de atletas e cidadãos.
+                  </p>
+              </div>
+              <div>
+                  <h4 className="font-semibold mb-2 flex items-center gap-2"><Medal className="h-4 w-4 text-primary" /> Principais Conquistas</h4>
+                  <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1 pl-8">
+                      <li>Campeão Mundial IBJJF (2010)</li>
+                      <li>Campeão Pan-Americano (2009, 2011)</li>
+                      <li>Mestre do Ano - Federação Estadual (2018)</li>
+                  </ul>
+              </div>
+              <div>
+                  <h4 className="font-semibold mb-2 flex items-center gap-2"><Sparkles className="h-4 w-4 text-primary" /> Especialidades</h4>
+                  <div className="flex flex-wrap gap-2 pl-8">
+                      <Badge variant="secondary">Guarda De La Riva</Badge>
+                      <Badge variant="secondary">Passagem de Pressão</Badge>
+                      <Badge variant="secondary">Jiu-Jitsu Infantil</Badge>
+                      <Badge variant="secondary">Defesa Pessoal</Badge>
+                  </div>
+              </div>
+          </CardContent>
+      </Card>
       )}
     </div>
   );
