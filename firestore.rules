@@ -1,9 +1,13 @@
+
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Permite leitura e escrita em todos os documentos.
+    // ATENÇÃO: Use apenas para desenvolvimento.
+    // Para produção, implemente regras de segurança detalhadas.
     match /{document=**} {
-      allow read, write: if false;
+      allow read, write: if true;
     }
   }
 }
