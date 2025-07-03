@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -20,12 +21,14 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
 
   const getRole = () => {
-    if (email.toLowerCase() === mockUsers.admin.email) {
+    const cleanEmail = email.trim().toLowerCase();
+    if (cleanEmail === mockUsers.admin.email) {
       return "admin";
     }
-    if (email.toLowerCase() === mockUsers.professor.email) {
+    if (cleanEmail === mockUsers.professor.email) {
       return "professor";
     }
+    // Default to student for the student email or any other email
     return "student";
   };
 
