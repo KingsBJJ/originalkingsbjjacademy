@@ -41,7 +41,7 @@ const instructorFormSchema = z.object({
   name: z.string().min(3, { message: 'O nome deve ter pelo menos 3 caracteres.' }),
   email: z.string().email({ message: 'Por favor, insira um email válido.' }),
   phone: z.string().min(10, { message: 'O telefone deve ter pelo menos 10 dígitos.' }),
-  affiliation: z.string({ required_error: 'Selecione uma filial.' }),
+  affiliation: z.string().optional(),
   belt: z.string({ required_error: 'Selecione uma graduação.' }),
   stripes: z.coerce.number().int().min(0).max(6).optional(),
   bio: z.string().optional(),
@@ -184,11 +184,11 @@ export default function NewInstructorPage() {
                   name="affiliation"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Filial</FormLabel>
+                      <FormLabel>Filial (Opcional)</FormLabel>
                        <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Selecione a filial" />
+                            <SelectValue placeholder="Selecione uma filial" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
