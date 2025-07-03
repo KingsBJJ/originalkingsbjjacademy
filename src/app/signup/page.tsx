@@ -24,7 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { allBelts, mockUsers, allBeltsKids } from "@/lib/mock-data";
+import { allBelts, allBeltsKids } from "@/lib/mock-data";
 import { useToast } from "@/hooks/use-toast";
 import { Check } from "lucide-react";
 import { 
@@ -265,12 +265,6 @@ export default function SignUpPage() {
                   <RadioGroupItem value="professor" id="r-professor" />
                   <Label htmlFor="r-professor" className="text-white/80 font-normal">Professor</Label>
                 </div>
-                {email.toLowerCase() === mockUsers.admin.email && (
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="admin" id="r-admin" />
-                    <Label htmlFor="r-admin" className="text-white/80 font-normal">Admin</Label>
-                  </div>
-                )}
               </RadioGroup>
             </div>
 
@@ -355,7 +349,7 @@ export default function SignUpPage() {
                         isAccepted={termsAccepted}
                       />
                   </div>
-                  {affiliation && !termsAccepted && (
+                  {!termsAccepted && (
                     <p className="text-xs text-muted-foreground px-1">
                         É obrigatório assinar o termo para matricular um menor.
                     </p>
