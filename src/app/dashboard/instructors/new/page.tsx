@@ -1,6 +1,6 @@
 "use client";
 
-import { useContext } from 'react';
+import { useContext, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
@@ -33,8 +33,9 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { UserContext } from '../../client-layout';
-import { allBelts, mockBranches } from '@/lib/mock-data';
+import { allBelts } from '@/lib/mock-data';
 import { ArrowLeft } from 'lucide-react';
+import { getBranches, addInstructor, type Branch } from '@/lib/firestoreService';
 
 const instructorFormSchema = z.object({
   name: z.string().min(3, { message: 'O nome deve ter pelo menos 3 caracteres.' }),
@@ -53,6 +54,7 @@ export default function NewInstructorPage() {
   const user = useContext(UserContext);
   const router = useRouter();
   const { toast } = useToast();
+  const [branches, setBranches] = useState<Branch[]>([]);
 
   const form = useForm<InstructorFormValues>({
     resolver: zodResolver(instructorFormSchema),
@@ -66,15 +68,36 @@ export default function NewInstructorPage() {
     },
   });
 
+  useEffect(() => {
+    getBranches()
+      .then(setBranches)
+      .catch((error) => {
+        console.error("Failed to fetch branches:", error);
+        toast({
+          variant: "destructive",
+          title: "Erro ao carregar filiais.",
+        });
+      });
+  }, [toast]);
+
   const watchedBelt = form.watch("belt");
 
-  const onSubmit = (data: InstructorFormValues) => {
-    console.log(data);
-    toast({
-      title: 'Professor Cadastrado!',
-      description: `O professor ${data.name} foi adicionado com sucesso.`,
-    });
-    router.push(`/dashboard/instructors?role=${user?.role}`);
+  const onSubmit = async (data: InstructorFormValues) => {
+    try {
+      await addInstructor(data);
+      toast({
+        title: 'Professor Cadastrado!',
+        description: `O professor ${data.name} foi adicionado com sucesso.`,
+      });
+      router.push(`/dashboard/instructors?role=${user?.role}`);
+    } catch (error) {
+      console.error("Failed to add instructor:", error);
+      toast({
+        variant: "destructive",
+        title: 'Erro ao cadastrar',
+        description: 'Não foi possível adicionar o professor. Tente novamente.',
+      });
+    }
   };
 
   if (user?.role !== 'admin') {
@@ -169,7 +192,7 @@ export default function NewInstructorPage() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {mockBranches.map((branch) => (
+                          {branches.map((branch) => (
                             <SelectItem key={branch.id} value={branch.name}>{branch.name}</SelectItem>
                           ))}
                         </SelectContent>
@@ -254,10 +277,12 @@ export default function NewInstructorPage() {
                   )}
                 />
               <div className="flex justify-end gap-2">
-                  <Button variant="outline" type="button" onClick={() => router.back()}>
+                  <Button variant="outline" type="button" onClick={() => router.back()} disabled={form.formState.isSubmitting}>
                       Cancelar
                   </Button>
-                  <Button type="submit">Salvar Professor</Button>
+                  <Button type="submit" disabled={form.formState.isSubmitting}>
+                    {form.formState.isSubmitting ? 'Salvando...' : 'Salvar Professor'}
+                  </Button>
               </div>
             </form>
           </Form>

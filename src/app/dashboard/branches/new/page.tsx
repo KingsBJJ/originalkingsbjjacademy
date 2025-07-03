@@ -1,6 +1,6 @@
 "use client";
 
-import { useContext } from 'react';
+import { useContext, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useForm, useFieldArray } from 'react-hook-form';
@@ -33,9 +33,8 @@ import {
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { UserContext } from '../../client-layout';
-import { mockInstructors } from '@/lib/mock-data';
 import { ArrowLeft, PlusCircle, Trash2 } from 'lucide-react';
-import { addBranch } from '@/lib/firestoreService';
+import { addBranch, getInstructors, type Instructor } from '@/lib/firestoreService';
 
 const classScheduleSchema = z.object({
   name: z.string().min(1, { message: 'O nome da aula é obrigatório.' }),
@@ -62,6 +61,7 @@ export default function NewBranchPage() {
   const user = useContext(UserContext);
   const router = useRouter();
   const { toast } = useToast();
+  const [instructors, setInstructors] = useState<Instructor[]>([]);
 
   const form = useForm<BranchFormValues>({
     resolver: zodResolver(branchFormSchema),
@@ -77,6 +77,19 @@ export default function NewBranchPage() {
     control: form.control,
     name: "schedule",
   });
+
+  useEffect(() => {
+    getInstructors()
+      .then(setInstructors)
+      .catch(err => {
+        console.error("Failed to fetch instructors", err);
+        toast({
+          variant: 'destructive',
+          title: 'Erro ao buscar instrutores',
+          description: 'Não foi possível carregar a lista de instrutores.',
+        });
+      });
+  }, [toast]);
 
   const onSubmit = async (data: BranchFormValues) => {
     try {
@@ -174,7 +187,7 @@ export default function NewBranchPage() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {mockInstructors.map((instructor) => (
+                          {instructors.map((instructor) => (
                             <SelectItem key={instructor.id} value={instructor.name}>{instructor.name}</SelectItem>
                           ))}
                         </SelectContent>
@@ -200,7 +213,7 @@ export default function NewBranchPage() {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              {mockInstructors.map((instructor) => (
+                              {instructors.map((instructor) => (
                                 <SelectItem key={instructor.id} value={instructor.name}>{instructor.name}</SelectItem>
                               ))}
                             </SelectContent>
@@ -221,7 +234,7 @@ export default function NewBranchPage() {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              {mockInstructors.map((instructor) => (
+                              {instructors.map((instructor) => (
                                 <SelectItem key={instructor.id} value={instructor.name}>{instructor.name}</SelectItem>
                               ))}
                             </SelectContent>
@@ -242,7 +255,7 @@ export default function NewBranchPage() {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              {mockInstructors.map((instructor) => (
+                              {instructors.map((instructor) => (
                                 <SelectItem key={instructor.id} value={instructor.name}>{instructor.name}</SelectItem>
                               ))}
                             </SelectContent>
@@ -315,7 +328,7 @@ export default function NewBranchPage() {
                                 <FormItem><FormLabel>Horário</FormLabel><FormControl><Input placeholder="18:00 - 19:00" {...field} /></FormControl><FormMessage /></FormItem>
                             )} />
                             <FormField control={form.control} name={`schedule.${index}.instructor`} render={({ field }) => (
-                                <FormItem><FormLabel>Professor</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Selecione"/></SelectTrigger></FormControl><SelectContent>{mockInstructors.map(i => <SelectItem key={i.id} value={i.name}>{i.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                                <FormItem><FormLabel>Professor</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Selecione"/></SelectTrigger></FormControl><SelectContent>{instructors.map(i => <SelectItem key={i.id} value={i.name}>{i.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
                             )} />
                             <FormField control={form.control} name={`schedule.${index}.category`} render={({ field }) => (
                                 <FormItem><FormLabel>Categoria</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl><SelectContent><SelectItem value="Adults">Adultos</SelectItem><SelectItem value="Kids">Kids</SelectItem></SelectContent></Select><FormMessage /></FormItem>

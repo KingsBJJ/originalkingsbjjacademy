@@ -44,9 +44,24 @@ export type TermsAcceptance = {
   acceptedAt: Timestamp; // Tipagem específica para Firestore Timestamp
 };
 
+// Tipo para Professor
+export type Instructor = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  affiliation: string;
+  belt: string;
+  stripes?: number;
+  bio?: string;
+  avatar?: string;
+};
+
+
 // Referências às coleções do Firestore
 const branchesCollection = collection(db, 'branches');
 const termsAcceptancesCollection = collection(db, 'termsAcceptances');
+const instructorsCollection = collection(db, 'instructors');
 
 /**
  * Obtém todas as filiais ordenadas por nome.
@@ -124,6 +139,35 @@ export const deleteBranch = async (id: string) => {
     throw new Error('Não foi possível excluir a filial.');
   }
 };
+
+/**
+ * Adiciona um novo professor.
+ * @param instructorData Dados do professor (sem ID).
+ */
+export const addInstructor = async (instructorData: Omit<Instructor, 'id'>) => {
+  try {
+    return await addDoc(instructorsCollection, instructorData);
+  } catch (error) {
+    console.error('Erro ao adicionar professor:', error);
+    throw new Error('Não foi possível adicionar o professor.');
+  }
+};
+
+/**
+ * Obtém todos os professores ordenados por nome.
+ * @returns Lista de professores.
+ */
+export const getInstructors = async (): Promise<Instructor[]> => {
+  try {
+    const q = query(instructorsCollection, orderBy('name'));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Instructor));
+  } catch (error) {
+    console.error('Erro ao obter professores:', error);
+    throw new Error('Não foi possível obter os professores.');
+  }
+};
+
 
 /**
  * Salva a aceitação de termos.

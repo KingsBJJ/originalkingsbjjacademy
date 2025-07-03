@@ -1,6 +1,6 @@
 "use client";
 
-import { useContext } from "react";
+import { useContext, useState, useEffect } from "react";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -19,14 +19,50 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { mockInstructors, beltColors } from "@/lib/mock-data";
+import { beltColors } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 import { UserContext } from "../client-layout";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
+import { getInstructors, type Instructor } from "@/lib/firestoreService";
+import { Skeleton } from "@/components/ui/skeleton";
+
+const InstructorRowSkeleton = () => (
+  <TableRow>
+    <TableCell>
+      <div className="flex items-center gap-3">
+        <Skeleton className="h-9 w-9 rounded-full" />
+        <div>
+          <Skeleton className="h-4 w-32" />
+          <Skeleton className="h-3 w-40 mt-1" />
+        </div>
+      </div>
+    </TableCell>
+    <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+    <TableCell><Skeleton className="h-5 w-20 rounded-full" /></TableCell>
+    <TableCell className="text-right"><Skeleton className="h-4 w-28" /></TableCell>
+  </TableRow>
+);
 
 export default function InstructorsPage() {
   const user = useContext(UserContext);
+  const [instructors, setInstructors] = useState<Instructor[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchInstructors = async () => {
+      try {
+        const fetchedInstructors = await getInstructors();
+        setInstructors(fetchedInstructors);
+      } catch (error) {
+        console.error("Failed to fetch instructors:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchInstructors();
+  }, []);
 
   if (!user) {
     return <div>Carregando...</div>;
@@ -34,8 +70,8 @@ export default function InstructorsPage() {
 
   const displayedInstructors =
     user.role === "admin"
-      ? mockInstructors
-      : mockInstructors.filter((i) => i.affiliation === user.affiliation);
+      ? instructors
+      : instructors.filter((i) => i.affiliation === user.affiliation);
 
   return (
     <div className="grid gap-6">
@@ -77,45 +113,49 @@ export default function InstructorsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {displayedInstructors.map((instructor) => {
-                const beltStyle =
-                  beltColors[instructor.belt] || beltColors.Branca;
-                return (
-                  <TableRow key={instructor.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-9 w-9">
-                          <AvatarImage
-                            src={instructor.avatar}
-                            alt={instructor.name}
-                          />
-                          <AvatarFallback>
-                            {instructor.name.charAt(0)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                           <p className="font-medium">{instructor.name}</p>
-                           <p className="text-xs text-muted-foreground">{instructor.email}</p>
+              {loading ? (
+                Array.from({ length: 4 }).map((_, i) => <InstructorRowSkeleton key={i} />)
+              ) : (
+                displayedInstructors.map((instructor) => {
+                  const beltKey = instructor.belt as keyof typeof beltColors;
+                  const beltStyle = beltColors[beltKey] || beltColors.Branca;
+                  return (
+                    <TableRow key={instructor.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-9 w-9">
+                            <AvatarImage
+                              src={instructor.avatar}
+                              alt={instructor.name}
+                            />
+                            <AvatarFallback>
+                              {instructor.name.charAt(0)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="font-medium">{instructor.name}</p>
+                            <p className="text-xs text-muted-foreground">{instructor.email}</p>
+                          </div>
                         </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>{instructor.affiliation}</TableCell>
-                    <TableCell>
-                      <Badge
-                        className={cn(
-                          "text-xs font-semibold",
-                          beltStyle.bg,
-                          beltStyle.text
-                        )}
-                      >
-                        {instructor.belt}
-                        {(instructor.belt === 'Preta' || instructor.belt === 'Coral') && instructor.stripes > 0 && ` - ${instructor.stripes}º Grau`}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">{instructor.phone}</TableCell>
-                  </TableRow>
-                );
-              })}
+                      </TableCell>
+                      <TableCell>{instructor.affiliation}</TableCell>
+                      <TableCell>
+                        <Badge
+                          className={cn(
+                            "text-xs font-semibold",
+                            beltStyle.bg,
+                            beltStyle.text
+                          )}
+                        >
+                          {instructor.belt}
+                          {(instructor.belt === 'Preta' || instructor.belt === 'Coral') && instructor.stripes && instructor.stripes > 0 && ` - ${instructor.stripes}º Grau`}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">{instructor.phone}</TableCell>
+                    </TableRow>
+                  );
+                })
+              )}
             </TableBody>
           </Table>
         </CardContent>

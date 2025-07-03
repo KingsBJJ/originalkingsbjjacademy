@@ -33,9 +33,8 @@ import {
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { UserContext } from '../../../client-layout';
-import { mockInstructors } from '@/lib/mock-data';
 import { ArrowLeft, PlusCircle, Trash2 } from 'lucide-react';
-import { getBranch, updateBranch, type Branch } from '@/lib/firestoreService';
+import { getBranch, updateBranch, getInstructors, type Branch, type Instructor } from '@/lib/firestoreService';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const classScheduleSchema = z.object({
@@ -94,6 +93,7 @@ export default function EditBranchPage() {
   const { toast } = useToast();
   const [branch, setBranch] = useState<Branch | null>(null);
   const [loading, setLoading] = useState(true);
+  const [instructors, setInstructors] = useState<Instructor[]>([]);
 
   const branchId = params.id as string;
 
@@ -107,34 +107,41 @@ export default function EditBranchPage() {
   });
 
   useEffect(() => {
-    const fetchBranchData = async () => {
+    const fetchData = async () => {
       if (!branchId) return;
       try {
-        const data = await getBranch(branchId);
-        if (data) {
-          setBranch(data);
+        setLoading(true);
+        const [branchData, instructorsData] = await Promise.all([
+          getBranch(branchId),
+          getInstructors(),
+        ]);
+        
+        setInstructors(instructorsData);
+
+        if (branchData) {
+          setBranch(branchData);
           form.reset({
-            name: data.name,
-            address: data.address,
-            phone: data.phone,
-            responsible: data.responsible,
-            instructor2: data.additionalInstructors?.[0] || '',
-            instructor3: data.additionalInstructors?.[1] || '',
-            instructor4: data.additionalInstructors?.[2] || '',
-            schedule: data.schedule || [],
+            name: branchData.name,
+            address: branchData.address,
+            phone: branchData.phone,
+            responsible: branchData.responsible,
+            instructor2: branchData.additionalInstructors?.[0] || '',
+            instructor3: branchData.additionalInstructors?.[1] || '',
+            instructor4: branchData.additionalInstructors?.[2] || '',
+            schedule: branchData.schedule || [],
           });
         } else {
             toast({ variant: "destructive", title: "Filial não encontrada." });
             router.push(`/dashboard/branches?role=${user?.role}`);
         }
       } catch (error) {
-        console.error("Failed to fetch branch:", error);
-        toast({ variant: "destructive", title: "Erro ao carregar filial." });
+        console.error("Failed to fetch data:", error);
+        toast({ variant: "destructive", title: "Erro ao carregar dados da página." });
       } finally {
         setLoading(false);
       }
     };
-    fetchBranchData();
+    fetchData();
   }, [branchId, form, router, toast, user?.role]);
 
   const onSubmit = async (data: BranchFormValues) => {
@@ -241,7 +248,7 @@ export default function EditBranchPage() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {mockInstructors.map((instructor) => (
+                          {instructors.map((instructor) => (
                             <SelectItem key={instructor.id} value={instructor.name}>{instructor.name}</SelectItem>
                           ))}
                         </SelectContent>
@@ -267,7 +274,7 @@ export default function EditBranchPage() {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              {mockInstructors.map((instructor) => (
+                              {instructors.map((instructor) => (
                                 <SelectItem key={instructor.id} value={instructor.name}>{instructor.name}</SelectItem>
                               ))}
                             </SelectContent>
@@ -288,7 +295,7 @@ export default function EditBranchPage() {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              {mockInstructors.map((instructor) => (
+                              {instructors.map((instructor) => (
                                 <SelectItem key={instructor.id} value={instructor.name}>{instructor.name}</SelectItem>
                               ))}
                             </SelectContent>
@@ -309,7 +316,7 @@ export default function EditBranchPage() {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              {mockInstructors.map((instructor) => (
+                              {instructors.map((instructor) => (
                                 <SelectItem key={instructor.id} value={instructor.name}>{instructor.name}</SelectItem>
                               ))}
                             </SelectContent>
@@ -382,7 +389,7 @@ export default function EditBranchPage() {
                                 <FormItem><FormLabel>Horário</FormLabel><FormControl><Input placeholder="18:00 - 19:00" {...field} /></FormControl><FormMessage /></FormItem>
                             )} />
                             <FormField control={form.control} name={`schedule.${index}.instructor`} render={({ field }) => (
-                                <FormItem><FormLabel>Professor</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Selecione"/></SelectTrigger></FormControl><SelectContent>{mockInstructors.map(i => <SelectItem key={i.id} value={i.name}>{i.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                                <FormItem><FormLabel>Professor</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Selecione"/></SelectTrigger></FormControl><SelectContent>{instructors.map(i => <SelectItem key={i.id} value={i.name}>{i.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
                             )} />
                             <FormField control={form.control} name={`schedule.${index}.category`} render={({ field }) => (
                                 <FormItem><FormLabel>Categoria</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl><SelectContent><SelectItem value="Adults">Adultos</SelectItem><SelectItem value="Kids">Kids</SelectItem></SelectContent></Select><FormMessage /></FormItem>
