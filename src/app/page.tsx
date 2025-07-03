@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link";
@@ -15,20 +14,20 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { KingsBjjLogo } from "@/components/kings-bjj-logo";
-import { mockUsers } from "@/lib/mock-data";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
 
   const getRole = () => {
     const cleanEmail = email.trim().toLowerCase();
-    if (cleanEmail === mockUsers.admin.email) {
+    
+    if (cleanEmail === 'admin@kingsbjj.com') {
       return "admin";
     }
-    if (cleanEmail === mockUsers.professor.email) {
+    if (cleanEmail === 'professor@kingsbjj.com') {
       return "professor";
     }
-    // Default to student for the student email or any other email
+    // Default to student for any other email
     return "student";
   };
 
