@@ -50,7 +50,7 @@ export type Instructor = {
   name: string;
   email: string;
   phone: string;
-  affiliation: string;
+  affiliation?: string;
   belt: string;
   stripes?: number;
   bio?: string;

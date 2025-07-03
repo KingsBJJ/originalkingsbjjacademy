@@ -36,7 +36,7 @@ export type Instructor = {
   belt: keyof typeof beltColors;
   stripes: number;
   bio: string;
-  affiliation: string;
+  affiliation?: string;
   email: string;
   phone: string;
 };
