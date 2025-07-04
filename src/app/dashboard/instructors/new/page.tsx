@@ -20,6 +20,7 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
+  CardDescription
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -92,10 +93,10 @@ export default function NewInstructorPage() {
         email: data.email,
         phone: data.phone,
         belt: data.belt,
-        affiliations: data.affiliations ?? [],
-        bio: data.bio ?? '',
-        avatar: data.avatar ?? '',
-        stripes: data.stripes ?? 0,
+        affiliations: data.affiliations || [],
+        bio: data.bio || '',
+        avatar: data.avatar || '',
+        stripes: data.stripes || 0,
       };
 
       await addInstructor(instructorData);
@@ -118,7 +119,7 @@ export default function NewInstructorPage() {
       });
     }
   };
-
+  
   if (user?.role !== 'admin') {
     return (
       <div className="flex items-center justify-center h-full">
@@ -249,7 +250,7 @@ export default function NewInstructorPage() {
                     <FormItem>
                       <FormLabel>URL da Foto (Opcional)</FormLabel>
                       <FormControl>
-                        <Input placeholder="https://..." {...field} />
+                        <Input placeholder="https://..." {...field} value={field.value ?? ''} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -319,6 +320,7 @@ export default function NewInstructorPage() {
                           placeholder="Fale um pouco sobre a jornada do professor..."
                           className="resize-none"
                           {...field}
+                          value={field.value ?? ''}
                         />
                       </FormControl>
                       <FormMessage />
