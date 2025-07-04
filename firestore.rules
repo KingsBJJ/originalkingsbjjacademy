@@ -1,13 +1,19 @@
-
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
-    // ATENÇÃO: Esta regra permite que qualquer pessoa leia e escreva no seu banco de dados.
-    // É uma medida temporária para diagnóstico e desenvolvimento.
-    // Devemos criar regras seguras antes de ir para produção.
-    match /{document=**} {
-      allow read, write: if true;
+    // Permite leitura e escrita para qualquer usuário autenticado
+    // ATENÇÃO: Em produção, restrinja o acesso com base nos papéis do usuário (admin, professor, etc.)
+    
+    match /instructors/{instructorId} {
+      allow read, write: if request.auth != null;
+    }
+
+    match /branches/{branchId} {
+      allow read, write: if request.auth != null;
+    }
+
+    match /termsAcceptances/{acceptanceId} {
+      allow read, write: if request.auth != null;
     }
   }
 }
