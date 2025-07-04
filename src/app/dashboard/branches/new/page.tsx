@@ -62,6 +62,7 @@ export default function NewBranchPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [instructors, setInstructors] = useState<Instructor[]>([]);
+  const [isSaving, setIsSaving] = useState(false);
 
   const form = useForm<BranchFormValues>({
     resolver: zodResolver(branchFormSchema),
@@ -89,9 +90,10 @@ export default function NewBranchPage() {
           description: 'Não foi possível carregar a lista de instrutores.',
         });
       });
-  }, []);
+  }, [toast]);
 
   const onSubmit = async (data: BranchFormValues) => {
+    setIsSaving(true);
     try {
       const additionalInstructors = [data.instructor2, data.instructor3, data.instructor4].filter(
         (instructor) => instructor && instructor.trim() !== ''
@@ -113,9 +115,9 @@ export default function NewBranchPage() {
         description: `A filial ${data.name} foi adicionada com sucesso.`,
       });
       
-      setTimeout(() => {
-        router.push(`/dashboard/branches?role=${user?.role}`);
-      }, 1000);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      router.push(`/dashboard/branches?role=${user?.role}`);
+
     } catch (error) {
       console.error("Failed to add branch:", error);
       toast({
@@ -123,6 +125,8 @@ export default function NewBranchPage() {
         title: 'Erro ao cadastrar',
         description: 'Não foi possível adicionar a filial. Tente novamente.',
       });
+    } finally {
+        setIsSaving(false);
     }
   };
 
@@ -350,11 +354,11 @@ export default function NewBranchPage() {
               </div>
               
               <div className="flex justify-end gap-2">
-                  <Button variant="outline" type="button" onClick={() => router.back()} disabled={form.formState.isSubmitting}>
+                  <Button variant="outline" type="button" onClick={() => router.back()} disabled={isSaving}>
                       Cancelar
                   </Button>
-                  <Button type="submit" disabled={form.formState.isSubmitting}>
-                    {form.formState.isSubmitting ? 'Salvando...' : 'Salvar Filial'}
+                  <Button type="submit" disabled={isSaving}>
+                    {isSaving ? 'Salvando...' : 'Salvar Filial'}
                   </Button>
               </div>
             </form>

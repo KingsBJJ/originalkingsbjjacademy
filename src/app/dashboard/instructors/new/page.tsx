@@ -57,6 +57,7 @@ export default function NewInstructorPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [branches, setBranches] = useState<Branch[]>([]);
+  const [isSaving, setIsSaving] = useState(false);
 
   const form = useForm<InstructorFormValues>({
     resolver: zodResolver(instructorFormSchema),
@@ -82,11 +83,12 @@ export default function NewInstructorPage() {
           title: "Erro ao carregar filiais.",
         });
       });
-  }, []);
+  }, [toast]);
 
   const watchedBelt = form.watch("belt");
 
   const onSubmit = async (data: InstructorFormValues) => {
+    setIsSaving(true);
     try {
       const instructorData: Omit<Instructor, 'id'> = {
         name: data.name,
@@ -106,9 +108,8 @@ export default function NewInstructorPage() {
         description: `O professor ${data.name} foi adicionado com sucesso.`,
       });
       
-      setTimeout(() => {
-        router.push(`/dashboard/instructors?role=${user?.role}`);
-      }, 1000);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      router.push(`/dashboard/instructors?role=${user?.role}`);
 
     } catch (error) {
       console.error("Failed to add instructor:", error);
@@ -117,6 +118,8 @@ export default function NewInstructorPage() {
         title: 'Erro ao cadastrar',
         description: 'Não foi possível adicionar o professor. Tente novamente.',
       });
+    } finally {
+        setIsSaving(false);
     }
   };
   
@@ -328,11 +331,11 @@ export default function NewInstructorPage() {
                   )}
                 />
               <div className="flex justify-end gap-2">
-                  <Button variant="outline" type="button" onClick={() => router.back()} disabled={form.formState.isSubmitting}>
+                  <Button variant="outline" type="button" onClick={() => router.back()} disabled={isSaving}>
                       Cancelar
                   </Button>
-                  <Button type="submit" disabled={form.formState.isSubmitting}>
-                    {form.formState.isSubmitting ? 'Salvando...' : 'Salvar Professor'}
+                  <Button type="submit" disabled={isSaving}>
+                    {isSaving ? 'Salvando...' : 'Salvar Professor'}
                   </Button>
               </div>
             </form>

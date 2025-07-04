@@ -88,6 +88,7 @@ export default function EditInstructorPage() {
   const { toast } = useToast();
   const [instructor, setInstructor] = useState<Instructor | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const [branches, setBranches] = useState<Branch[]>([]);
 
   const instructorId = params.id as string;
@@ -142,6 +143,7 @@ export default function EditInstructorPage() {
 
 
   const onSubmit = async (data: InstructorFormValues) => {
+    setIsSaving(true);
     try {
         const instructorData: Omit<Instructor, 'id'> = {
             name: data.name,
@@ -160,9 +162,8 @@ export default function EditInstructorPage() {
         description: `O professor ${data.name} foi atualizado com sucesso.`,
       });
       
-      setTimeout(() => {
-        router.push(`/dashboard/instructors?role=${user?.role}`);
-      }, 1000);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      router.push(`/dashboard/instructors?role=${user?.role}`);
 
     } catch (error) {
       console.error("Failed to update instructor:", error);
@@ -171,6 +172,8 @@ export default function EditInstructorPage() {
         title: 'Erro ao atualizar',
         description: 'Não foi possível salvar as alterações. Tente novamente.',
       });
+    } finally {
+        setIsSaving(false);
     }
   };
   
@@ -390,11 +393,11 @@ export default function EditInstructorPage() {
                   )}
                 />
               <div className="flex justify-end gap-2">
-                  <Button variant="outline" type="button" onClick={() => router.back()} disabled={form.formState.isSubmitting}>
+                  <Button variant="outline" type="button" onClick={() => router.back()} disabled={isSaving}>
                       Cancelar
                   </Button>
-                  <Button type="submit" disabled={form.formState.isSubmitting}>
-                    {form.formState.isSubmitting ? 'Salvando...' : 'Salvar Alterações'}
+                  <Button type="submit" disabled={isSaving}>
+                    {isSaving ? 'Salvando...' : 'Salvar Alterações'}
                   </Button>
               </div>
             </form>

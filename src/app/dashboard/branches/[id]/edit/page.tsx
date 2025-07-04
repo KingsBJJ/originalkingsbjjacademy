@@ -93,6 +93,7 @@ export default function EditBranchPage() {
   const { toast } = useToast();
   const [branch, setBranch] = useState<Branch | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const [instructors, setInstructors] = useState<Instructor[]>([]);
 
   const branchId = params.id as string;
@@ -149,6 +150,7 @@ export default function EditBranchPage() {
   }, [branchId, resetForm, router, toast, user?.role]);
 
   const onSubmit = async (data: BranchFormValues) => {
+    setIsSaving(true);
     try {
       const additionalInstructors = [data.instructor2, data.instructor3, data.instructor4].filter(
         (instructor) => instructor && instructor.trim() !== ''
@@ -170,9 +172,9 @@ export default function EditBranchPage() {
         description: `A filial ${data.name} foi atualizada com sucesso.`,
       });
       
-      setTimeout(() => {
-        router.push(`/dashboard/branches?role=${user?.role}`);
-      }, 1000);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      router.push(`/dashboard/branches?role=${user?.role}`);
+
     } catch (error) {
       console.error("Failed to update branch:", error);
       toast({
@@ -180,6 +182,8 @@ export default function EditBranchPage() {
         title: 'Erro ao atualizar',
         description: 'Não foi possível salvar as alterações. Tente novamente.',
       });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -418,8 +422,8 @@ export default function EditBranchPage() {
                   <Button variant="outline" type="button" onClick={() => router.back()}>
                       Cancelar
                   </Button>
-                  <Button type="submit" disabled={form.formState.isSubmitting}>
-                     {form.formState.isSubmitting ? 'Salvando...' : 'Salvar Alterações'}
+                  <Button type="submit" disabled={isSaving}>
+                     {isSaving ? 'Salvando...' : 'Salvar Alterações'}
                   </Button>
               </div>
             </form>
