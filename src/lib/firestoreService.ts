@@ -147,7 +147,8 @@ export const deleteBranch = async (id: string) => {
  */
 export const addInstructor = async (instructorData: Omit<Instructor, 'id'>) => {
   try {
-    return await addDoc(instructorsCollection, instructorData);
+    const docRef = await addDoc(instructorsCollection, instructorData);
+    return docRef;
   } catch (error) {
     console.error('Erro ao adicionar professor:', error);
     throw new Error('Não foi possível adicionar o professor.');
@@ -166,6 +167,54 @@ export const getInstructors = async (): Promise<Instructor[]> => {
   } catch (error) {
     console.error('Erro ao obter professores:', error);
     throw new Error('Não foi possível obter os professores.');
+  }
+};
+
+/**
+ * Obtém um professor específico pelo ID.
+ * @param id ID do professor.
+ * @returns Professor correspondente ou null se não encontrado.
+ */
+export const getInstructor = async (id: string): Promise<Instructor | null> => {
+  try {
+    const docRef = doc(db, 'instructors', id);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      return { id: docSnap.id, ...docSnap.data() } as Instructor;
+    }
+    return null;
+  } catch (error) {
+    console.error('Erro ao obter professor:', error);
+    throw new Error('Não foi possível obter os dados do professor.');
+  }
+};
+
+/**
+ * Atualiza um professor existente.
+ * @param id ID do professor.
+ * @param instructorData Dados a serem atualizados.
+ */
+export const updateInstructor = async (id: string, instructorData: Partial<Omit<Instructor, 'id'>>) => {
+  try {
+    const docRef = doc(db, 'instructors', id);
+    await updateDoc(docRef, instructorData);
+  } catch (error) {
+    console.error('Erro ao atualizar professor:', error);
+    throw new Error('Não foi possível atualizar o professor.');
+  }
+};
+
+/**
+ * Exclui um professor.
+ * @param id ID do professor.
+ */
+export const deleteInstructor = async (id: string) => {
+  try {
+    const docRef = doc(db, 'instructors', id);
+    await deleteDoc(docRef);
+  } catch (error) {
+    console.error('Erro ao excluir professor:', error);
+    throw new Error('Não foi possível excluir o professor.');
   }
 };
 
