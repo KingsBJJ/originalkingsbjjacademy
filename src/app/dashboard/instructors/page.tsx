@@ -89,7 +89,7 @@ export default function InstructorsPage() {
     };
 
     fetchInstructors();
-  }, [toast]);
+  }, []);
 
   const handleDeleteClick = (instructor: Instructor) => {
     setInstructorToDelete(instructor);

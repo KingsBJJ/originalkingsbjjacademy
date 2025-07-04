@@ -1,6 +1,6 @@
 "use client";
 
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
 import { useForm, useFieldArray } from 'react-hook-form';
@@ -105,6 +105,19 @@ export default function EditBranchPage() {
     control: form.control,
     name: "schedule",
   });
+  
+  const resetForm = useCallback((branchData: Branch) => {
+    form.reset({
+      name: branchData.name,
+      address: branchData.address,
+      phone: branchData.phone,
+      responsible: branchData.responsible || '',
+      instructor2: branchData.additionalInstructors?.[0] || '',
+      instructor3: branchData.additionalInstructors?.[1] || '',
+      instructor4: branchData.additionalInstructors?.[2] || '',
+      schedule: branchData.schedule || [],
+    });
+  }, [form]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -120,16 +133,7 @@ export default function EditBranchPage() {
 
         if (branchData) {
           setBranch(branchData);
-          form.reset({
-            name: branchData.name,
-            address: branchData.address,
-            phone: branchData.phone,
-            responsible: branchData.responsible || '',
-            instructor2: branchData.additionalInstructors?.[0] || '',
-            instructor3: branchData.additionalInstructors?.[1] || '',
-            instructor4: branchData.additionalInstructors?.[2] || '',
-            schedule: branchData.schedule || [],
-          });
+          resetForm(branchData);
         } else {
             toast({ variant: "destructive", title: "Filial não encontrada." });
             router.push(`/dashboard/branches?role=${user?.role}`);
@@ -142,7 +146,7 @@ export default function EditBranchPage() {
       }
     };
     fetchData();
-  }, [branchId, form, router, toast, user?.role]);
+  }, [branchId, resetForm, router, toast, user?.role]);
 
   const onSubmit = async (data: BranchFormValues) => {
     try {
@@ -154,9 +158,9 @@ export default function EditBranchPage() {
         name: data.name,
         address: data.address,
         phone: data.phone,
-        schedule: data.schedule || [],
-        responsible: data.responsible || '',
-        additionalInstructors,
+        schedule: data.schedule ?? [],
+        responsible: data.responsible ?? '',
+        additionalInstructors: additionalInstructors ?? [],
       };
 
       await updateBranch(branchId, branchData);

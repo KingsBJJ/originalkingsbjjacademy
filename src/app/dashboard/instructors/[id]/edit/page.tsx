@@ -1,6 +1,6 @@
 "use client";
 
-import { useContext, useState, useEffect } from 'react';
+import { useContext, useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
@@ -98,6 +98,19 @@ export default function EditInstructorPage() {
   
   const watchedBelt = form.watch("belt");
 
+  const resetForm = useCallback((instructorData: Instructor) => {
+    form.reset({
+      name: instructorData.name,
+      email: instructorData.email,
+      phone: instructorData.phone,
+      affiliations: instructorData.affiliations || [],
+      belt: instructorData.belt,
+      stripes: instructorData.stripes || 0,
+      bio: instructorData.bio || '',
+      avatar: instructorData.avatar || '',
+    });
+  }, [form]);
+
   useEffect(() => {
     const fetchData = async () => {
       if (!instructorId) return;
@@ -112,16 +125,7 @@ export default function EditInstructorPage() {
 
         if (instructorData) {
           setInstructor(instructorData);
-          form.reset({
-            name: instructorData.name,
-            email: instructorData.email,
-            phone: instructorData.phone,
-            affiliations: instructorData.affiliations || [],
-            belt: instructorData.belt,
-            stripes: instructorData.stripes || 0,
-            bio: instructorData.bio || '',
-            avatar: instructorData.avatar || '',
-          });
+          resetForm(instructorData);
         } else {
             toast({ variant: "destructive", title: "Professor não encontrado." });
             router.push(`/dashboard/instructors?role=${user?.role}`);
@@ -134,7 +138,7 @@ export default function EditInstructorPage() {
       }
     };
     fetchData();
-  }, [instructorId, form, router, toast, user?.role]);
+  }, [instructorId, resetForm, router, toast, user?.role]);
 
 
   const onSubmit = async (data: InstructorFormValues) => {

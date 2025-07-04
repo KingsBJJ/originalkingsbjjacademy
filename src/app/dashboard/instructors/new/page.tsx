@@ -82,7 +82,7 @@ export default function NewInstructorPage() {
           title: "Erro ao carregar filiais.",
         });
       });
-  }, [toast]);
+  }, []);
 
   const watchedBelt = form.watch("belt");
 
@@ -93,10 +93,10 @@ export default function NewInstructorPage() {
         email: data.email,
         phone: data.phone,
         belt: data.belt,
-        affiliations: data.affiliations || [],
-        bio: data.bio || '',
-        avatar: data.avatar || '',
-        stripes: data.stripes || 0,
+        affiliations: data.affiliations ?? [],
+        bio: data.bio ?? '',
+        avatar: data.avatar ?? '',
+        stripes: data.stripes ?? 0,
       };
 
       await addInstructor(instructorData);

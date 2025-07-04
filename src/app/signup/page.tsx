@@ -138,7 +138,7 @@ export default function SignUpPage() {
         }
     };
     fetchInitialData();
-  }, [toast]);
+  }, []);
 
   useEffect(() => {
     if (affiliation && branches.length > 0 && instructors.length > 0) {

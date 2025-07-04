@@ -89,7 +89,7 @@ export default function NewBranchPage() {
           description: 'Não foi possível carregar a lista de instrutores.',
         });
       });
-  }, [toast]);
+  }, []);
 
   const onSubmit = async (data: BranchFormValues) => {
     try {
@@ -101,9 +101,9 @@ export default function NewBranchPage() {
         name: data.name,
         address: data.address,
         phone: data.phone,
-        schedule: data.schedule || [],
-        responsible: data.responsible || '',
-        additionalInstructors,
+        schedule: data.schedule ?? [],
+        responsible: data.responsible ?? '',
+        additionalInstructors: additionalInstructors ?? [],
       };
 
       await addBranch(branchData);

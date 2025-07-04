@@ -91,7 +91,7 @@ export default function BranchesPage() {
     };
 
     fetchBranches();
-  }, [toast]);
+  }, []);
 
   const handleDeleteClick = (branch: Branch) => {
     setBranchToDelete(branch);
