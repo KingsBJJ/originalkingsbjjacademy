@@ -87,11 +87,14 @@ export default function NewInstructorPage() {
   const onSubmit = async (data: InstructorFormValues) => {
     try {
       const instructorData = {
-        ...data,
-        affiliation: data.affiliation || '',
-        bio: data.bio || '',
-        avatar: data.avatar || '',
-        stripes: data.stripes || 0,
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        belt: data.belt,
+        affiliation: data.affiliation ?? '',
+        bio: data.bio ?? '',
+        avatar: data.avatar ?? '',
+        stripes: data.stripes ?? 0,
       };
 
       await addInstructor(instructorData);
