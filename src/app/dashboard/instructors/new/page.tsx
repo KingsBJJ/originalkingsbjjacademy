@@ -91,7 +91,7 @@ export default function NewInstructorPage() {
         email: data.email,
         phone: data.phone,
         belt: data.belt,
-        affiliation: data.affiliation ?? '',
+        affiliation: data.affiliation === 'none' ? '' : data.affiliation ?? '',
         bio: data.bio ?? '',
         avatar: data.avatar ?? '',
         stripes: data.stripes ?? 0,
@@ -206,7 +206,7 @@ export default function NewInstructorPage() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                           <SelectItem value="">Nenhuma</SelectItem>
+                           <SelectItem value="none">Nenhuma</SelectItem>
                           {branches.map((branch) => (
                             <SelectItem key={branch.id} value={branch.name}>{branch.name}</SelectItem>
                           ))}
