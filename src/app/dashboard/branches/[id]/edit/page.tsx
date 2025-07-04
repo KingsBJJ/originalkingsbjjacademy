@@ -49,7 +49,7 @@ const branchFormSchema = z.object({
   name: z.string().min(3, { message: 'O nome da filial deve ter pelo menos 3 caracteres.' }),
   address: z.string().min(10, { message: 'O endereço deve ter pelo menos 10 caracteres.' }),
   phone: z.string().min(10, { message: 'O telefone deve ter pelo menos 10 dígitos.' }),
-  responsible: z.string({ required_error: 'Selecione um responsável.' }).min(1, 'Selecione um responsável.'),
+  responsible: z.string().optional(),
   instructor2: z.string().optional(),
   instructor3: z.string().optional(),
   instructor4: z.string().optional(),
@@ -124,7 +124,7 @@ export default function EditBranchPage() {
             name: branchData.name,
             address: branchData.address,
             phone: branchData.phone,
-            responsible: branchData.responsible,
+            responsible: branchData.responsible || '',
             instructor2: branchData.additionalInstructors?.[0] || '',
             instructor3: branchData.additionalInstructors?.[1] || '',
             instructor4: branchData.additionalInstructors?.[2] || '',
@@ -146,14 +146,16 @@ export default function EditBranchPage() {
 
   const onSubmit = async (data: BranchFormValues) => {
     try {
-      const { responsible, instructor2, instructor3, instructor4, ...rest } = data;
-      const additionalInstructors = [instructor2, instructor3, instructor4].filter(
+      const additionalInstructors = [data.instructor2, data.instructor3, data.instructor4].filter(
         (instructor) => instructor && instructor.trim() !== ''
       );
 
       const branchData = {
-        ...rest,
-        responsible,
+        name: data.name,
+        address: data.address,
+        phone: data.phone,
+        schedule: data.schedule || [],
+        responsible: data.responsible || '',
         additionalInstructors,
       };
 
@@ -163,7 +165,10 @@ export default function EditBranchPage() {
         title: 'Filial Atualizada!',
         description: `A filial ${data.name} foi atualizada com sucesso.`,
       });
-      router.push(`/dashboard/branches?role=${user?.role}`);
+      
+      setTimeout(() => {
+        router.push(`/dashboard/branches?role=${user?.role}`);
+      }, 1000);
     } catch (error) {
       console.error("Failed to update branch:", error);
       toast({
@@ -240,7 +245,7 @@ export default function EditBranchPage() {
                   name="responsible"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Professor Responsável</FormLabel>
+                      <FormLabel>Professor Responsável (Opcional)</FormLabel>
                        <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>

@@ -35,7 +35,7 @@ import { useToast } from '@/hooks/use-toast';
 import { UserContext } from '../../client-layout';
 import { allBelts } from '@/lib/mock-data';
 import { ArrowLeft } from 'lucide-react';
-import { getBranches, addInstructor, type Branch } from '@/lib/firestoreService';
+import { getBranches, addInstructor, type Branch, type Instructor } from '@/lib/firestoreService';
 
 const instructorFormSchema = z.object({
   name: z.string().min(3, { message: 'O nome deve ter pelo menos 3 caracteres.' }),
@@ -86,12 +86,12 @@ export default function NewInstructorPage() {
 
   const onSubmit = async (data: InstructorFormValues) => {
     try {
-      const instructorData = {
+      const instructorData: Omit<Instructor, 'id'> = {
         name: data.name,
         email: data.email,
         phone: data.phone,
         belt: data.belt,
-        affiliation: data.affiliation === 'none' ? '' : data.affiliation ?? '',
+        affiliation: data.affiliation === 'none' ? '' : (data.affiliation ?? ''),
         bio: data.bio ?? '',
         avatar: data.avatar ?? '',
         stripes: data.stripes ?? 0,
@@ -103,7 +103,11 @@ export default function NewInstructorPage() {
         title: 'Professor Cadastrado!',
         description: `O professor ${data.name} foi adicionado com sucesso.`,
       });
-      router.push(`/dashboard/instructors?role=${user?.role}`);
+      
+      setTimeout(() => {
+        router.push(`/dashboard/instructors?role=${user?.role}`);
+      }, 1000);
+
     } catch (error) {
       console.error("Failed to add instructor:", error);
       toast({

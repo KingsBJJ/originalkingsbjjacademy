@@ -93,14 +93,16 @@ export default function NewBranchPage() {
 
   const onSubmit = async (data: BranchFormValues) => {
     try {
-      const { responsible, instructor2, instructor3, instructor4, ...rest } = data;
-      const additionalInstructors = [instructor2, instructor3, instructor4].filter(
+      const additionalInstructors = [data.instructor2, data.instructor3, data.instructor4].filter(
         (instructor) => instructor && instructor.trim() !== ''
       );
 
       const branchData = {
-        ...rest,
-        responsible: responsible || '',
+        name: data.name,
+        address: data.address,
+        phone: data.phone,
+        schedule: data.schedule || [],
+        responsible: data.responsible || '',
         additionalInstructors,
       };
 
@@ -110,7 +112,10 @@ export default function NewBranchPage() {
         title: 'Filial Cadastrada!',
         description: `A filial ${data.name} foi adicionada com sucesso.`,
       });
-      router.push(`/dashboard/branches?role=${user?.role}`);
+      
+      setTimeout(() => {
+        router.push(`/dashboard/branches?role=${user?.role}`);
+      }, 1000);
     } catch (error) {
       console.error("Failed to add branch:", error);
       toast({
