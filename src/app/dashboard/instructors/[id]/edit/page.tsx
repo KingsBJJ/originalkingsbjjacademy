@@ -138,32 +138,36 @@ export default function EditInstructorPage() {
         setLoading(false);
       }
     };
-    fetchData();
-  }, [instructorId, resetForm, router, toast, user?.role]);
+    if (user) {
+        fetchData();
+    }
+  }, [instructorId, resetForm, router, toast, user]);
 
 
   const onSubmit = async (data: InstructorFormValues) => {
     setIsSaving(true);
     try {
-        const instructorData: Omit<Instructor, 'id'> = {
-            name: data.name,
-            email: data.email,
-            phone: data.phone,
-            belt: data.belt,
-            affiliations: data.affiliations ?? [],
-            bio: data.bio ?? '',
-            avatar: data.avatar ?? '',
-            stripes: data.stripes ?? 0,
-        };
-      await updateInstructor(instructorId, instructorData);
+        const { name, email, phone, belt, affiliations, bio, avatar, stripes } = data;
 
-      toast({
-        title: 'Professor Atualizado!',
-        description: `O professor ${data.name} foi atualizado com sucesso.`,
-      });
+        const instructorData: Omit<Instructor, 'id'> = {
+            name: name,
+            email: email,
+            phone: phone,
+            belt: belt,
+            affiliations: affiliations ?? [],
+            bio: bio ?? '',
+            avatar: avatar ?? '',
+            stripes: stripes ?? 0,
+        };
+
+        await updateInstructor(instructorId, instructorData);
+
+        toast({
+            title: 'Professor Atualizado!',
+            description: `O professor ${data.name} foi atualizado com sucesso.`,
+        });
       
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      router.push(`/dashboard/instructors?role=${user?.role}`);
+        router.push(`/dashboard/instructors?role=${user?.role}`);
 
     } catch (error) {
       console.error("Failed to update instructor:", error);

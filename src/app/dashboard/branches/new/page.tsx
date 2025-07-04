@@ -95,16 +95,18 @@ export default function NewBranchPage() {
   const onSubmit = async (data: BranchFormValues) => {
     setIsSaving(true);
     try {
-      const additionalInstructors = [data.instructor2, data.instructor3, data.instructor4].filter(
-        (instructor) => instructor && instructor.trim() !== ''
+      const { name, address, phone, schedule, responsible, instructor2, instructor3, instructor4 } = data;
+      
+      const additionalInstructors = [instructor2, instructor3, instructor4].filter(
+        (instructor): instructor is string => !!instructor && instructor.trim() !== ''
       );
 
       const branchData = {
-        name: data.name,
-        address: data.address,
-        phone: data.phone,
-        schedule: data.schedule ?? [],
-        responsible: data.responsible ?? '',
+        name: name,
+        address: address,
+        phone: phone,
+        schedule: schedule ?? [],
+        responsible: responsible ?? '',
         additionalInstructors: additionalInstructors ?? [],
       };
 
@@ -115,7 +117,6 @@ export default function NewBranchPage() {
         description: `A filial ${data.name} foi adicionada com sucesso.`,
       });
       
-      await new Promise(resolve => setTimeout(resolve, 1000));
       router.push(`/dashboard/branches?role=${user?.role}`);
 
     } catch (error) {
