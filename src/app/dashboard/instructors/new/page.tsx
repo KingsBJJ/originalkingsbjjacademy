@@ -42,7 +42,7 @@ const instructorFormSchema = z.object({
   email: z.string().email({ message: 'Por favor, insira um email válido.' }),
   phone: z.string().min(10, { message: 'O telefone deve ter pelo menos 10 dígitos.' }),
   affiliation: z.string().optional(),
-  belt: z.string({ required_error: 'Selecione uma graduação.' }),
+  belt: z.string({ required_error: 'Selecione uma graduação.' }).min(1, { message: 'Selecione uma graduação.' }),
   stripes: z.coerce.number().int().min(0).max(6).optional(),
   bio: z.string().optional(),
   avatar: z.string().optional(),
@@ -62,6 +62,8 @@ export default function NewInstructorPage() {
       name: '',
       email: '',
       phone: '',
+      affiliation: '',
+      belt: '',
       bio: '',
       avatar: '',
       stripes: 0,
@@ -84,7 +86,16 @@ export default function NewInstructorPage() {
 
   const onSubmit = async (data: InstructorFormValues) => {
     try {
-      await addInstructor(data);
+      const instructorData = {
+        ...data,
+        affiliation: data.affiliation || '',
+        bio: data.bio || '',
+        avatar: data.avatar || '',
+        stripes: data.stripes || 0,
+      };
+
+      await addInstructor(instructorData);
+
       toast({
         title: 'Professor Cadastrado!',
         description: `O professor ${data.name} foi adicionado com sucesso.`,
@@ -192,6 +203,7 @@ export default function NewInstructorPage() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
+                           <SelectItem value="">Nenhuma</SelectItem>
                           {branches.map((branch) => (
                             <SelectItem key={branch.id} value={branch.name}>{branch.name}</SelectItem>
                           ))}
@@ -264,7 +276,7 @@ export default function NewInstructorPage() {
                   name="bio"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Biografia</FormLabel>
+                      <FormLabel>Biografia (Opcional)</FormLabel>
                       <FormControl>
                         <Textarea
                           placeholder="Fale um pouco sobre a jornada do professor..."
