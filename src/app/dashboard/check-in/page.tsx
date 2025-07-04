@@ -15,8 +15,8 @@ import { Camera, Check } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { UserContext } from '../client-layout';
-import { mockClasses } from '@/lib/mock-data';
+import { UserContext, UserUpdateContext } from '../client-layout';
+import { mockClasses, mockBranches } from '@/lib/mock-data';
 
 
 export default function CheckInPage() {
@@ -31,6 +31,7 @@ export default function CheckInPage() {
   const router = useRouter();
   const { toast } = useToast();
   const user = useContext(UserContext);
+  const updateUser = useContext(UserUpdateContext);
 
   const stopCamera = useCallback(() => {
     if (streamRef.current) {
@@ -115,19 +116,31 @@ export default function CheckInPage() {
           if (code) {
             stopCamera();
             if (code.data === 'KINGS_BJJ_UNIVERSAL_CHECKIN') {
-              const nextClass = mockClasses.find(c => c.branchId === user.branchId);
-              if (nextClass) {
-                setScannedCode(nextClass.name);
+              // Simulate check-in at any branch by picking the first available class
+              const nextClass = mockClasses[0];
+              const branch = mockBranches.find(b => b.id === nextClass.branchId);
+              const branchName = branch ? branch.name : 'Filial desconhecida';
+              
+              if (nextClass && user && updateUser) {
+                setScannedCode(`${nextClass.name} em ${branchName}`);
                 setCheckinTime(new Date());
+
+                // Update user attendance
+                const newAttendance = {
+                  total: user.attendance.total + 1,
+                  lastMonth: user.attendance.lastMonth + 1,
+                };
+                updateUser({ attendance: newAttendance });
+
                 toast({
                   title: 'Check-in Realizado!',
-                  description: `Presença confirmada na aula "${nextClass.name}".`,
+                  description: `Presença confirmada. Sua frequência foi atualizada.`,
                 });
               } else {
                  toast({
                     variant: 'destructive',
-                    title: 'Nenhuma aula encontrada',
-                    description: 'Não foi possível encontrar uma aula para sua filial no momento.',
+                    title: 'Erro no Check-in',
+                    description: 'Não foi possível encontrar dados da aula ou do usuário.',
                   });
               }
             } else {
@@ -152,7 +165,7 @@ export default function CheckInPage() {
     return () => {
       cancelAnimationFrame(animationFrameId);
     };
-  }, [isScanning, stopCamera, toast, user]);
+  }, [isScanning, stopCamera, toast, user, updateUser]);
 
 
   return (
@@ -177,7 +190,7 @@ export default function CheckInPage() {
                     </div>
                   <h2 className="text-2xl font-bold">Check-in Confirmado!</h2>
                   <p className="text-muted-foreground">
-                    Você está confirmado na aula: <br />
+                    Presença confirmada para a aula: <br />
                     <span className="font-semibold text-foreground">{scannedCode}</span>
                      <br />
                     <span className="text-xs">
