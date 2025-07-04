@@ -123,10 +123,7 @@ export default function InstructorsPage() {
     return <div>Carregando...</div>;
   }
 
-  const displayedInstructors =
-    user.role === "admin"
-      ? instructors
-      : instructors.filter((i) => i.affiliations?.includes(user.affiliation));
+  const displayedInstructors = instructors;
 
   return (
     <>
@@ -143,10 +140,7 @@ export default function InstructorsPage() {
             <div>
               <CardTitle>Lista de Professores</CardTitle>
               <CardDescription>
-                {user.role === 'admin' 
-                  ? `Total de ${displayedInstructors.length} professores em todas as filiais.`
-                  : `Professores da sua filial.`
-                }
+                {`Total de ${displayedInstructors.length} professores em todas as filiais.`}
               </CardDescription>
             </div>
             {user.role === 'admin' && (
