@@ -1,19 +1,26 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Permite leitura e escrita para qualquer usuário autenticado
-    // ATENÇÃO: Em produção, restrinja o acesso com base nos papéis do usuário (admin, professor, etc.)
-    
-    match /instructors/{instructorId} {
-      allow read, write: if request.auth != null;
-    }
 
+    // Branches are public for reading (e.g., on signup page)
+    // but can only be changed by authenticated users (admins in the app).
     match /branches/{branchId} {
-      allow read, write: if request.auth != null;
+      allow read: if true;
+      allow create, update, delete: if request.auth != null;
     }
 
+    // Instructors are public for reading (e.g., on signup page)
+    // but can only be changed by authenticated users (admins in the app).
+    match /instructors/{instructorId} {
+      allow read: if true;
+      allow create, update, delete: if request.auth != null;
+    }
+
+    // Terms can be created by anyone during signup.
+    // Only authenticated users (admins/profs) can view them later.
     match /termsAcceptances/{acceptanceId} {
-      allow read, write: if request.auth != null;
+      allow create: if true;
+      allow read, update, delete: if request.auth != null;
     }
   }
 }
