@@ -29,7 +29,7 @@ export type Branch = {
   name: string;
   address: string;
   phone: string;
-  responsible: string;
+  responsible?: string;
   additionalInstructors?: string[];
   schedule?: ClassScheduleItem[];
 };

@@ -1,8 +1,8 @@
 "use client";
 
-import { useContext, useState, useEffect } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -32,9 +32,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { UserContext } from '../../client-layout';
+import { UserContext } from '../../../client-layout';
 import { ArrowLeft, PlusCircle, Trash2 } from 'lucide-react';
-import { addBranch, getInstructors, type Instructor } from '@/lib/firestoreService';
+import { getBranch, updateBranch, getInstructors, type Branch, type Instructor } from '@/lib/firestoreService';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const classScheduleSchema = z.object({
   name: z.string().min(1, { message: 'O nome da aula é obrigatório.' }),
@@ -57,20 +58,47 @@ const branchFormSchema = z.object({
 
 type BranchFormValues = z.infer<typeof branchFormSchema>;
 
-export default function NewBranchPage() {
+const EditBranchPageSkeleton = () => (
+    <div className="grid gap-6">
+        <div className="flex items-center gap-4">
+            <Skeleton className="h-10 w-10" />
+            <div>
+                <Skeleton className="h-8 w-64 mb-2" />
+                <Skeleton className="h-5 w-80" />
+            </div>
+        </div>
+        <Card>
+            <CardContent className="pt-6 space-y-6">
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                    <div className="space-y-2"><Skeleton className="h-4 w-24" /><Skeleton className="h-10 w-full" /></div>
+                    <div className="space-y-2"><Skeleton className="h-4 w-32" /><Skeleton className="h-10 w-full" /></div>
+                </div>
+                <div className="space-y-2"><Skeleton className="h-4 w-48" /><div className="grid grid-cols-1 md:grid-cols-3 gap-4"><Skeleton className="h-10 w-full" /><Skeleton className="h-10 w-full" /><Skeleton className="h-10 w-full" /></div></div>
+                <div className="space-y-2"><Skeleton className="h-4 w-20" /><Skeleton className="h-10 w-full" /></div>
+                 <div className="space-y-2"><Skeleton className="h-4 w-24" /><Skeleton className="h-10 w-full" /></div>
+                <div className="flex justify-end gap-2">
+                    <Skeleton className="h-10 w-24" />
+                    <Skeleton className="h-10 w-24" />
+                </div>
+            </CardContent>
+        </Card>
+    </div>
+);
+
+
+export default function EditBranchPage() {
   const user = useContext(UserContext);
   const router = useRouter();
+  const params = useParams();
   const { toast } = useToast();
+  const [branch, setBranch] = useState<Branch | null>(null);
+  const [loading, setLoading] = useState(true);
   const [instructors, setInstructors] = useState<Instructor[]>([]);
+
+  const branchId = params.id as string;
 
   const form = useForm<BranchFormValues>({
     resolver: zodResolver(branchFormSchema),
-    defaultValues: {
-      name: '',
-      address: '',
-      phone: '',
-      schedule: [],
-    },
   });
 
   const { fields, append, remove } = useFieldArray({
@@ -79,17 +107,42 @@ export default function NewBranchPage() {
   });
 
   useEffect(() => {
-    getInstructors()
-      .then(setInstructors)
-      .catch(err => {
-        console.error("Failed to fetch instructors", err);
-        toast({
-          variant: 'destructive',
-          title: 'Erro ao buscar instrutores',
-          description: 'Não foi possível carregar a lista de instrutores.',
-        });
-      });
-  }, [toast]);
+    const fetchData = async () => {
+      if (!branchId) return;
+      try {
+        setLoading(true);
+        const [branchData, instructorsData] = await Promise.all([
+          getBranch(branchId),
+          getInstructors(),
+        ]);
+        
+        setInstructors(instructorsData);
+
+        if (branchData) {
+          setBranch(branchData);
+          form.reset({
+            name: branchData.name,
+            address: branchData.address,
+            phone: branchData.phone,
+            responsible: branchData.responsible || '',
+            instructor2: branchData.additionalInstructors?.[0] || '',
+            instructor3: branchData.additionalInstructors?.[1] || '',
+            instructor4: branchData.additionalInstructors?.[2] || '',
+            schedule: branchData.schedule || [],
+          });
+        } else {
+            toast({ variant: "destructive", title: "Filial não encontrada." });
+            router.push(`/dashboard/branches?role=${user?.role}`);
+        }
+      } catch (error) {
+        console.error("Failed to fetch data:", error);
+        toast({ variant: "destructive", title: "Erro ao carregar dados da página." });
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [branchId, form, router, toast, user?.role]);
 
   const onSubmit = async (data: BranchFormValues) => {
     try {
@@ -104,22 +157,26 @@ export default function NewBranchPage() {
         additionalInstructors,
       };
 
-      await addBranch(branchData);
+      await updateBranch(branchId, branchData);
 
       toast({
-        title: 'Filial Cadastrada!',
-        description: `A filial ${data.name} foi adicionada com sucesso.`,
+        title: 'Filial Atualizada!',
+        description: `A filial ${data.name} foi atualizada com sucesso.`,
       });
       router.push(`/dashboard/branches?role=${user?.role}`);
     } catch (error) {
-      console.error("Failed to add branch:", error);
+      console.error("Failed to update branch:", error);
       toast({
         variant: "destructive",
-        title: 'Erro ao cadastrar',
-        description: 'Não foi possível adicionar a filial. Tente novamente.',
+        title: 'Erro ao atualizar',
+        description: 'Não foi possível salvar as alterações. Tente novamente.',
       });
     }
   };
+
+  if (loading) {
+    return <EditBranchPageSkeleton />;
+  }
 
   if (user?.role !== 'admin') {
     return (
@@ -142,6 +199,10 @@ export default function NewBranchPage() {
     );
   }
 
+  if (!branch) {
+      return null;
+  }
+
   return (
     <div className="grid gap-6">
        <div className="flex items-center gap-4">
@@ -152,8 +213,8 @@ export default function NewBranchPage() {
           </Link>
         </Button>
         <div>
-            <h1 className="text-3xl font-bold tracking-tight">Cadastrar Filial</h1>
-            <p className="text-muted-foreground">Preencha os dados da nova filial.</p>
+            <h1 className="text-3xl font-bold tracking-tight">Editar Filial</h1>
+            <p className="text-muted-foreground">Atualize os dados da filial.</p>
         </div>
       </div>
       <Card>
@@ -297,7 +358,7 @@ export default function NewBranchPage() {
                   )}
                 />
               </div>
-
+              
               {/* Schedule Section */}
               <div className="space-y-4 rounded-lg border p-4">
                   <div className="flex items-center justify-between">
@@ -345,11 +406,11 @@ export default function NewBranchPage() {
               </div>
               
               <div className="flex justify-end gap-2">
-                  <Button variant="outline" type="button" onClick={() => router.back()} disabled={form.formState.isSubmitting}>
+                  <Button variant="outline" type="button" onClick={() => router.back()}>
                       Cancelar
                   </Button>
                   <Button type="submit" disabled={form.formState.isSubmitting}>
-                    {form.formState.isSubmitting ? 'Salvando...' : 'Salvar Filial'}
+                     {form.formState.isSubmitting ? 'Salvando...' : 'Salvar Alterações'}
                   </Button>
               </div>
             </form>

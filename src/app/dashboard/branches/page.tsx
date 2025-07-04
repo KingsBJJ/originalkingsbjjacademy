@@ -199,7 +199,7 @@ export default function BranchesPage() {
                   <div className="flex items-center gap-3 text-sm">
                     <UserIcon className="h-4 w-4 text-primary" />
                     <span className="font-medium">Responsável:</span>
-                    <span className="text-muted-foreground">{branch.responsible}</span>
+                    <span className="text-muted-foreground">{branch.responsible || 'Não definido'}</span>
                   </div>
                    {branch.schedule && branch.schedule.length > 0 && (
                       <Accordion type="single" collapsible className="w-full">
