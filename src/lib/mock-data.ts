@@ -16,6 +16,7 @@ export type User = {
   affiliation: string;
   branchId: string;
   category: "Adult" | "Kids";
+  mainInstructor?: string;
 };
 
 export type Class = {
@@ -147,6 +148,7 @@ const studentUser: User = {
   affiliation: "Kings BJJ - Centro",
   branchId: "b1",
   category: "Adult",
+  mainInstructor: "Prof. Rickson Gracie",
 };
 
 const professorUser: User = {
@@ -225,7 +227,7 @@ export const mockBranches: Branch[] = [
     address: "Rua Principal 123, Cidade, BR", 
     phone: "(55) 1234-5678", 
     responsible: "Prof. Rickson Gracie",
-    additionalInstructors: ["Prof. Helio Gracie"],
+    additionalInstructors: ["Prof. Helio Gracie", "Profa. Carla Ribeiro"],
     schedule: [
         { name: "Fundamentos", day: "Seg/Qua", time: "18:00 - 19:00", instructor: "Prof. Helio Gracie", category: "Adults" },
         { name: "Avançado", day: "Ter/Qui", time: "19:00 - 20:30", instructor: "Prof. Rickson Gracie", category: "Adults" },
@@ -253,19 +255,19 @@ export const mockBranches: Branch[] = [
 ];
 
 export const mockAdultStudents: Omit<User, 'role'>[] = [
-  { id: "s1", name: "Maria Silva", email: "maria@email.com", avatar: "https://placehold.co/128x128.png", belt: "Azul", stripes: 2, attendance: { total: 80, lastMonth: 10 }, nextGraduationProgress: 60, affiliation: "Kings BJJ - Centro", branchId: "b1", category: "Adult" },
-  { id: "s2", name: "João Pereira", email: "joao@email.com", avatar: "https://placehold.co/128x128.png", belt: "Branca", stripes: 4, attendance: { total: 40, lastMonth: 15 }, nextGraduationProgress: 90, affiliation: "Kings BJJ - Centro", branchId: "b1", category: "Adult" },
-  { id: "s3", name: "Carlos Souza", email: "carlos@email.com", avatar: "https://placehold.co/128x128.png", belt: "Roxa", stripes: 1, attendance: { total: 150, lastMonth: 8 }, nextGraduationProgress: 30, affiliation: "Kings BJJ - Norte", branchId: "b2", category: "Adult" },
-  { id: "s4", name: "Ana Oliveira", email: "ana@email.com", avatar: "https://placehold.co/128x128.png", belt: "Marrom", stripes: 3, attendance: { total: 200, lastMonth: 16 }, nextGraduationProgress: 85, affiliation: "Kings BJJ - Norte", branchId: "b2", category: "Adult" },
-  { id: "s5", name: "Bruno Alves", email: "bruno@email.com", avatar: "https://placehold.co/128x128.png", belt: "Preta", stripes: 1, attendance: { total: 300, lastMonth: 18 }, nextGraduationProgress: 10, affiliation: "Kings BJJ - Centro", branchId: "b1", category: "Adult" },
-  { id: "s6", name: "André Santos", email: "andre@email.com", avatar: "https://placehold.co/128x128.png", belt: "Azul", stripes: 1, attendance: { total: 60, lastMonth: 9 }, nextGraduationProgress: 45, affiliation: "Kings BJJ - Sul", branchId: "b3", category: "Adult" },
+  { id: "s1", name: "Maria Silva", email: "maria@email.com", avatar: "https://placehold.co/128x128.png", belt: "Azul", stripes: 2, attendance: { total: 80, lastMonth: 10 }, nextGraduationProgress: 60, affiliation: "Kings BJJ - Centro", branchId: "b1", category: "Adult", mainInstructor: "Prof. Rickson Gracie" },
+  { id: "s2", name: "João Pereira", email: "joao@email.com", avatar: "https://placehold.co/128x128.png", belt: "Branca", stripes: 4, attendance: { total: 40, lastMonth: 15 }, nextGraduationProgress: 90, affiliation: "Kings BJJ - Centro", branchId: "b1", category: "Adult", mainInstructor: "Prof. Helio Gracie" },
+  { id: "s3", name: "Carlos Souza", email: "carlos@email.com", avatar: "https://placehold.co/128x128.png", belt: "Roxa", stripes: 1, attendance: { total: 150, lastMonth: 8 }, nextGraduationProgress: 30, affiliation: "Kings BJJ - Norte", branchId: "b2", category: "Adult", mainInstructor: "Prof. Fabio Gurgel" },
+  { id: "s4", name: "Ana Oliveira", email: "ana@email.com", avatar: "https://placehold.co/128x128.png", belt: "Marrom", stripes: 3, attendance: { total: 200, lastMonth: 16 }, nextGraduationProgress: 85, affiliation: "Kings BJJ - Norte", branchId: "b2", category: "Adult", mainInstructor: "Prof. Fabio Gurgel" },
+  { id: "s5", name: "Bruno Alves", email: "bruno@email.com", avatar: "https://placehold.co/128x128.png", belt: "Preta", stripes: 1, attendance: { total: 300, lastMonth: 18 }, nextGraduationProgress: 10, affiliation: "Kings BJJ - Centro", branchId: "b1", category: "Adult", mainInstructor: "Prof. Rickson Gracie" },
+  { id: "s6", name: "André Santos", email: "andre@email.com", avatar: "https://placehold.co/128x128.png", belt: "Azul", stripes: 1, attendance: { total: 60, lastMonth: 9 }, nextGraduationProgress: 45, affiliation: "Kings BJJ - Sul", branchId: "b3", category: "Adult", mainInstructor: "Prof. Royler Gracie" },
 ];
 
 export const mockKidsStudents: Omit<User, 'role'>[] = [
-  { id: "k1", name: "Miguel Santos", email: "miguel@email.com", avatar: "https://placehold.co/128x128.png", belt: "Cinza", stripes: 2, attendance: { total: 50, lastMonth: 8 }, nextGraduationProgress: 40, affiliation: "Kings BJJ - Centro", branchId: "b1", category: "Kids" },
-  { id: "k2", name: "Sofia Lima", email: "sofia@email.com", avatar: "https://placehold.co/128x128.png", belt: "Amarela", stripes: 1, attendance: { total: 65, lastMonth: 12 }, nextGraduationProgress: 70, affiliation: "Kings BJJ - Norte", branchId: "b2", category: "Kids" },
-  { id: "k3", name: "Davi Oliveira", email: "davi@email.com", avatar: "https://placehold.co/128x128.png", belt: "Branca", stripes: 3, attendance: { total: 20, lastMonth: 10 }, nextGraduationProgress: 80, affiliation: "Kings BJJ - Centro", branchId: "b1", category: "Kids" },
-  { id: "k4", name: "Laura Pereira", email: "laura@email.com", avatar: "https://placehold.co/128x128.png", belt: "Laranja", stripes: 0, attendance: { total: 90, lastMonth: 14 }, nextGraduationProgress: 25, affiliation: "Kings BJJ - Norte", branchId: "b2", category: "Kids" },
+  { id: "k1", name: "Miguel Santos", email: "miguel@email.com", avatar: "https://placehold.co/128x128.png", belt: "Cinza", stripes: 2, attendance: { total: 50, lastMonth: 8 }, nextGraduationProgress: 40, affiliation: "Kings BJJ - Centro", branchId: "b1", category: "Kids", mainInstructor: "Profa. Carla Ribeiro" },
+  { id: "k2", name: "Sofia Lima", email: "sofia@email.com", avatar: "https://placehold.co/128x128.png", belt: "Amarela", stripes: 1, attendance: { total: 65, lastMonth: 12 }, nextGraduationProgress: 70, affiliation: "Kings BJJ - Norte", branchId: "b2", category: "Kids", mainInstructor: "Prof. Fabio Gurgel" },
+  { id: "k3", name: "Davi Oliveira", email: "davi@email.com", avatar: "https://placehold.co/128x128.png", belt: "Branca", stripes: 3, attendance: { total: 20, lastMonth: 10 }, nextGraduationProgress: 80, affiliation: "Kings BJJ - Centro", branchId: "b1", category: "Kids", mainInstructor: "Profa. Carla Ribeiro" },
+  { id: "k4", name: "Laura Pereira", email: "laura@email.com", avatar: "https://placehold.co/128x128.png", belt: "Laranja", stripes: 0, attendance: { total: 90, lastMonth: 14 }, nextGraduationProgress: 25, affiliation: "Kings BJJ - Norte", branchId: "b2", category: "Kids", mainInstructor: "Prof. Fabio Gurgel" },
 ];
 
 export const mockAllStudents = [...mockAdultStudents, ...mockKidsStudents];

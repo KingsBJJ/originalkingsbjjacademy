@@ -37,11 +37,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 const allBeltColors = { ...beltColors, ...beltColorsKids };
 type Student = Omit<StudentUser, 'role'>;
 
-const StudentTable = ({ students, userRole }: { students: Student[], userRole: 'admin' | 'professor' | 'student' }) => {
-    const title = userRole === 'admin' ? "Lista de Alunos" : "Alunos da sua Filial";
+const StudentTable = ({ students, userRole, userName }: { students: Student[], userRole: 'admin' | 'professor' | 'student', userName?: string }) => {
+    const title = userRole === 'admin' ? "Lista de Alunos" : `Alunos do Prof. ${userName}`;
     const description = userRole === 'admin' 
         ? `Total de ${students.length} alunos cadastrados.`
-        : `Total de ${students.length} alunos na sua filial.`;
+        : `Total de ${students.length} alunos na sua turma.`;
 
     return (
     <Card>
@@ -60,7 +60,7 @@ const StudentTable = ({ students, userRole }: { students: Student[], userRole: '
             </TableRow>
           </TableHeader>
           <TableBody>
-            {students.map((student) => {
+            {students.length > 0 ? students.map((student) => {
               const beltStyle = allBeltColors[student.belt as keyof typeof allBeltColors] || allBeltColors.Branca;
               return (
                 <TableRow key={student.id}>
@@ -102,7 +102,13 @@ const StudentTable = ({ students, userRole }: { students: Student[], userRole: '
                   </TableCell>
                 </TableRow>
               );
-            })}
+            }) : (
+                <TableRow>
+                    <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
+                        Nenhum aluno encontrado para sua turma.
+                    </TableCell>
+                </TableRow>
+            )}
           </TableBody>
         </Table>
       </CardContent>
@@ -136,11 +142,11 @@ export default function ManageStudentsPage() {
 
   const adultStudents = user.role === 'admin'
     ? mockAdultStudents
-    : mockAdultStudents.filter(s => s.affiliation === user.affiliation);
+    : mockAdultStudents.filter(s => s.affiliation === user.affiliation && s.mainInstructor === user.name);
   
   const kidsStudents = user.role === 'admin'
     ? mockKidsStudents
-    : mockKidsStudents.filter(s => s.affiliation === user.affiliation);
+    : mockKidsStudents.filter(s => s.affiliation === user.affiliation && s.mainInstructor === user.name);
 
   return (
     <div className="grid gap-6">
@@ -149,7 +155,7 @@ export default function ManageStudentsPage() {
         <p className="text-muted-foreground">
           {user.role === 'admin' 
             ? "Visualize e gerencie todos os alunos do sistema."
-            : "Visualize e gerencie os alunos da sua filial."
+            : "Visualize e gerencie os alunos da sua turma."
           }
         </p>
       </div>
@@ -159,10 +165,10 @@ export default function ManageStudentsPage() {
           <TabsTrigger value="kids">Kids ({kidsStudents.length})</TabsTrigger>
         </TabsList>
         <TabsContent value="adults" className="mt-4">
-          <StudentTable students={adultStudents} userRole={user.role} />
+          <StudentTable students={adultStudents} userRole={user.role} userName={user.name} />
         </TabsContent>
         <TabsContent value="kids" className="mt-4">
-          <StudentTable students={kidsStudents} userRole={user.role} />
+          <StudentTable students={kidsStudents} userRole={user.role} userName={user.name} />
         </TabsContent>
       </Tabs>
     </div>

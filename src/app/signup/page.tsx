@@ -24,7 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { allBelts, allBeltsKids } from "@/lib/mock-data";
+import { allBelts, allBeltsKids, mockInstructors } from "@/lib/mock-data";
 import { useToast } from "@/hooks/use-toast";
 import { Check } from "lucide-react";
 import { 
@@ -37,7 +37,7 @@ import {
   DialogTrigger
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { getBranches, saveTermsAcceptance, type Branch } from "@/lib/firestoreService";
+import { getBranches, saveTermsAcceptance, type Branch, getInstructors, type Instructor } from "@/lib/firestoreService";
 
 
 function TermsDialog({ onAccept, isAccepted }: { onAccept: (parentName: string, childName: string) => void, isAccepted: boolean }) {
@@ -112,26 +112,51 @@ export default function SignUpPage() {
   const [category, setCategory] = useState("adulto");
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [branches, setBranches] = useState<Branch[]>([]);
+  const [instructors, setInstructors] = useState<Instructor[]>([]);
+  const [filteredInstructors, setFilteredInstructors] = useState<Instructor[]>([]);
   const [affiliation, setAffiliation] = useState("");
+  const [mainInstructor, setMainInstructor] = useState("");
   const router = useRouter();
   const { toast } = useToast();
 
   useEffect(() => {
-    const fetchBranchesData = async () => {
+    const fetchInitialData = async () => {
         try {
-            const fetchedBranches = await getBranches();
+            const [fetchedBranches, fetchedInstructors] = await Promise.all([
+              getBranches(),
+              getInstructors()
+            ]);
             setBranches(fetchedBranches);
+            setInstructors(fetchedInstructors);
         } catch (error) {
-            console.error("Failed to fetch branches:", error);
+            console.error("Failed to fetch initial data:", error);
             toast({
                 variant: "destructive",
-                title: "Erro ao carregar filiais",
-                description: "Não foi possível buscar os dados das filiais.",
+                title: "Erro ao carregar dados",
+                description: "Não foi possível buscar os dados de filiais e instrutores.",
             });
         }
     };
-    fetchBranchesData();
+    fetchInitialData();
   }, [toast]);
+
+  useEffect(() => {
+    if (affiliation && branches.length > 0 && instructors.length > 0) {
+      const selectedBranch = branches.find(b => b.id === affiliation);
+      if (selectedBranch) {
+        const branchInstructorsNames = [
+          selectedBranch.responsible,
+          ...(selectedBranch.additionalInstructors || [])
+        ].filter(Boolean); // Filtra nomes vazios ou nulos
+        
+        const filtered = instructors.filter(i => branchInstructorsNames.includes(i.name));
+        setFilteredInstructors(filtered);
+      }
+    } else {
+      setFilteredInstructors([]);
+    }
+    setMainInstructor(""); // Reseta a seleção do professor ao mudar a filial
+  }, [affiliation, branches, instructors]);
 
 
   const handleCategoryChange = (newCategory: string) => {
@@ -283,6 +308,22 @@ export default function SignUpPage() {
                 </SelectContent>
               </Select>
             </div>
+            
+            <div className="grid gap-2">
+                <Label htmlFor="mainInstructor" className="text-white/80">Professor Responsável</Label>
+                <Select onValueChange={setMainInstructor} value={mainInstructor} disabled={!affiliation || filteredInstructors.length === 0}>
+                    <SelectTrigger id="mainInstructor" className="bg-white/5 border-white/20 text-white">
+                        <SelectValue placeholder={!affiliation ? "Selecione a filial primeiro" : "Selecione seu professor"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {filteredInstructors.map((instructor) => (
+                            <SelectItem key={instructor.id} value={instructor.name}>
+                                {instructor.name}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            </div>
 
              <div className="grid gap-2">
               <Label className="text-white/80">Categoria</Label>
@@ -358,7 +399,7 @@ export default function SignUpPage() {
             )}
 
 
-            <Button type="submit" className="w-full" disabled={category === 'kids' && !termsAccepted}>
+            <Button type="submit" className="w-full" disabled={(category === 'kids' && !termsAccepted) || !mainInstructor}>
               Criar conta
             </Button>
           </form>
