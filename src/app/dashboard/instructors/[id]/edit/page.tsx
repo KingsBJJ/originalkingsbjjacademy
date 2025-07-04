@@ -1,6 +1,6 @@
 "use client";
 
-import { useContext, useState, useEffect, useCallback } from 'react';
+import { useContext, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
@@ -98,23 +98,10 @@ export default function EditInstructorPage() {
   });
   
   const watchedBelt = form.watch("belt");
-
-  const resetForm = useCallback((instructorData: Instructor) => {
-    form.reset({
-      name: instructorData.name,
-      email: instructorData.email,
-      phone: instructorData.phone,
-      affiliations: instructorData.affiliations || [],
-      belt: instructorData.belt,
-      stripes: instructorData.stripes || 0,
-      bio: instructorData.bio || '',
-      avatar: instructorData.avatar || '',
-    });
-  }, [form]);
-
+  
   useEffect(() => {
     const fetchData = async () => {
-      if (!instructorId) return;
+      if (!instructorId || !user) return;
       try {
         setLoading(true);
         const [instructorData, branchesData] = await Promise.all([
@@ -126,10 +113,19 @@ export default function EditInstructorPage() {
 
         if (instructorData) {
           setInstructor(instructorData);
-          resetForm(instructorData);
+          form.reset({
+            name: instructorData.name,
+            email: instructorData.email,
+            phone: instructorData.phone,
+            affiliations: instructorData.affiliations || [],
+            belt: instructorData.belt,
+            stripes: instructorData.stripes || 0,
+            bio: instructorData.bio || '',
+            avatar: instructorData.avatar || '',
+          });
         } else {
             toast({ variant: "destructive", title: "Professor não encontrado." });
-            router.push(`/dashboard/instructors?role=${user?.role}`);
+            router.push(`/dashboard/instructors?role=${user.role}`);
         }
       } catch (error) {
         console.error("Failed to fetch data:", error);
@@ -138,10 +134,8 @@ export default function EditInstructorPage() {
         setLoading(false);
       }
     };
-    if (user) {
-        fetchData();
-    }
-  }, [instructorId, resetForm, router, toast, user]);
+    fetchData();
+  }, [instructorId, user]);
 
 
   const onSubmit = async (data: InstructorFormValues) => {

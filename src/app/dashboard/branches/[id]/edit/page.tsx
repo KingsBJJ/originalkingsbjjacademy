@@ -1,6 +1,6 @@
 "use client";
 
-import { useContext, useEffect, useState, useCallback } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
 import { useForm, useFieldArray } from 'react-hook-form';
@@ -107,22 +107,9 @@ export default function EditBranchPage() {
     name: "schedule",
   });
   
-  const resetForm = useCallback((branchData: Branch) => {
-    form.reset({
-      name: branchData.name,
-      address: branchData.address,
-      phone: branchData.phone,
-      responsible: branchData.responsible || '',
-      instructor2: branchData.additionalInstructors?.[0] || '',
-      instructor3: branchData.additionalInstructors?.[1] || '',
-      instructor4: branchData.additionalInstructors?.[2] || '',
-      schedule: branchData.schedule || [],
-    });
-  }, [form]);
-
   useEffect(() => {
     const fetchData = async () => {
-      if (!branchId) return;
+      if (!branchId || !user) return;
       try {
         setLoading(true);
         const [branchData, instructorsData] = await Promise.all([
@@ -134,10 +121,19 @@ export default function EditBranchPage() {
 
         if (branchData) {
           setBranch(branchData);
-          resetForm(branchData);
+          form.reset({
+            name: branchData.name,
+            address: branchData.address,
+            phone: branchData.phone,
+            responsible: branchData.responsible || '',
+            instructor2: branchData.additionalInstructors?.[0] || '',
+            instructor3: branchData.additionalInstructors?.[1] || '',
+            instructor4: branchData.additionalInstructors?.[2] || '',
+            schedule: branchData.schedule || [],
+          });
         } else {
             toast({ variant: "destructive", title: "Filial não encontrada." });
-            router.push(`/dashboard/branches?role=${user?.role}`);
+            router.push(`/dashboard/branches?role=${user.role}`);
         }
       } catch (error) {
         console.error("Failed to fetch data:", error);
@@ -146,10 +142,8 @@ export default function EditBranchPage() {
         setLoading(false);
       }
     };
-    if (user) {
-      fetchData();
-    }
-  }, [branchId, resetForm, router, toast, user]);
+    fetchData();
+  }, [branchId, user]);
 
   const onSubmit = async (data: BranchFormValues) => {
     setIsSaving(true);
