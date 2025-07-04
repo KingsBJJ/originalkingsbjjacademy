@@ -9,6 +9,7 @@ import * as z from 'zod';
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -17,7 +18,6 @@ import {
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -31,6 +31,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { UserContext } from '../../client-layout';
 import { allBelts } from '@/lib/mock-data';
@@ -41,7 +42,7 @@ const instructorFormSchema = z.object({
   name: z.string().min(3, { message: 'O nome deve ter pelo menos 3 caracteres.' }),
   email: z.string().email({ message: 'Por favor, insira um email válido.' }),
   phone: z.string().min(10, { message: 'O telefone deve ter pelo menos 10 dígitos.' }),
-  affiliation: z.string().optional(),
+  affiliations: z.array(z.string()).optional(),
   belt: z.string({ required_error: 'Selecione uma graduação.' }).min(1, { message: 'Selecione uma graduação.' }),
   stripes: z.coerce.number().int().min(0).max(6).optional(),
   bio: z.string().optional(),
@@ -62,7 +63,7 @@ export default function NewInstructorPage() {
       name: '',
       email: '',
       phone: '',
-      affiliation: '',
+      affiliations: [],
       belt: '',
       bio: '',
       avatar: '',
@@ -91,7 +92,7 @@ export default function NewInstructorPage() {
         email: data.email,
         phone: data.phone,
         belt: data.belt,
-        affiliation: data.affiliation === 'none' ? '' : (data.affiliation ?? ''),
+        affiliations: data.affiliations ?? [],
         bio: data.bio ?? '',
         avatar: data.avatar ?? '',
         stripes: data.stripes ?? 0,
@@ -199,29 +200,6 @@ export default function NewInstructorPage() {
                 />
                 <FormField
                   control={form.control}
-                  name="affiliation"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Filial (Opcional)</FormLabel>
-                       <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecione uma filial" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                           <SelectItem value="none">Nenhuma</SelectItem>
-                          {branches.map((branch) => (
-                            <SelectItem key={branch.id} value={branch.name}>{branch.name}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
                   name="belt"
                   render={({ field }) => (
                     <FormItem>
@@ -278,6 +256,58 @@ export default function NewInstructorPage() {
                   )}
                 />
               </div>
+
+              <FormField
+                control={form.control}
+                name="affiliations"
+                render={() => (
+                  <FormItem>
+                    <div className="mb-4">
+                      <FormLabel className="text-base">Filiais</FormLabel>
+                      <FormDescription>
+                        Selecione todas as filiais onde este professor leciona.
+                      </FormDescription>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 rounded-lg border p-4">
+                      {branches.map((branch) => (
+                        <FormField
+                          key={branch.id}
+                          control={form.control}
+                          name="affiliations"
+                          render={({ field }) => {
+                            return (
+                              <FormItem
+                                key={branch.id}
+                                className="flex flex-row items-start space-x-3 space-y-0"
+                              >
+                                <FormControl>
+                                  <Checkbox
+                                    checked={field.value?.includes(branch.name)}
+                                    onCheckedChange={(checked) => {
+                                      return checked
+                                        ? field.onChange([...(field.value ?? []), branch.name])
+                                        : field.onChange(
+                                            field.value?.filter(
+                                              (value) => value !== branch.name
+                                            )
+                                          )
+                                    }}
+                                  />
+                                </FormControl>
+                                <FormLabel className="font-normal">
+                                  {branch.name}
+                                </FormLabel>
+                              </FormItem>
+                            )
+                          }}
+                        />
+                      ))}
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
                <FormField
                   control={form.control}
                   name="bio"

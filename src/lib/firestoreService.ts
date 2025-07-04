@@ -50,7 +50,7 @@ export type Instructor = {
   name: string;
   email: string;
   phone: string;
-  affiliation?: string;
+  affiliations?: string[];
   belt: string;
   stripes?: number;
   bio?: string;
@@ -104,7 +104,8 @@ export const getBranch = async (id: string): Promise<Branch | null> => {
  */
 export const addBranch = async (branchData: Omit<Branch, 'id'>) => {
   try {
-    return await addDoc(branchesCollection, branchData);
+    const docRef = await addDoc(branchesCollection, branchData);
+    return docRef;
   } catch (error) {
     console.error('Erro ao adicionar filial:', error);
     throw new Error('Não foi possível adicionar a filial.');

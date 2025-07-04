@@ -71,7 +71,7 @@ export default function InstructorsPage() {
   const displayedInstructors =
     user.role === "admin"
       ? instructors
-      : instructors.filter((i) => i.affiliation === user.affiliation);
+      : instructors.filter((i) => i.affiliations?.includes(user.affiliation));
 
   return (
     <div className="grid gap-6">
@@ -107,7 +107,7 @@ export default function InstructorsPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Professor</TableHead>
-                <TableHead>Filial</TableHead>
+                <TableHead>Filiais</TableHead>
                 <TableHead>Graduação</TableHead>
                 <TableHead className="text-right">Contato</TableHead>
               </TableRow>
@@ -138,7 +138,7 @@ export default function InstructorsPage() {
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell>{instructor.affiliation}</TableCell>
+                      <TableCell>{instructor.affiliations?.join(', ') || 'Nenhuma'}</TableCell>
                       <TableCell>
                         <Badge
                           className={cn(
