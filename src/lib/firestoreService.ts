@@ -1,3 +1,4 @@
+
 "use client";
 
 import { db } from '@/lib/firebase';
@@ -16,10 +17,28 @@ import {
     limit,
     setDoc
 } from 'firebase/firestore';
-import type { User as AuthUser } from '@/lib/mock-data';
-
 
 // --- Types ---
+
+export type User = {
+  id: string;
+  name: string;
+  email: string;
+  role: "student" | "professor" | "admin";
+  avatar: string;
+  belt: string;
+  stripes: number;
+  attendance: {
+    total: number;
+    lastMonth: number;
+  };
+  nextGraduationProgress: number;
+  affiliation: string;
+  branchId: string;
+  category: "Adult" | "Kids";
+  mainInstructor?: string;
+};
+
 export type ClassScheduleItem = {
   name: string;
   day: string;
@@ -59,7 +78,7 @@ export type Instructor = {
   avatar?: string;
 };
 
-export type Student = Omit<AuthUser, 'role'>;
+export type Student = Omit<User, 'role'>;
 
 
 // --- References to Firestore Collections ---
@@ -213,7 +232,7 @@ export const saveTermsAcceptance = async (data: Omit<TermsAcceptance, 'id' | 'ac
 
 
 // --- User Functions ---
-export const getAppUser = async (role: 'student' | 'professor' | 'admin'): Promise<AuthUser | null> => {
+export const getAppUser = async (role: 'student' | 'professor' | 'admin'): Promise<User | null> => {
     try {
         const q = query(usersCollection, where("role", "==", role), limit(1));
         const querySnapshot = await getDocs(q);
@@ -221,14 +240,14 @@ export const getAppUser = async (role: 'student' | 'professor' | 'admin'): Promi
             return null;
         }
         const userDoc = querySnapshot.docs[0];
-        return { id: userDoc.id, ...userDoc.data() } as AuthUser;
+        return { id: userDoc.id, ...userDoc.data() } as User;
     } catch (error) {
         console.error(`Error getting user for role ${role}: `, error);
         throw new Error("Failed to fetch user.");
     }
 };
 
-export const createAppUser = async (userData: AuthUser) => {
+export const createAppUser = async (userData: User) => {
     try {
         const docRef = doc(db, 'users', userData.id);
         await setDoc(docRef, userData);
@@ -239,7 +258,7 @@ export const createAppUser = async (userData: AuthUser) => {
     }
 }
 
-export const updateUser = async (id: string, userData: Partial<AuthUser>) => {
+export const updateUser = async (id: string, userData: Partial<User>) => {
     try {
         const docRef = doc(db, 'users', id);
         await updateDoc(docRef, userData);

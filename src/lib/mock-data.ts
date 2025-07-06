@@ -1,21 +1,4 @@
-export type User = {
-  id: string;
-  name: string;
-  email: string;
-  role: "student" | "professor" | "admin";
-  avatar: string;
-  belt: keyof typeof beltColors | keyof typeof beltColorsKids;
-  stripes: number;
-  attendance: {
-    total: number;
-    lastMonth: number;
-  };
-  nextGraduationProgress: number;
-  affiliation: string;
-  branchId: string;
-  category: "Adult" | "Kids";
-  mainInstructor?: string;
-};
+import type { User } from './firestoreService';
 
 export const beltColors = {
   Branca: { bg: "bg-white", text: "text-black" },
@@ -148,3 +131,53 @@ export const mockUsers = {
   professor: professorUser,
   admin: adminUser,
 };
+
+
+export const mockAnnouncements = [
+    {
+        id: '1',
+        title: 'Seminário Especial com Mestre Leão',
+        content: 'Neste sábado, teremos um seminário imperdível com o grande Mestre Leão, faixa coral 8º grau. Foco em defesa pessoal e Jiu-Jitsu da velha guarda. Vagas limitadas, inscrições na recepção.',
+        author: 'Prof. Rickson Gracie',
+        authorAvatar: 'https://placehold.co/128x128.png',
+        timestamp: '2 dias atrás'
+    },
+    {
+        id: '2',
+        title: 'Aulão de Feriado Confirmado!',
+        content: 'Pessoal, nosso tradicional aulão de feriado está confirmado! Será às 10h da manhã. Todos os níveis e todas as filiais estão convidados para um super treino de confraternização.',
+        author: 'Admin Geral',
+        authorAvatar: 'https://placehold.co/128x128.png',
+        timestamp: '5 dias atrás'
+    }
+];
+
+export const mockAttendanceHistory = [
+    { date: '03/07/2024', class: 'Fundamentos', status: 'Presente' },
+    { date: '01/07/2024', class: 'Avançado', status: 'Presente' },
+    { date: '28/06/2024', class: 'No-Gi', status: 'Presente' },
+    { date: '26/06/2024', class: 'Fundamentos', status: 'Faltou' },
+];
+
+export const mockInstructors = [
+  {
+    id: 'inst1',
+    name: 'Prof. Hélio Gracie',
+    email: 'helio@kingsbjj.com',
+    phone: '(21) 99999-1111',
+    affiliations: ['Kings BJJ - Centro'],
+    belt: 'Coral' as keyof typeof beltColors,
+    stripes: 9,
+    avatar: 'https://placehold.co/128x128.png'
+  },
+  {
+    id: 'inst2',
+    name: 'Prof. Carlson Gracie',
+    email: 'carlson@kingsbjj.com',
+    phone: '(21) 99999-2222',
+    affiliations: ['Kings BJJ - Zona Sul'],
+    belt: 'Preta' as keyof typeof beltColors,
+    stripes: 6,
+    avatar: 'https://placehold.co/128x128.png'
+  },
+];
