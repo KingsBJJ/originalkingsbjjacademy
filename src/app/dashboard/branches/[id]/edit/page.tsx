@@ -143,7 +143,7 @@ export default function EditBranchPage() {
       }
     };
     fetchData();
-  }, [branchId, user]);
+  }, [branchId, user, form, router, toast]);
 
   const onSubmit = async (data: BranchFormValues) => {
     setIsSaving(true);
@@ -170,7 +170,9 @@ export default function EditBranchPage() {
         description: `A filial ${data.name} foi atualizada com sucesso.`,
       });
       
-      router.push(`/dashboard/branches?role=${user?.role}`);
+      setTimeout(() => {
+        router.push(`/dashboard/branches?role=${user?.role}`);
+      }, 1000);
 
     } catch (error) {
       console.error("Failed to update branch:", error);

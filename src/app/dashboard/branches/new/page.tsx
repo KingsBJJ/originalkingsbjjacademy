@@ -117,7 +117,9 @@ export default function NewBranchPage() {
         description: `A filial ${data.name} foi adicionada com sucesso.`,
       });
       
-      router.push(`/dashboard/branches?role=${user?.role}`);
+      setTimeout(() => {
+          router.push(`/dashboard/branches?role=${user?.role}`);
+      }, 1000);
 
     } catch (error) {
       console.error("Failed to add branch:", error);

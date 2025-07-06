@@ -135,7 +135,7 @@ export default function EditInstructorPage() {
       }
     };
     fetchData();
-  }, [instructorId, user]);
+  }, [instructorId, user, form, router, toast]);
 
 
   const onSubmit = async (data: InstructorFormValues) => {
@@ -161,7 +161,9 @@ export default function EditInstructorPage() {
             description: `O professor ${data.name} foi atualizado com sucesso.`,
         });
       
-        router.push(`/dashboard/instructors?role=${user?.role}`);
+        setTimeout(() => {
+          router.push(`/dashboard/instructors?role=${user?.role}`);
+        }, 1000);
 
     } catch (error) {
       console.error("Failed to update instructor:", error);

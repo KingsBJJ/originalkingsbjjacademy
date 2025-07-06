@@ -110,7 +110,9 @@ export default function NewInstructorPage() {
         description: `O professor ${data.name} foi adicionado com sucesso.`,
       });
       
-      router.push(`/dashboard/instructors?role=${user?.role}`);
+      setTimeout(() => {
+        router.push(`/dashboard/instructors?role=${user?.role}`);
+      }, 1000);
 
     } catch (error) {
       console.error("Failed to add instructor:", error);
