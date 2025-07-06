@@ -1,9 +1,10 @@
+
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Para fins de prototipagem, permite acesso aberto.
-    // Em produção, você deve restringir o acesso.
+    // Permite leitura e escrita em todos os documentos para a fase de prototipagem.
+    // ATENÇÃO: Em produção, estas regras devem ser mais restritivas.
     match /{document=**} {
       allow read, write: if true;
     }
