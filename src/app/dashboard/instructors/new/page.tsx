@@ -57,6 +57,7 @@ export default function NewInstructorPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [branches, setBranches] = useState<Branch[]>([]);
+  const [isSaving, setIsSaving] = useState(false);
 
   const form = useForm<InstructorFormValues>({
     resolver: zodResolver(instructorFormSchema),
@@ -72,8 +73,6 @@ export default function NewInstructorPage() {
     },
   });
 
-  const { formState: { isSubmitting } } = form;
-
   useEffect(() => {
     getBranches()
       .then(setBranches)
@@ -84,11 +83,12 @@ export default function NewInstructorPage() {
           title: "Erro ao carregar filiais.",
         });
       });
-  }, [toast]);
+  }, []);
 
   const watchedBelt = form.watch("belt");
 
   const onSubmit = async (data: InstructorFormValues) => {
+    setIsSaving(true);
     try {
       const { name, email, phone, belt, affiliations, bio, avatar, stripes } = data;
       
@@ -119,6 +119,8 @@ export default function NewInstructorPage() {
         title: 'Erro ao cadastrar',
         description: 'Não foi possível adicionar o professor. Tente novamente.',
       });
+    } finally {
+        setIsSaving(false);
     }
   };
   
@@ -330,11 +332,11 @@ export default function NewInstructorPage() {
                   )}
                 />
               <div className="flex justify-end gap-2">
-                  <Button variant="outline" type="button" onClick={() => router.back()} disabled={isSubmitting}>
+                  <Button variant="outline" type="button" onClick={() => router.back()} disabled={isSaving}>
                       Cancelar
                   </Button>
-                  <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting ? 'Salvando...' : 'Salvar Professor'}
+                  <Button type="submit" disabled={isSaving}>
+                    {isSaving ? 'Salvando...' : 'Salvar Professor'}
                   </Button>
               </div>
             </form>

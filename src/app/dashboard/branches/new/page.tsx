@@ -62,6 +62,7 @@ export default function NewBranchPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [instructors, setInstructors] = useState<Instructor[]>([]);
+  const [isSaving, setIsSaving] = useState(false);
 
   const form = useForm<BranchFormValues>({
     resolver: zodResolver(branchFormSchema),
@@ -76,8 +77,6 @@ export default function NewBranchPage() {
       schedule: [],
     },
   });
-
-  const { formState: { isSubmitting } } = form;
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
@@ -95,9 +94,10 @@ export default function NewBranchPage() {
           description: 'Não foi possível carregar a lista de instrutores.',
         });
       });
-  }, [toast]);
+  }, []);
 
   const onSubmit = async (data: BranchFormValues) => {
+    setIsSaving(true);
     try {
       const { name, address, phone, schedule, responsible, instructor2, instructor3, instructor4 } = data;
       
@@ -130,6 +130,8 @@ export default function NewBranchPage() {
         title: 'Erro ao cadastrar',
         description: 'Não foi possível adicionar a filial. Tente novamente.',
       });
+    } finally {
+        setIsSaving(false);
     }
   };
 
@@ -357,11 +359,11 @@ export default function NewBranchPage() {
               </div>
               
               <div className="flex justify-end gap-2">
-                  <Button variant="outline" type="button" onClick={() => router.back()} disabled={isSubmitting}>
+                  <Button variant="outline" type="button" onClick={() => router.back()} disabled={isSaving}>
                       Cancelar
                   </Button>
-                  <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting ? 'Salvando...' : 'Salvar Filial'}
+                  <Button type="submit" disabled={isSaving}>
+                    {isSaving ? 'Salvando...' : 'Salvar Filial'}
                   </Button>
               </div>
             </form>
