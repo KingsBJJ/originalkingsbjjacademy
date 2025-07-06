@@ -107,45 +107,47 @@ export default function EditBranchPage() {
     name: "schedule",
   });
   
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!branchId || !user) return;
-      try {
-        setLoading(true);
-        const [branchData, instructorsData] = await Promise.all([
-          getBranch(branchId),
-          getInstructors(),
-        ]);
-        
-        setInstructors(instructorsData);
+  const { reset } = form;
+  const userRole = user?.role;
 
-        if (branchData) {
-          setBranch(branchData);
-          form.reset({
-            name: branchData.name,
-            address: branchData.address,
-            phone: branchData.phone,
-            responsible: branchData.responsible || '',
-            instructor2: branchData.additionalInstructors?.[0] || '',
-            instructor3: branchData.additionalInstructors?.[1] || '',
-            instructor4: branchData.additionalInstructors?.[2] || '',
-            schedule: branchData.schedule || [],
-          });
-        } else {
-            toast({ variant: "destructive", title: "Filial não encontrada." });
-            router.push(`/dashboard/branches?role=${user.role}`);
-        }
-      } catch (error) {
-        console.error("Failed to fetch data:", error);
-        toast({ variant: "destructive", title: "Erro ao carregar dados da página." });
-      } finally {
-        setLoading(false);
+  const fetchData = useCallback(async () => {
+    if (!branchId) return;
+    try {
+      setLoading(true);
+      const [branchData, instructorsData] = await Promise.all([
+        getBranch(branchId),
+        getInstructors(),
+      ]);
+      
+      setInstructors(instructorsData);
+
+      if (branchData) {
+        setBranch(branchData);
+        reset({
+          name: branchData.name,
+          address: branchData.address,
+          phone: branchData.phone,
+          responsible: branchData.responsible || '',
+          instructor2: branchData.additionalInstructors?.[0] || '',
+          instructor3: branchData.additionalInstructors?.[1] || '',
+          instructor4: branchData.additionalInstructors?.[2] || '',
+          schedule: branchData.schedule || [],
+        });
+      } else {
+          toast({ variant: "destructive", title: "Filial não encontrada." });
+          if(userRole) router.push(`/dashboard/branches?role=${userRole}`);
       }
-    };
-    if (branchId) {
-        fetchData();
+    } catch (error) {
+      console.error("Failed to fetch data:", error);
+      toast({ variant: "destructive", title: "Erro ao carregar dados da página." });
+    } finally {
+      setLoading(false);
     }
-  }, [branchId, user, form.reset, router, toast]);
+  }, [branchId, reset, router, toast, userRole]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const onSubmit = async (data: BranchFormValues) => {
     setIsSaving(true);

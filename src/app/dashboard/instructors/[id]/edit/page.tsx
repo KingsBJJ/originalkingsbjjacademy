@@ -99,45 +99,47 @@ export default function EditInstructorPage() {
   
   const watchedBelt = form.watch("belt");
   
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!instructorId || !user) return;
-      try {
-        setLoading(true);
-        const [instructorData, branchesData] = await Promise.all([
-          getInstructor(instructorId),
-          getBranches(),
-        ]);
-        
-        setBranches(branchesData);
+  const { reset } = form;
+  const userRole = user?.role;
 
-        if (instructorData) {
-          setInstructor(instructorData);
-          form.reset({
-            name: instructorData.name,
-            email: instructorData.email,
-            phone: instructorData.phone,
-            affiliations: instructorData.affiliations || [],
-            belt: instructorData.belt,
-            stripes: instructorData.stripes || 0,
-            bio: instructorData.bio || '',
-            avatar: instructorData.avatar || '',
-          });
-        } else {
-            toast({ variant: "destructive", title: "Professor não encontrado." });
-            router.push(`/dashboard/instructors?role=${user.role}`);
-        }
-      } catch (error) {
-        console.error("Failed to fetch data:", error);
-        toast({ variant: "destructive", title: "Erro ao carregar dados da página." });
-      } finally {
-        setLoading(false);
+  const fetchData = useCallback(async () => {
+    if (!instructorId) return;
+    try {
+      setLoading(true);
+      const [instructorData, branchesData] = await Promise.all([
+        getInstructor(instructorId),
+        getBranches(),
+      ]);
+      
+      setBranches(branchesData);
+
+      if (instructorData) {
+        setInstructor(instructorData);
+        reset({
+          name: instructorData.name,
+          email: instructorData.email,
+          phone: instructorData.phone,
+          affiliations: instructorData.affiliations || [],
+          belt: instructorData.belt,
+          stripes: instructorData.stripes || 0,
+          bio: instructorData.bio || '',
+          avatar: instructorData.avatar || '',
+        });
+      } else {
+          toast({ variant: "destructive", title: "Professor não encontrado." });
+          if(userRole) router.push(`/dashboard/instructors?role=${userRole}`);
       }
-    };
-    if (instructorId) {
-        fetchData();
+    } catch (error) {
+      console.error("Failed to fetch data:", error);
+      toast({ variant: "destructive", title: "Erro ao carregar dados da página." });
+    } finally {
+      setLoading(false);
     }
-  }, [instructorId, user, form.reset, router, toast]);
+  }, [instructorId, reset, router, toast, userRole]);
+  
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
 
   const onSubmit = async (data: InstructorFormValues) => {
