@@ -4,7 +4,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import Image from 'next/image';
 import { KingsBjjLogo } from '@/components/kings-bjj-logo';
 
-// O Page component é um Server Component e pode receber searchParams
+// The Page component is a Server Component and can receive searchParams
 export default function TermsOfServicePage({
   searchParams,
 }: {
