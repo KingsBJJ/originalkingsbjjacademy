@@ -9,6 +9,7 @@ export function KingsBjjLogo({ className }: { className?: string }) {
       width={512}
       height={512}
       className={cn("object-contain", className)}
+      priority
     />
   );
 }

@@ -45,7 +45,8 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { updateUser as updateDbUser } from "@/lib/firestoreService";
+import { updateUser as updateDbUser, getAppUser, createAppUser } from "@/lib/firestoreService";
+import { useToast } from "@/hooks/use-toast";
 
 
 type NavItem = {
@@ -99,17 +100,41 @@ export default function DashboardClientLayout({
 }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const role = (searchParams.get("role") || "student") as "student" | "professor" | "admin";
+  const role = searchParams.get("role");
+  const { toast } = useToast();
   
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    // This is a more robust way to handle the initial user loading for the prototype.
-    // It avoids a fragile network request that was causing the app to freeze.
-    const validRole = role === 'admin' || role === 'professor' ? role : 'student';
-    const mockUser = mockUsers[validRole];
-    setUser(mockUser);
-  }, [role]);
+    const fetchUser = async () => {
+      const validRole = (role || 'student') as 'student' | 'professor' | 'admin';
+      try {
+        let dbUser = await getAppUser(validRole);
+        if (dbUser) {
+          setUser(dbUser);
+        } else {
+          console.warn(`User with role ${validRole} not found. Creating from mock data as a fallback.`);
+          const mockUser = mockUsers[validRole];
+          await createAppUser(mockUser);
+          setUser(mockUser);
+        }
+      } catch (error) {
+        console.error("Failed to fetch or create user:", error);
+        toast({
+            variant: "destructive",
+            title: "Erro de Conexão",
+            description: "Não foi possível carregar os dados. Usando dados de demonstração.",
+        });
+        // Fallback to mock user to prevent app from being stuck
+        const mockUser = mockUsers[validRole];
+        setUser(mockUser);
+      }
+    };
+
+    if (role) {
+      fetchUser();
+    }
+  }, [role, toast]);
 
   const updateUser = useCallback((newUserData: Partial<User>) => {
     setUser(prevUser => {
@@ -124,13 +149,18 @@ export default function DashboardClientLayout({
         };
       }
       
-      // Update in Firestore as well - this part still uses the network
-      // but it won't block the UI from loading.
-      updateDbUser(prevUser.id, newUserData).catch(console.error);
+      updateDbUser(prevUser.id, newUserData).catch(error => {
+          console.error("Failed to update user in DB:", error);
+          toast({
+            variant: "destructive",
+            title: "Erro de Sincronização",
+            description: "Não foi possível salvar as alterações no servidor.",
+          });
+      });
       
       return updatedUser;
     });
-  }, []);
+  }, [toast]);
 
   const navItems: NavItem[] = useMemo(() => {
     if (user?.role === 'admin') {
