@@ -1,3 +1,5 @@
+"use client";
+
 import { db } from '@/lib/firebase';
 import { 
     collection, 
@@ -9,8 +11,13 @@ import {
     deleteDoc, 
     query,
     serverTimestamp,
-    Timestamp
+    Timestamp,
+    where,
+    limit,
+    setDoc
 } from 'firebase/firestore';
+import type { User as AuthUser } from '@/lib/mock-data';
+
 
 // --- Types ---
 export type ClassScheduleItem = {
@@ -41,7 +48,7 @@ export type TermsAcceptance = {
 };
 
 export type Instructor = {
-  id: string;
+  id:string;
   name: string;
   email: string;
   phone: string;
@@ -52,9 +59,14 @@ export type Instructor = {
   avatar?: string;
 };
 
+export type Student = Omit<AuthUser, 'role'>;
+
+
 // --- References to Firestore Collections ---
 const branchesCollection = collection(db, 'branches');
 const instructorsCollection = collection(db, 'instructors');
+const studentsCollection = collection(db, 'students');
+const usersCollection = collection(db, 'users');
 const termsCollection = collection(db, 'terms');
 
 
@@ -63,6 +75,9 @@ const termsCollection = collection(db, 'terms');
 export const getBranches = async (): Promise<Branch[]> => {
   try {
     const querySnapshot = await getDocs(query(branchesCollection));
+    if (querySnapshot.empty) {
+      return [];
+    }
     return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Branch));
   } catch (error) {
     console.error("Error getting branches: ", error);
@@ -117,6 +132,9 @@ export const deleteBranch = async (id: string) => {
 export const getInstructors = async (): Promise<Instructor[]> => {
     try {
         const querySnapshot = await getDocs(query(instructorsCollection));
+        if (querySnapshot.empty) {
+            return [];
+        }
         return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Instructor));
     } catch (error) {
         console.error("Error getting instructors: ", error);
@@ -166,6 +184,18 @@ export const deleteInstructor = async (id: string) => {
 };
 
 
+// --- Student Functions ---
+export const getStudents = async (): Promise<Student[]> => {
+    try {
+        const querySnapshot = await getDocs(query(studentsCollection));
+        return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Student));
+    } catch (error) {
+        console.error("Error getting students: ", error);
+        throw new Error("Failed to fetch students.");
+    }
+};
+
+
 // --- Terms Acceptance Functions ---
 
 export const saveTermsAcceptance = async (data: Omit<TermsAcceptance, 'id' | 'acceptedAt'>) => {
@@ -178,5 +208,43 @@ export const saveTermsAcceptance = async (data: Omit<TermsAcceptance, 'id' | 'ac
     } catch (error) {
         console.error("Error saving terms acceptance: ", error);
         throw new Error("Failed to save terms acceptance.");
+    }
+};
+
+
+// --- User Functions ---
+export const getAppUser = async (role: 'student' | 'professor' | 'admin'): Promise<AuthUser | null> => {
+    try {
+        const q = query(usersCollection, where("role", "==", role), limit(1));
+        const querySnapshot = await getDocs(q);
+        if (querySnapshot.empty) {
+            return null;
+        }
+        const userDoc = querySnapshot.docs[0];
+        return { id: userDoc.id, ...userDoc.data() } as AuthUser;
+    } catch (error) {
+        console.error(`Error getting user for role ${role}: `, error);
+        throw new Error("Failed to fetch user.");
+    }
+};
+
+export const createAppUser = async (userData: AuthUser) => {
+    try {
+        const docRef = doc(db, 'users', userData.id);
+        await setDoc(docRef, userData);
+        return userData;
+    } catch (error) {
+        console.error("Error creating user: ", error);
+        throw new Error("Failed to create user.");
+    }
+}
+
+export const updateUser = async (id: string, userData: Partial<AuthUser>) => {
+    try {
+        const docRef = doc(db, 'users', id);
+        await updateDoc(docRef, userData);
+    } catch (error) {
+        console.error("Error updating user: ", error);
+        throw new Error("Failed to update user.");
     }
 };

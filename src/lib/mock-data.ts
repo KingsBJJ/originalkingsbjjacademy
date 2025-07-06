@@ -1,5 +1,3 @@
-import type { ClassScheduleItem } from './firestoreService';
-
 export type User = {
   id: string;
   name: string;
@@ -17,48 +15,6 @@ export type User = {
   branchId: string;
   category: "Adult" | "Kids";
   mainInstructor?: string;
-};
-
-export type Class = {
-  id: string;
-  name: string;
-  time: string;
-  instructor: string;
-  category: "Adult" | "Kids";
-  enrolled: number;
-  capacity: number;
-  branchId: string;
-};
-
-export type Instructor = {
-  id: string;
-  name: string;
-  avatar: string;
-  belt: keyof typeof beltColors;
-  stripes: number;
-  bio: string;
-  affiliations?: string[];
-  email: string;
-  phone: string;
-};
-
-export type Branch = {
-  id: string;
-  name: string;
-  address: string;
-  phone: string;
-  responsible?: string;
-  additionalInstructors?: string[];
-  schedule?: ClassScheduleItem[];
-};
-
-export type Announcement = {
-  id: string;
-  title: string;
-  content: string;
-  author: string;
-  authorAvatar: string;
-  timestamp: string;
 };
 
 export const beltColors = {
@@ -133,7 +89,7 @@ export const beltInfoKids = {
 };
 
 const studentUser: User = {
-  id: "user1",
+  id: "student_user",
   name: "Alex Costa",
   email: "student@kingsbjj.com",
   role: "student",
@@ -152,7 +108,7 @@ const studentUser: User = {
 };
 
 const professorUser: User = {
-  id: "user2",
+  id: "professor_user",
   name: "Prof. Rickson Gracie",
   email: "professor@kingsbjj.com",
   role: "professor",
@@ -170,7 +126,7 @@ const professorUser: User = {
 };
 
 const adminUser: User = {
-  id: "user3",
+  id: "admin_user",
   name: "Admin Geral",
   email: "admin@kingsbjj.com",
   role: "admin",
@@ -192,126 +148,3 @@ export const mockUsers = {
   professor: professorUser,
   admin: adminUser,
 };
-
-export const mockAttendanceHistory = [
-  { date: "2024-07-22", class: "Fundamentos de Kimono", status: "Presente" },
-  { date: "2024-07-20", class: "Sem Kimono - Avançado", status: "Presente" },
-  { date: "2024-07-18", class: "Fundamentos de Kimono", status: "Presente" },
-  { date: "2024-07-17", class: "Treino Livre", status: "Presente" },
-  { date: "2024-07-15", class: "Fundamentos de Kimono", status: "Ausente" },
-  { date: "2024-07-13", class: "Sem Kimono - Avançado", status: "Presente" },
-];
-
-export const mockClasses: Class[] = [
-  { id: "c1", name: "Fundamentos de Kimono", time: "18:00 - 19:00", instructor: "Prof. Helio", category: "Adult", enrolled: 18, capacity: 20, branchId: "b1" },
-  { id: "c2", name: "Jiu-Jitsu Kids (5-8 anos)", time: "17:00 - 17:45", instructor: "Profa. Carla", category: "Kids", enrolled: 10, capacity: 15, branchId: "b1" },
-  { id: "c3", name: "Sem Kimono - Avançado", time: "19:00 - 20:00", instructor: "Prof. Rickson", category: "Adult", enrolled: 12, capacity: 20, branchId: "b1" },
-  { id: "c4", name: "Treino Livre", time: "20:00 - 21:00", instructor: "Todos", category: "Adult", enrolled: 25, capacity: 30, branchId: "b1" },
-  { id: "c5", name: "Jiu-Jitsu Kids (9-12 anos)", time: "16:00 - 16:45", instructor: "Profa. Carla", category: "Kids", enrolled: 14, capacity: 15, branchId: "b1" },
-  { id: "c6", name: "Fundamentos (Manhã)", time: "07:00 - 08:00", instructor: "Prof. Fabio Gurgel", category: "Adult", enrolled: 15, capacity: 20, branchId: "b2" },
-  { id: "c7", name: "Sem Kimono (Manhã)", time: "08:00 - 09:00", instructor: "Prof. Fabio Gurgel", category: "Adult", enrolled: 10, capacity: 20, branchId: "b2" },
-];
-
-export const mockInstructors: Instructor[] = [
-  { id: "i1", name: "Prof. Helio Gracie", avatar: "https://placehold.co/128x128.png", belt: "Coral", stripes: 7, bio: "Co-criador do Jiu-Jitsu Brasileiro, com foco em alavancagem e técnica.", affiliations: ["Kings BJJ - Centro"], email: "helio@kingsbjj.com", phone: "(55) 1111-1111" },
-  { id: "i2", name: "Prof. Rickson Gracie", avatar: "https://placehold.co/128x128.png", belt: "Preta", stripes: 6, bio: "Conhecido por seu recorde invicto e domínio dos fundamentos.", affiliations: ["Kings BJJ - Centro", "Kings BJJ - Norte"], email: "rickson@kingsbjj.com", phone: "(55) 2222-2222" },
-  { id: "i3", name: "Profa. Carla Ribeiro", avatar: "https://placehold.co/128x128.png", belt: "Preta", stripes: 3, bio: "Especialista em treino infantil e técnicas modernas de jiu-jitsu.", affiliations: ["Kings BJJ - Centro"], email: "carla@kingsbjj.com", phone: "(55) 3333-3333" },
-  { id: "i4", name: "Prof. Fabio Gurgel", avatar: "https://placehold.co/128x128.png", belt: "Preta", stripes: 5, bio: "Múltiplo campeão mundial e um estrategista especialista.", affiliations: ["Kings BJJ - Norte"], email: "fabio@kingsbjj.com", phone: "(55) 4444-4444" },
-  { id: "i5", name: "Prof. Royler Gracie", avatar: "https://placehold.co/128x128.png", belt: "Preta", stripes: 7, bio: "Mestre em levar a luta para o chão e aplicar finalizações precisas.", affiliations: ["Kings BJJ - Sul"], email: "royler@kingsbjj.com", phone: "(55) 5555-5555" },
-];
-
-export const mockBranches: Branch[] = [
-    { 
-    id: "b1", 
-    name: "Kings BJJ - Centro", 
-    address: "Rua Principal 123, Cidade, BR", 
-    phone: "(55) 1234-5678", 
-    responsible: "Prof. Rickson Gracie",
-    additionalInstructors: ["Prof. Helio Gracie", "Profa. Carla Ribeiro"],
-    schedule: [
-        { name: "Fundamentos", day: "Seg/Qua", time: "18:00 - 19:00", instructor: "Prof. Helio Gracie", category: "Adults" },
-        { name: "Avançado", day: "Ter/Qui", time: "19:00 - 20:30", instructor: "Prof. Rickson Gracie", category: "Adults" },
-        { name: "Kids", day: "Seg/Qua", time: "17:00 - 17:45", instructor: "Profa. Carla Ribeiro", category: "Kids" },
-    ]
-  },
-  { 
-    id: "b2", 
-    name: "Kings BJJ - Norte", 
-    address: "Avenida Norte 456, Cidade, BR", 
-    phone: "(55) 8765-4321", 
-    responsible: "Prof. Fabio Gurgel",
-    schedule: [
-        { name: "Manhã", day: "Ter/Qui", time: "07:00 - 08:00", instructor: "Prof. Fabio Gurgel", category: "Adults" },
-        { name: "Noite", day: "Seg/Qua/Sex", time: "20:00 - 21:30", instructor: "Prof. Fabio Gurgel", category: "Adults" },
-    ]
-  },
-  { 
-    id: "b3", 
-    name: "Kings BJJ - Sul", 
-    address: "Avenida Sul 789, Cidade, BR", 
-    phone: "(55) 9876-5432", 
-    responsible: "Prof. Royler Gracie",
-  },
-];
-
-export const mockAdultStudents: Omit<User, 'role'>[] = [
-  { id: "s1", name: "Maria Silva", email: "maria@email.com", avatar: "https://placehold.co/128x128.png", belt: "Azul", stripes: 2, attendance: { total: 80, lastMonth: 10 }, nextGraduationProgress: 60, affiliation: "Kings BJJ - Centro", branchId: "b1", category: "Adult", mainInstructor: "Prof. Rickson Gracie" },
-  { id: "s2", name: "João Pereira", email: "joao@email.com", avatar: "https://placehold.co/128x128.png", belt: "Branca", stripes: 4, attendance: { total: 40, lastMonth: 15 }, nextGraduationProgress: 90, affiliation: "Kings BJJ - Centro", branchId: "b1", category: "Adult", mainInstructor: "Prof. Helio Gracie" },
-  { id: "s3", name: "Carlos Souza", email: "carlos@email.com", avatar: "https://placehold.co/128x128.png", belt: "Roxa", stripes: 1, attendance: { total: 150, lastMonth: 8 }, nextGraduationProgress: 30, affiliation: "Kings BJJ - Norte", branchId: "b2", category: "Adult", mainInstructor: "Prof. Fabio Gurgel" },
-  { id: "s4", name: "Ana Oliveira", email: "ana@email.com", avatar: "https://placehold.co/128x128.png", belt: "Marrom", stripes: 3, attendance: { total: 200, lastMonth: 16 }, nextGraduationProgress: 85, affiliation: "Kings BJJ - Norte", branchId: "b2", category: "Adult", mainInstructor: "Prof. Fabio Gurgel" },
-  { id: "s5", name: "Bruno Alves", email: "bruno@email.com", avatar: "https://placehold.co/128x128.png", belt: "Preta", stripes: 1, attendance: { total: 300, lastMonth: 18 }, nextGraduationProgress: 10, affiliation: "Kings BJJ - Centro", branchId: "b1", category: "Adult", mainInstructor: "Prof. Rickson Gracie" },
-  { id: "s6", name: "André Santos", email: "andre@email.com", avatar: "https://placehold.co/128x128.png", belt: "Azul", stripes: 1, attendance: { total: 60, lastMonth: 9 }, nextGraduationProgress: 45, affiliation: "Kings BJJ - Sul", branchId: "b3", category: "Adult", mainInstructor: "Prof. Royler Gracie" },
-];
-
-export const mockKidsStudents: Omit<User, 'role'>[] = [
-  { id: "k1", name: "Miguel Santos", email: "miguel@email.com", avatar: "https://placehold.co/128x128.png", belt: "Cinza", stripes: 2, attendance: { total: 50, lastMonth: 8 }, nextGraduationProgress: 40, affiliation: "Kings BJJ - Centro", branchId: "b1", category: "Kids", mainInstructor: "Profa. Carla Ribeiro" },
-  { id: "k2", name: "Sofia Lima", email: "sofia@email.com", avatar: "https://placehold.co/128x128.png", belt: "Amarela", stripes: 1, attendance: { total: 65, lastMonth: 12 }, nextGraduationProgress: 70, affiliation: "Kings BJJ - Norte", branchId: "b2", category: "Kids", mainInstructor: "Prof. Fabio Gurgel" },
-  { id: "k3", name: "Davi Oliveira", email: "davi@email.com", avatar: "https://placehold.co/128x128.png", belt: "Branca", stripes: 3, attendance: { total: 20, lastMonth: 10 }, nextGraduationProgress: 80, affiliation: "Kings BJJ - Centro", branchId: "b1", category: "Kids", mainInstructor: "Profa. Carla Ribeiro" },
-  { id: "k4", name: "Laura Pereira", email: "laura@email.com", avatar: "https://placehold.co/128x128.png", belt: "Laranja", stripes: 0, attendance: { total: 90, lastMonth: 14 }, nextGraduationProgress: 25, affiliation: "Kings BJJ - Norte", branchId: "b2", category: "Kids", mainInstructor: "Prof. Fabio Gurgel" },
-];
-
-export const mockAllStudents = [...mockAdultStudents, ...mockKidsStudents];
-
-export const mockTeamGrowth = [
-  { month: "Fev", total: 35 },
-  { month: "Mar", total: 42 },
-  { month: "Abr", total: 48 },
-  { month: "Mai", total: 55 },
-  { month: "Jun", total: 62 },
-  { month: "Jul", total: 70 },
-];
-
-export const mockGrowthMetrics = [
-  { metric: "Novos Alunos (Mês)", value: 15, key: "new" },
-  { metric: "Retenção (Trimestre)", value: 92, key: "retention" },
-  { metric: "Crescimento Kids", value: 25, key: "kids" },
-  { metric: "Engajamento (Check-in)", value: 88, key: "engagement" },
-  { metric: "Graduações (Ano)", value: 40, key: "graduations" },
-];
-
-export const mockAnnouncements: Announcement[] = [
-  {
-    id: "a1",
-    title: "Graduação de Final de Ano!",
-    content: "Preparem seus kimonos! Nossa cerimônia de graduação de final de ano será no dia 15 de Dezembro. Teremos um super seminário com um convidado especial e um churrasco de confraternização. Não percam!",
-    author: "Prof. Rickson Gracie",
-    authorAvatar: "https://placehold.co/128x128.png",
-    timestamp: "há 2 dias",
-  },
-  {
-    id: "a2",
-    title: "Horário Especial de Feriado",
-    content: "Atenção, equipe! Na próxima sexta-feira, dia 7, não haverá aulas devido ao feriado. As aulas de sábado ocorrerão normalmente. Bom descanso a todos!",
-    author: "Admin Geral",
-    authorAvatar: "https://placehold.co/128x128.png",
-    timestamp: "há 1 semana",
-  },
-  {
-    id: "a3",
-    title: "Campeonato Interno Kings BJJ",
-    content: "Vem aí o nosso campeonato interno! Será no dia 28 do próximo mês. Inscrições abertas na recepção. Mostre sua técnica e espírito de equipe. Oss!",
-    author: "Prof. Fabio Gurgel",
-    authorAvatar: "https://placehold.co/128x128.png",
-    timestamp: "há 2 semanas",
-  },
-];

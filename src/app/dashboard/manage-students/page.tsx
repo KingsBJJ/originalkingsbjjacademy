@@ -1,6 +1,6 @@
 "use client";
 
-import { useContext } from 'react';
+import { useContext, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -20,7 +20,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { UserContext } from '../client-layout';
-import { mockAdultStudents, mockKidsStudents, beltColors, beltColorsKids, User as StudentUser } from '@/lib/mock-data';
+import { beltColors, beltColorsKids, User as StudentUser } from '@/lib/mock-data';
+import { getStudents, type Student } from '@/lib/firestoreService';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { MoreHorizontal } from 'lucide-react';
@@ -32,12 +33,29 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
+import { Skeleton } from '@/components/ui/skeleton';
 
 const allBeltColors = { ...beltColors, ...beltColorsKids };
-type Student = Omit<StudentUser, 'role'>;
 
-const StudentTable = ({ students, userRole, userName }: { students: Student[], userRole: 'admin' | 'professor' | 'student', userName?: string }) => {
+const StudentTableRowSkeleton = () => (
+    <TableRow>
+      <TableCell>
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-9 w-9 rounded-full" />
+          <div>
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-3 w-40 mt-1" />
+          </div>
+        </div>
+      </TableCell>
+      <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+      <TableCell><Skeleton className="h-5 w-20 rounded-full" /></TableCell>
+      <TableCell className="text-right"><Skeleton className="h-8 w-8" /></TableCell>
+    </TableRow>
+);
+
+
+const StudentTable = ({ students, userRole, isLoading, userName }: { students: Student[], userRole: 'admin' | 'professor' | 'student', isLoading: boolean, userName?: string }) => {
     const title = userRole === 'admin' ? "Lista de Alunos" : `Alunos do Prof. ${userName}`;
     const description = userRole === 'admin' 
         ? `Total de ${students.length} alunos cadastrados.`
@@ -60,7 +78,9 @@ const StudentTable = ({ students, userRole, userName }: { students: Student[], u
             </TableRow>
           </TableHeader>
           <TableBody>
-            {students.length > 0 ? students.map((student) => {
+            {isLoading ? (
+                Array.from({ length: 5 }).map((_, i) => <StudentTableRowSkeleton key={i} />)
+            ) : students.length > 0 ? students.map((student) => {
               const beltStyle = allBeltColors[student.belt as keyof typeof allBeltColors] || allBeltColors.Branca;
               return (
                 <TableRow key={student.id}>
@@ -118,6 +138,23 @@ const StudentTable = ({ students, userRole, userName }: { students: Student[], u
 
 export default function ManageStudentsPage() {
   const user = useContext(UserContext);
+  const [students, setStudents] = useState<Student[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStudents = async () => {
+      try {
+        setLoading(true);
+        const allStudents = await getStudents();
+        setStudents(allStudents);
+      } catch (error) {
+        console.error("Failed to fetch students", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStudents();
+  }, []);
 
   if (!user || user.role === 'student') {
     return (
@@ -140,13 +177,12 @@ export default function ManageStudentsPage() {
     );
   }
 
-  const adultStudents = user.role === 'admin'
-    ? mockAdultStudents
-    : mockAdultStudents.filter(s => s.affiliation === user.affiliation && s.mainInstructor === user.name);
+  const filteredStudents = user.role === 'admin'
+    ? students
+    : students.filter(s => s.affiliation === user.affiliation && s.mainInstructor === user.name);
   
-  const kidsStudents = user.role === 'admin'
-    ? mockKidsStudents
-    : mockKidsStudents.filter(s => s.affiliation === user.affiliation && s.mainInstructor === user.name);
+  const adultStudents = filteredStudents.filter(s => s.category === 'Adult');
+  const kidsStudents = filteredStudents.filter(s => s.category === 'Kids');
 
   return (
     <div className="grid gap-6">
@@ -165,10 +201,10 @@ export default function ManageStudentsPage() {
           <TabsTrigger value="kids">Kids ({kidsStudents.length})</TabsTrigger>
         </TabsList>
         <TabsContent value="adults" className="mt-4">
-          <StudentTable students={adultStudents} userRole={user.role} userName={user.name} />
+          <StudentTable students={adultStudents} userRole={user.role} isLoading={loading} userName={user.name} />
         </TabsContent>
         <TabsContent value="kids" className="mt-4">
-          <StudentTable students={kidsStudents} userRole={user.role} userName={user.name} />
+          <StudentTable students={kidsStudents} userRole={user.role} isLoading={loading} userName={user.name} />
         </TabsContent>
       </Tabs>
     </div>

@@ -1,174 +1,87 @@
 "use client";
 
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 import Link from "next/link";
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import {
-  mockClasses,
-  mockGrowthMetrics,
-  mockAllStudents,
-  mockTeamGrowth,
-} from "@/lib/mock-data";
-import {
   CheckCircle,
   Medal,
-  BarChart as BarChartIcon,
   Users,
   Map,
-  User,
-  BarChart2,
+  User as UserIcon,
   Trophy,
 } from "lucide-react";
 import { UserContext } from "./client-layout";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Cell,
-  LabelList,
-} from "recharts";
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  type ChartConfig,
-} from "@/components/ui/chart";
+import { getBranches, getInstructors, getStudents, type Branch, type Instructor, type Student } from "@/lib/firestoreService";
+import { Skeleton } from "@/components/ui/skeleton";
+
+type DashboardData = {
+  branches: Branch[];
+  instructors: Instructor[];
+  students: Student[];
+};
+
+const DataCard = ({ title, value, description, icon: Icon }: { title: string; value: number | string; description: string; icon: React.ElementType }) => (
+    <Card>
+        <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+                <Icon />
+                <span>{title}</span>
+            </CardTitle>
+        </CardHeader>
+        <CardContent>
+            <p className="text-4xl font-bold">{value}</p>
+            <p className="text-xs text-muted-foreground">{description}</p>
+        </CardContent>
+    </Card>
+);
 
 const AdminDashboard = () => {
-  const chartData = mockTeamGrowth;
-  const growthMetricsData = mockGrowthMetrics;
+  const [data, setData] = useState<DashboardData | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const chartConfig = {
-    value: {
-      label: "Valor (%)",
-    },
-    new: {
-      label: "Novos Alunos (Mês)",
-      color: "hsl(var(--chart-1))",
-    },
-    retention: {
-      label: "Retenção (Trimestre)",
-      color: "hsl(var(--chart-2))",
-    },
-    kids: {
-      label: "Crescimento Kids",
-      color: "hsl(var(--chart-3))",
-    },
-    engagement: {
-      label: "Engajamento (Check-in)",
-      color: "hsl(var(--chart-4))",
-    },
-    graduations: {
-      label: "Graduações (Ano)",
-      color: "hsl(var(--chart-5))",
-    },
-  } satisfies ChartConfig;
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [branches, instructors, students] = await Promise.all([
+          getBranches(),
+          getInstructors(),
+          getStudents(),
+        ]);
+        setData({ branches, instructors, students });
+      } catch (error) {
+        console.error("Failed to fetch dashboard data", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return (
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <Skeleton className="h-36" />
+            <Skeleton className="h-36" />
+            <Skeleton className="h-36" />
+        </div>
+    );
+  }
 
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Users />
-            <span>Total de Alunos</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-4xl font-bold">
-            {mockAllStudents.length}
-          </p>
-          <p className="text-xs text-muted-foreground">
-            Alunos ativos em todas as filiais
-          </p>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Map />
-            <span>Total de Filiais</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-4xl font-bold">2</p>
-          <p className="text-xs text-muted-foreground">Filiais em operação</p>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <User />
-            <span>Total de Professores</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-4xl font-bold">4</p>
-          <p className="text-xs text-muted-foreground">
-            Professores em todas as filiais
-          </p>
-        </CardContent>
-      </Card>
-      <Card className="md:col-span-2 lg:col-span-3">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <BarChart2 />
-            Estatísticas de Crescimento da Equipe
-          </CardTitle>
-          <CardDescription>
-            Principais métricas de crescimento em porcentagem.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ChartContainer config={chartConfig} className="h-[300px] w-full">
-            <BarChart
-              accessibilityLayer
-              data={growthMetricsData}
-              margin={{
-                top: 30,
-              }}
-            >
-              <CartesianGrid vertical={false} />
-              <XAxis
-                dataKey="metric"
-                tickLine={false}
-                axisLine={false}
-                tickMargin={10}
-              />
-              <YAxis
-                tickFormatter={(value) => `${value}%`}
-                domain={[0, 100]}
-              />
-              <ChartTooltip
-                cursor={false}
-                content={<ChartTooltipContent hideLabel />}
-              />
-              <Bar dataKey="value" radius={[8, 8, 0, 0]}>
-                <LabelList
-                  position="top"
-                  offset={8}
-                  className="fill-foreground"
-                  fontSize={12}
-                  formatter={(value: number) => `${value}%`}
-                />
-                {growthMetricsData.map((entry) => (
-                  <Cell key={entry.metric} fill={`var(--color-${entry.key})`} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ChartContainer>
-        </CardContent>
-      </Card>
+      <DataCard title="Total de Alunos" value={data?.students.length ?? 0} description="Alunos ativos em todas as filiais" icon={Users} />
+      <DataCard title="Total de Filiais" value={data?.branches.length ?? 0} description="Filiais em operação" icon={Map} />
+      <DataCard title="Total de Professores" value={data?.instructors.length ?? 0} description="Professores em todas as filiais" icon={UserIcon} />
+      
       <Card className="md:col-span-2 lg:col-span-3">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -215,54 +128,44 @@ const AdminDashboard = () => {
 
 const ProfessorDashboard = () => {
   const user = useContext(UserContext);
+  const [data, setData] = useState<DashboardData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!user?.affiliation) {
+          setLoading(false);
+          return;
+      }
+      try {
+        const [branches, students] = await Promise.all([
+          getBranches(),
+          getStudents(),
+        ]);
+        const affiliatedStudents = students.filter(s => s.affiliation === user.affiliation);
+        setData({ branches, instructors: [], students: affiliatedStudents });
+      } catch (error) {
+        console.error("Failed to fetch dashboard data", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [user?.affiliation]);
+
   if (!user) return null;
 
-  const userFirstName = user.name.split(" ")[1];
-  const nextClass =
-    mockClasses.find((c) => c.branchId === user.branchId && c.instructor.includes(userFirstName)) ||
-    mockClasses.find((c) => c.branchId === user.branchId) ||
-    mockClasses[0];
+  if (loading) {
+      return <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"><Skeleton className="h-36 md:col-span-1 lg:col-span-3" /><Skeleton className="h-36 md:col-span-1 lg:col-span-3" /></div>;
+  }
 
-  const branchMetricsData = [
-    { metric: "Total", value: mockAllStudents.filter(s => s.affiliation === user.affiliation).length, key: "total", unitPrefix: "", unitSuffix: "" },
-    { metric: "Novos", value: 5, key: "new", unitPrefix: "+", unitSuffix: ""},
-    { metric: "Retenção", value: 96, key: "retention", unitPrefix: "", unitSuffix: "%" },
-  ];
-
-  const chartConfig = {
-      value: {
-        label: "Valor",
-      },
-      total: {
-        label: "Total de Alunos",
-        color: "hsl(var(--chart-1))",
-      },
-      new: {
-        label: "Novos Alunos (Mês)",
-        color: "hsl(var(--chart-2))",
-      },
-      retention: {
-        label: "Retenção",
-        color: "hsl(var(--chart-4))",
-      },
-  } satisfies ChartConfig;
+  const nextClass = data?.branches
+    .flatMap(b => b.schedule?.map(s => ({...s, branchName: b.name})))
+    .find(c => c.instructor.includes(user.name.split(" ")[1]));
 
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <Card className="col-span-1 lg:col-span-1">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users />
-              <span>Seus Alunos</span>
-            </CardTitle>
-            <CardDescription>
-              Alunos na sua filial: {user.affiliation}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-              <p className="text-4xl font-bold">{mockAllStudents.filter(s => s.affiliation === user.affiliation).length}</p>
-          </CardContent>
-        </Card>
+        <DataCard title="Seus Alunos" value={data?.students.length ?? 0} description={`Alunos na sua filial: ${user.affiliation}`} icon={Users} />
         
         <Card className="col-span-1 lg:col-span-2">
             <CardHeader>
@@ -272,17 +175,21 @@ const ProfessorDashboard = () => {
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                        <p className="text-lg font-semibold">{nextClass.name}</p>
-                        <p className="text-muted-foreground">
-                        Hoje às {nextClass.time.split(' - ')[0]}
-                        </p>
+                {nextClass ? (
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <p className="text-lg font-semibold">{nextClass.name}</p>
+                            <p className="text-muted-foreground">
+                            {nextClass.day} às {nextClass.time.split(' - ')[0]}
+                            </p>
+                        </div>
+                        <Button size="lg" className="w-full sm:w-auto" asChild>
+                            <Link href={`/dashboard/schedule?role=${user.role}`}>Ver Grade Completa</Link>
+                        </Button>
                     </div>
-                    <Button size="lg" className="w-full sm:w-auto" asChild>
-                        <Link href={`/dashboard/schedule?role=${user.role}`}>Ver Grade Completa</Link>
-                    </Button>
-                </div>
+                ) : (
+                    <p className="text-muted-foreground">Nenhuma próxima aula encontrada.</p>
+                )}
             </CardContent>
         </Card>
 
@@ -310,62 +217,31 @@ const ProfessorDashboard = () => {
             </div>
           </CardContent>
         </Card>
-        
-        <Card className="md:col-span-2 lg:col-span-3">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BarChartIcon />
-              <span>Estatísticas da sua Unidade</span>
-            </CardTitle>
-            <CardDescription>
-              Desempenho da unidade {user.affiliation}.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-             <ChartContainer config={chartConfig} className="h-[250px] w-full">
-              <BarChart accessibilityLayer data={branchMetricsData}>
-                <CartesianGrid vertical={false} />
-                <XAxis
-                  dataKey="metric"
-                  tickLine={false}
-                  axisLine={false}
-                  tickMargin={10}
-                  tick={{ fontSize: 12 }}
-                />
-                <YAxis
-                  tickFormatter={(value) => `${value}`}
-                />
-                <ChartTooltip
-                  cursor={false}
-                  content={<ChartTooltipContent hideLabel />}
-                />
-                <Bar dataKey="value" radius={[8, 8, 0, 0]}>
-                  <LabelList
-                    position="top"
-                    offset={8}
-                    className="fill-foreground font-semibold"
-                    fontSize={12}
-                    dataKey={(d: { value: number; unitPrefix: string; unitSuffix: string }) => `${d.unitPrefix}${d.value}${d.unitSuffix}`}
-                  />
-                  {branchMetricsData.map((entry) => (
-                    <Cell key={entry.metric} fill={`var(--color-${entry.key})`} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ChartContainer>
-          </CardContent>
-        </Card>
     </div>
   );
 };
 
-
 const StudentDashboard = () => {
   const user = useContext(UserContext);
+  const [branches, setBranches] = useState<Branch[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getBranches().then(data => {
+        setBranches(data);
+        setLoading(false);
+    }).catch(console.error);
+  }, []);
+
   if (!user) return null;
 
-  const nextClass =
-    mockClasses.find((c) => c.branchId === user.branchId) || mockClasses[0];
+  if (loading) {
+      return <div className="grid gap-6"><Skeleton className="h-44 w-full" /> <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3"><Skeleton className="h-44" /><Skeleton className="h-44" /><Skeleton className="h-44" /></div></div>;
+  }
+
+  const nextClass = branches
+      .find(b => b.id === user.branchId)
+      ?.schedule?.[0];
 
   return (
     <>
@@ -382,15 +258,21 @@ const StudentDashboard = () => {
         </CardHeader>
         <CardContent>
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-lg font-semibold">{nextClass.name}</p>
-              <p className="text-muted-foreground">
-                {nextClass.time} com {nextClass.instructor}
-              </p>
-            </div>
-            <Button size="lg" className="w-full sm:w-auto" asChild>
-              <Link href={`/dashboard/check-in?role=${user.role}`}>Fazer Check-in</Link>
-            </Button>
+            {nextClass ? (
+                <>
+                    <div>
+                        <p className="text-lg font-semibold">{nextClass.name}</p>
+                        <p className="text-muted-foreground">
+                            {nextClass.time} com {nextClass.instructor}
+                        </p>
+                    </div>
+                    <Button size="lg" className="w-full sm:w-auto" asChild>
+                        <Link href={`/dashboard/check-in?role=${user.role}`}>Fazer Check-in</Link>
+                    </Button>
+                </>
+            ) : (
+                 <p className="text-muted-foreground">Nenhuma aula agendada para sua filial.</p>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -423,10 +305,7 @@ const StudentDashboard = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BarChartIcon />
-              <span>Frequência</span>
-            </CardTitle>
+            <CardTitle>Frequência</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-baseline justify-center gap-2">
@@ -470,7 +349,15 @@ export default function DashboardPage() {
   const user = useContext(UserContext);
 
   if (!user) {
-    return <div>Carregando...</div>;
+    return <div className="grid gap-6">
+        <Skeleton className="h-10 w-1/2" />
+        <Skeleton className="h-5 w-3/4" />
+        <div className="mt-4 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <Skeleton className="h-36" />
+            <Skeleton className="h-36" />
+            <Skeleton className="h-36" />
+        </div>
+    </div>
   }
 
   const welcomeMessage = {

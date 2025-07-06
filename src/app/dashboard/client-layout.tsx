@@ -22,7 +22,7 @@ import {
   SidebarInset,
 } from "@/components/ui/sidebar";
 import { KingsBjjLogo } from "@/components/kings-bjj-logo";
-import { mockUsers, User, mockAnnouncements } from "@/lib/mock-data";
+import { User, mockUsers } from "@/lib/mock-data";
 import {
   Award,
   Bell,
@@ -42,6 +42,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { getAppUser, createAppUser, updateUser as updateDbUser } from "@/lib/firestoreService";
+
 
 type NavItem = {
   href: string;
@@ -94,14 +96,24 @@ export default function DashboardClientLayout({
 }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const role = searchParams.get("role") || "student";
+  const role = (searchParams.get("role") || "student") as "student" | "professor" | "admin";
   
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    const validRole = role === 'admin' || role === 'professor' ? role : 'student';
-    // Deep copy to prevent mutating the original mock object across sessions
-    setUser(JSON.parse(JSON.stringify(mockUsers[validRole])));
+    const fetchUser = async () => {
+        const validRole = role === 'admin' || role === 'professor' ? role : 'student';
+        let appUser = await getAppUser(validRole);
+
+        if (!appUser) {
+            // If user doesn't exist in DB, create it from mock data
+            const mockUser = mockUsers[validRole];
+            appUser = await createAppUser(mockUser);
+        }
+        setUser(appUser);
+    };
+
+    fetchUser();
   }, [role]);
 
   const updateUser = useCallback((newUserData: Partial<User>) => {
@@ -110,13 +122,16 @@ export default function DashboardClientLayout({
       
       const updatedUser = { ...prevUser, ...newUserData };
       
-      // Handle nested objects like attendance specifically
       if (newUserData.attendance) {
         updatedUser.attendance = {
           ...prevUser.attendance,
           ...newUserData.attendance
         };
       }
+      
+      // Update in Firestore as well
+      updateDbUser(prevUser.id, newUserData).catch(console.error);
+      
       return updatedUser;
     });
   }, []);
@@ -208,42 +223,22 @@ export default function DashboardClientLayout({
                       <PopoverTrigger asChild>
                         <Button variant="ghost" size="icon" className="relative rounded-full">
                           <Bell className="h-5 w-5" />
-                           {mockAnnouncements.filter(a => !a.branchId || a.branchId === user.branchId).length > 0 && (
-                              <span className="absolute top-1.5 right-1.5 flex h-2.5 w-2.5">
+                           <span className="absolute top-1.5 right-1.5 flex h-2.5 w-2.5">
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
                                 <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-                              </span>
-                          )}
+                           </span>
                           <span className="sr-only">Ver notificações</span>
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent align="end" className="w-96 p-0">
                         <div className="flex items-center justify-between border-b p-4">
                           <h3 className="font-semibold">Recados Recentes</h3>
-                          <Badge variant="secondary">{mockAnnouncements.filter(a => !a.branchId || a.branchId === user.branchId).length}</Badge>
+                          <Badge variant="secondary">3</Badge>
                         </div>
                         <div className="max-h-80 overflow-y-auto">
-                           {mockAnnouncements.filter(a => !a.branchId || a.branchId === user.branchId).length > 0 ? mockAnnouncements.slice(0, 3).map((announcement) => (
-                            <Link key={announcement.id} href={getHref('/dashboard/notifications')} className="block">
-                              <div className="flex items-start gap-3 border-b p-4 text-sm hover:bg-muted/50 last:border-b-0">
-                                  <Avatar className="h-8 w-8">
-                                      <AvatarImage src={announcement.authorAvatar} alt={announcement.author} />
-                                      <AvatarFallback>{announcement.author.charAt(0)}</AvatarFallback>
-                                  </Avatar>
-                                  <div className="grid gap-1">
-                                    <p className="font-semibold leading-relaxed">{announcement.title}</p>
-                                    <p className="text-xs text-muted-foreground line-clamp-2">
-                                        {announcement.content}
-                                    </p>
-                                    <p className="text-xs text-muted-foreground">{announcement.timestamp}</p>
-                                  </div>
-                              </div>
-                            </Link>
-                          )) : (
-                             <div className="p-4 text-center text-sm text-muted-foreground">
+                            <div className="p-4 text-center text-sm text-muted-foreground">
                                 Nenhum recado recente.
-                             </div>
-                          )}
+                            </div>
                         </div>
                         <div className="border-t p-2">
                             <Button size="sm" variant="link" className="w-full" asChild>
