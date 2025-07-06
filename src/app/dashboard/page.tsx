@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   Card,
@@ -18,7 +19,10 @@ import {
   Map,
   User as UserIcon,
   PlusCircle,
+  BarChart,
 } from "lucide-react";
+import { Bar, BarChart as RechartsBarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
+import { ChartConfig, ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
 import { UserContext } from "./client-layout";
 import { getBranches, getInstructors, getStudents, type Branch, type Instructor, type Student } from "@/lib/firestoreService";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -32,8 +36,8 @@ type DashboardData = {
 const DataCard = ({ title, value, description, icon: Icon }: { title: string; value: number | string; description: string; icon: React.ElementType }) => (
     <Card>
         <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-                <Icon />
+            <CardTitle className="flex items-center gap-2 text-base">
+                <Icon className="h-5 w-5" />
                 <span>{title}</span>
             </CardTitle>
         </CardHeader>
@@ -43,6 +47,13 @@ const DataCard = ({ title, value, description, icon: Icon }: { title: string; va
         </CardContent>
     </Card>
 );
+
+const chartConfig = {
+  students: {
+    label: "Alunos",
+    color: "hsl(var(--primary))",
+  },
+} satisfies ChartConfig;
 
 const AdminDashboard = () => {
   const user = useContext(UserContext);
@@ -68,21 +79,61 @@ const AdminDashboard = () => {
     fetchData();
   }, []);
 
+  const branchStudentData = useMemo(() => {
+    if (!data?.students || !data?.branches) return [];
+    
+    const studentCounts = data.students.reduce((acc, student) => {
+        const affiliation = student.affiliation || "Sem Filial";
+        acc[affiliation] = (acc[affiliation] || 0) + 1;
+        return acc;
+    }, {} as Record<string, number>);
+
+    return Object.entries(studentCounts).map(([branchName, studentCount]) => ({
+      name: branchName,
+      students: studentCount,
+    }));
+  }, [data]);
+
   if (loading) {
     return (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             <Skeleton className="h-36" />
             <Skeleton className="h-36" />
             <Skeleton className="h-36" />
+            <Skeleton className="h-80 md:col-span-3" />
+            <Skeleton className="h-40 md:col-span-3" />
         </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
       <DataCard title="Total de Alunos" value={data?.students.length ?? 0} description="Alunos ativos em todas as filiais" icon={Users} />
       <DataCard title="Total de Filiais" value={data?.branches.length ?? 0} description="Filiais em operação" icon={Map} />
       <DataCard title="Total de Professores" value={data?.instructors.length ?? 0} description="Professores em todas as filiais" icon={UserIcon} />
+      
+      <Card className="md:col-span-3">
+          <CardHeader>
+              <CardTitle className="flex items-center gap-2"><BarChart/>Distribuição de Alunos por Filial</CardTitle>
+              <CardDescription>Visualize a quantidade de alunos em cada filial para entender a demanda.</CardDescription>
+          </CardHeader>
+          <CardContent>
+              {branchStudentData.length > 0 ? (
+                <ChartContainer config={chartConfig} className="h-64 w-full">
+                    <RechartsBarChart accessibilityLayer data={branchStudentData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                        <XAxis dataKey="name" tickLine={false} axisLine={false} tickMargin={10} fontSize={12} angle={-15} textAnchor="end" />
+                        <YAxis tickLine={false} axisLine={false} tickMargin={10} fontSize={12} />
+                        <Tooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
+                        <Bar dataKey="students" fill="var(--color-students)" radius={4} />
+                    </RechartsBarChart>
+                </ChartContainer>
+              ) : (
+                <div className="flex h-64 items-center justify-center">
+                    <p className="text-muted-foreground">Nenhum dado de aluno ou filial para exibir.</p>
+                </div>
+              )}
+          </CardContent>
+      </Card>
       
       <Card className="md:col-span-3">
           <CardHeader>
