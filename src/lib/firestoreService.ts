@@ -1,10 +1,18 @@
+import { db } from '@/lib/firebase';
+import { 
+    collection, 
+    getDocs, 
+    doc, 
+    getDoc, 
+    addDoc, 
+    updateDoc, 
+    deleteDoc, 
+    query,
+    serverTimestamp,
+    Timestamp
+} from 'firebase/firestore';
 
-import { mockBranches, mockInstructors } from './mock-data';
-
-// Helper function to simulate network delay
-const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
-
-// --- Types (Keep them as they are) ---
+// --- Types ---
 export type ClassScheduleItem = {
   name: string;
   day: string;
@@ -29,7 +37,7 @@ export type TermsAcceptance = {
   childName: string;
   branchId: string;
   branchName: string;
-  acceptedAt: Date;
+  acceptedAt: Timestamp;
 };
 
 export type Instructor = {
@@ -44,118 +52,131 @@ export type Instructor = {
   avatar?: string;
 };
 
-// --- LocalStorage Keys ---
-const BRANCHES_KEY = 'kings-bjj-branches';
-const INSTRUCTORS_KEY = 'kings-bjj-instructors';
-const TERMS_KEY = 'kings-bjj-terms';
+// --- References to Firestore Collections ---
+const branchesCollection = collection(db, 'branches');
+const instructorsCollection = collection(db, 'instructors');
+const termsCollection = collection(db, 'terms');
+
 
 // --- Branch Functions ---
 
 export const getBranches = async (): Promise<Branch[]> => {
-  await delay(200); // Simulate network latency
-  if (typeof window === 'undefined') return [];
-  const branchesJson = localStorage.getItem(BRANCHES_KEY);
-  if (!branchesJson || JSON.parse(branchesJson).length === 0) {
-    // If no data, populate with mock data
-    localStorage.setItem(BRANCHES_KEY, JSON.stringify(mockBranches));
-    return mockBranches;
+  try {
+    const querySnapshot = await getDocs(query(branchesCollection));
+    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Branch));
+  } catch (error) {
+    console.error("Error getting branches: ", error);
+    throw new Error("Failed to fetch branches.");
   }
-  return JSON.parse(branchesJson);
 };
 
 export const getBranch = async (id: string): Promise<Branch | null> => {
-  await delay(200);
-  const branches = await getBranches();
-  return branches.find(b => b.id === id) || null;
+  try {
+    const docRef = doc(db, 'branches', id);
+    const docSnap = await getDoc(docRef);
+    return docSnap.exists() ? { id: docSnap.id, ...docSnap.data() } as Branch : null;
+  } catch (error) {
+    console.error("Error getting branch: ", error);
+    throw new Error("Failed to fetch branch.");
+  }
 };
 
 export const addBranch = async (branchData: Omit<Branch, 'id'>) => {
-  await delay(300);
-  const branches = await getBranches();
-  const newBranch: Branch = {
-    id: `branch_${Date.now()}`,
-    ...branchData,
-  };
-  branches.push(newBranch);
-  localStorage.setItem(BRANCHES_KEY, JSON.stringify(branches));
-  return { id: newBranch.id }; 
+  try {
+    const docRef = await addDoc(branchesCollection, branchData);
+    return { id: docRef.id };
+  } catch (error) {
+    console.error("Error adding branch: ", error);
+    throw new Error("Failed to add branch.");
+  }
 };
 
 export const updateBranch = async (id: string, branchData: Partial<Omit<Branch, 'id'>>) => {
-  await delay(300);
-  let branches = await getBranches();
-  branches = branches.map(b => (b.id === id ? { ...b, ...branchData } : b));
-  localStorage.setItem(BRANCHES_KEY, JSON.stringify(branches));
+  try {
+    const docRef = doc(db, 'branches', id);
+    await updateDoc(docRef, branchData);
+  } catch (error) {
+    console.error("Error updating branch: ", error);
+    throw new Error("Failed to update branch.");
+  }
 };
 
 export const deleteBranch = async (id: string) => {
-  await delay(300);
-  let branches = await getBranches();
-  branches = branches.filter(b => b.id !== id);
-  localStorage.setItem(BRANCHES_KEY, JSON.stringify(branches));
+  try {
+    const docRef = doc(db, 'branches', id);
+    await deleteDoc(docRef);
+  } catch (error) {
+    console.error("Error deleting branch: ", error);
+    throw new Error("Failed to delete branch.");
+  }
 };
+
 
 // --- Instructor Functions ---
 
 export const getInstructors = async (): Promise<Instructor[]> => {
-  await delay(200);
-  if (typeof window === 'undefined') return [];
-  const instructorsJson = localStorage.getItem(INSTRUCTORS_KEY);
-  if (!instructorsJson || JSON.parse(instructorsJson).length === 0) {
-    localStorage.setItem(INSTRUCTORS_KEY, JSON.stringify(mockInstructors));
-    return mockInstructors;
-  }
-  return JSON.parse(instructorsJson);
+    try {
+        const querySnapshot = await getDocs(query(instructorsCollection));
+        return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Instructor));
+    } catch (error) {
+        console.error("Error getting instructors: ", error);
+        throw new Error("Failed to fetch instructors.");
+    }
 };
 
 export const getInstructor = async (id: string): Promise<Instructor | null> => {
-    await delay(200);
-    const instructors = await getInstructors();
-    return instructors.find(i => i.id === id) || null;
+    try {
+        const docRef = doc(db, 'instructors', id);
+        const docSnap = await getDoc(docRef);
+        return docSnap.exists() ? { id: docSnap.id, ...docSnap.data() } as Instructor : null;
+    } catch (error) {
+        console.error("Error getting instructor: ", error);
+        throw new Error("Failed to fetch instructor.");
+    }
 }
 
 export const addInstructor = async (instructorData: Omit<Instructor, 'id'>) => {
-    await delay(300);
-    const instructors = await getInstructors();
-    const newInstructor: Instructor = {
-        id: `instructor_${Date.now()}`,
-        ...instructorData,
-    };
-    instructors.push(newInstructor);
-    localStorage.setItem(INSTRUCTORS_KEY, JSON.stringify(instructors));
-    return { id: newInstructor.id };
+    try {
+        const docRef = await addDoc(instructorsCollection, instructorData);
+        return { id: docRef.id };
+    } catch (error) {
+        console.error("Error adding instructor: ", error);
+        throw new Error("Failed to add instructor.");
+    }
 };
 
 export const updateInstructor = async (id: string, instructorData: Partial<Omit<Instructor, 'id'>>) => {
-    await delay(300);
-    let instructors = await getInstructors();
-    instructors = instructors.map(i => i.id === id ? { ...i, ...instructorData } : i);
-    localStorage.setItem(INSTRUCTORS_KEY, JSON.stringify(instructors));
+    try {
+        const docRef = doc(db, 'instructors', id);
+        await updateDoc(docRef, instructorData);
+    } catch (error) {
+        console.error("Error updating instructor: ", error);
+        throw new Error("Failed to update instructor.");
+    }
 };
 
 export const deleteInstructor = async (id: string) => {
-    await delay(300);
-    let instructors = await getInstructors();
-    instructors = instructors.filter(i => i.id !== id);
-    localStorage.setItem(INSTRUCTORS_KEY, JSON.stringify(instructors));
+    try {
+        const docRef = doc(db, 'instructors', id);
+        await deleteDoc(docRef);
+    } catch (error) {
+        console.error("Error deleting instructor: ", error);
+        throw new Error("Failed to delete instructor.");
+    }
 };
 
 
 // --- Terms Acceptance Functions ---
 
 export const saveTermsAcceptance = async (data: Omit<TermsAcceptance, 'id' | 'acceptedAt'>) => {
-    await delay(300);
-    if (typeof window === 'undefined') return;
-    const termsJson = localStorage.getItem(TERMS_KEY);
-    const terms: TermsAcceptance[] = termsJson ? JSON.parse(termsJson) : [];
-    
-    const newAcceptance: TermsAcceptance = {
-        id: `term_${Date.now()}`,
-        ...data,
-        acceptedAt: new Date(),
-    };
-
-    terms.push(newAcceptance);
-    localStorage.setItem(TERMS_KEY, JSON.stringify(terms));
-    return newAcceptance.id;
+    try {
+        const docRef = await addDoc(termsCollection, {
+            ...data,
+            acceptedAt: serverTimestamp(),
+        });
+        return docRef.id;
+    } catch (error) {
+        console.error("Error saving terms acceptance: ", error);
+        throw new Error("Failed to save terms acceptance.");
+    }
 };

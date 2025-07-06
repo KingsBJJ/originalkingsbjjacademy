@@ -1,12 +1,8 @@
-
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Para a fase de prototipagem, permitir leitura e escrita em todos os documentos
-    // para garantir que a funcionalidade de salvamento funcione sem a necessidade de
-    // configurar a autenticação completa do usuário ainda.
-    // ATENÇÃO: Estas regras são inseguras para um ambiente de produção.
+    // Allow all reads and writes for prototyping and initial setup.
+    // WARNING: This is insecure for a production environment.
     match /{document=**} {
       allow read, write: if true;
     }
