@@ -107,6 +107,7 @@ export default function DashboardClientLayout({
   const [authError, setAuthError] = useState<string | null>(null);
 
   useEffect(() => {
+    // Sanitize the role parameter to prevent invalid queries
     const role = roleParam ? roleParam.split('?')[0] as 'student' | 'professor' | 'admin' : null;
 
     if (role) {
