@@ -232,6 +232,22 @@ export const saveTermsAcceptance = async (data: Omit<TermsAcceptance, 'id' | 'ac
 
 
 // --- User Functions ---
+
+export const ensureUserExists = async (user: User) => {
+  try {
+      const userRef = doc(db, 'users', user.id);
+      const userSnap = await getDoc(userRef);
+      if (!userSnap.exists()) {
+          console.log(`User ${user.id} not found in DB. Creating...`);
+          await setDoc(userRef, user);
+      }
+  } catch (error) {
+      // Log error but do not throw, as this is a background task.
+      console.error(`Failed to ensure user ${user.id} exists in DB:`, error);
+  }
+};
+
+
 export const getAppUser = async (role: 'student' | 'professor' | 'admin'): Promise<User | null> => {
     try {
         const q = query(usersCollection, where("role", "==", role), limit(1));

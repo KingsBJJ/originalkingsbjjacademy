@@ -45,7 +45,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { updateUser as updateDbUser, getAppUser, createAppUser } from "@/lib/firestoreService";
+import { updateUser as updateDbUser, ensureUserExists } from "@/lib/firestoreService";
 import { useToast } from "@/hooks/use-toast";
 
 
@@ -102,51 +102,26 @@ export default function DashboardClientLayout({
   const searchParams = useSearchParams();
   const roleParam = searchParams.get("role");
   const { toast } = useToast();
-  
-  const [user, setUser] = useState<User | null>(null);
-  const [authError, setAuthError] = useState<string | null>(null);
+
+  const initialUser = useMemo(() => {
+    const role = roleParam ? roleParam.split('?')[0] as 'student' | 'professor' | 'admin' : 'student';
+    return mockUsers[role] || mockUsers.student;
+  }, [roleParam]);
+
+  const [user, setUser] = useState<User>(initialUser);
 
   useEffect(() => {
-    // Sanitize the role parameter to prevent invalid queries
-    const role = roleParam ? roleParam.split('?')[0] as 'student' | 'professor' | 'admin' : null;
-
-    if (role) {
-      const validRole = (role || 'student') as 'student' | 'professor' | 'admin';
-      
-      const fetchUser = async () => {
-        try {
-          let userFromDb = await getAppUser(validRole);
-          
-          if (!userFromDb) {
-            console.log(`User with role '${validRole}' not found in Firestore. Creating...`);
-            const mockUser = mockUsers[validRole];
-            if (!mockUser) {
-              throw new Error(`Invalid role detected: ${validRole}`);
-            }
-            userFromDb = await createAppUser(mockUser);
-          }
-          
-          setUser(userFromDb);
-          setAuthError(null);
-
-        } catch (error) {
-          console.error("CRITICAL: Failed to connect to Firestore or create user.", error);
-          setAuthError("Não foi possível conectar ao banco de dados. Exibindo dados de demonstração.");
-          const mockUser = mockUsers[validRole];
-          if(mockUser) setUser(mockUser);
-        }
-      };
-
-      fetchUser();
-    } else {
-        setAuthError("Perfil de usuário não especificado. Por favor, acesse através da página de login.");
+    // When the initial user is determined, sync it with Firestore.
+    // This happens in the background and does not block UI rendering.
+    if (initialUser) {
+      ensureUserExists(initialUser);
+      setUser(initialUser);
     }
-  }, [roleParam]);
+  }, [initialUser]);
+
 
   const updateUser = useCallback((newUserData: Partial<User>) => {
     setUser(prevUser => {
-      if (!prevUser) return null;
-      
       const updatedUser = { ...prevUser, ...newUserData };
       
       if (newUserData.attendance) {
@@ -156,27 +131,25 @@ export default function DashboardClientLayout({
         };
       }
       
-      if (!authError) {
-          updateDbUser(prevUser.id, newUserData).catch(error => {
-              console.error("Failed to update user in DB:", error);
-              toast({
-                variant: "destructive",
-                title: "Erro de Sincronização",
-                description: "Não foi possível salvar as alterações no servidor.",
-              });
+      // Update the DB in the background. Failures are logged but don't crash the app.
+      updateDbUser(updatedUser.id, newUserData).catch(error => {
+          console.error("Failed to update user in DB:", error);
+          toast({
+            variant: "destructive",
+            title: "Erro de Sincronização",
+            description: "Não foi possível salvar as alterações no servidor.",
           });
-      }
+      });
       
       return updatedUser;
     });
-  }, [toast, authError]);
+  }, [toast]);
 
   const navItems: NavItem[] = useMemo(() => {
-    const userRole = user?.role || (roleParam?.split('?')[0] as User['role']) || 'student';
-    if (userRole === 'admin') return adminNavItems;
-    if (userRole === 'professor') return professorNavItems;
+    if (user.role === 'admin') return adminNavItems;
+    if (user.role === 'professor') return professorNavItems;
     return studentNavItems;
-  }, [user?.role, roleParam]);
+  }, [user.role]);
 
   const getHref = (href: string) => {
       const currentRole = roleParam?.split('?')[0];
@@ -184,19 +157,11 @@ export default function DashboardClientLayout({
   }
   
   if (!user) {
+    // This should no longer be visible to the user, but serves as a fallback.
     return (
       <div className="flex h-screen w-full flex-col items-center justify-center gap-4 bg-background">
         <KingsBjjLogo className="h-24 w-24 animate-pulse" />
-        <p className="text-muted-foreground">Carregando painel...</p>
-         {authError && (
-              <Alert variant="destructive" className="max-w-md mt-4">
-                <AlertTriangle className="h-4 w-4" />
-                <AlertTitle>Erro Crítico</AlertTitle>
-                <AlertDescription>
-                  {authError}
-                </AlertDescription>
-              </Alert>
-            )}
+        <p className="text-muted-foreground">Inicializando painel...</p>
       </div>
     );
   }
@@ -299,15 +264,6 @@ export default function DashboardClientLayout({
                   </div>
                 </div>
             </header>
-             {authError && (
-              <Alert variant="destructive" className="m-4 rounded-lg">
-                <AlertTriangle className="h-4 w-4" />
-                <AlertTitle>Modo Offline</AlertTitle>
-                <AlertDescription>
-                  {authError} Algumas funcionalidades podem não funcionar corretamente.
-                </AlertDescription>
-              </Alert>
-            )}
             <main className="flex-1 overflow-auto p-4 sm:p-6">{children}</main>
           </SidebarInset>
         </SidebarProvider>
