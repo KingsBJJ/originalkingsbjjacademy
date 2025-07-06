@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useContext, useState, useEffect } from 'react';
@@ -94,7 +95,7 @@ export default function NewBranchPage() {
           description: 'Não foi possível carregar a lista de instrutores.',
         });
       });
-  }, []);
+  }, [toast]);
 
   const onSubmit = async (data: BranchFormValues) => {
     setIsSaving(true);

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useContext, useState, useEffect } from 'react';
@@ -83,7 +84,7 @@ export default function NewInstructorPage() {
           title: "Erro ao carregar filiais.",
         });
       });
-  }, []);
+  }, [toast]);
 
   const watchedBelt = form.watch("belt");
 
@@ -124,7 +125,7 @@ export default function NewInstructorPage() {
     }
   };
   
-  if (user?.role !== 'admin') {
+  if (user?.role !== 'admin' && user?.role !== 'professor') {
     return (
       <div className="flex items-center justify-center h-full">
         <Card className="w-full max-w-md">
@@ -135,7 +136,7 @@ export default function NewInstructorPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <p>Esta área é restrita a administradores.</p>
+            <p>Esta área é restrita a administradores e professores.</p>
             <Button asChild className="mt-4">
               <Link href={`/dashboard?role=${user?.role || 'student'}`}>Voltar ao Painel</Link>
             </Button>
@@ -149,7 +150,7 @@ export default function NewInstructorPage() {
     <div className="grid gap-6">
       <div className="flex items-center gap-4">
         <Button variant="outline" size="icon" asChild>
-          <Link href={`/dashboard/instructors?role=${user.role}`}>
+          <Link href={`/dashboard/instructors?role=${user?.role}`}>
             <ArrowLeft />
             <span className="sr-only">Voltar</span>
           </Link>

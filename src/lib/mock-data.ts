@@ -72,7 +72,7 @@ export const beltInfoKids = {
 };
 
 const studentUser: User = {
-  id: "student_user",
+  id: "student_user_1",
   name: "Alex Costa",
   email: "student@kingsbjj.com",
   role: "student",
@@ -91,7 +91,7 @@ const studentUser: User = {
 };
 
 const professorUser: User = {
-  id: "professor_user",
+  id: "professor_user_1",
   name: "Prof. Rickson Gracie",
   email: "professor@kingsbjj.com",
   role: "professor",
@@ -109,7 +109,7 @@ const professorUser: User = {
 };
 
 const adminUser: User = {
-  id: "admin_user",
+  id: "admin_user_1",
   name: "Admin Geral",
   email: "admin@kingsbjj.com",
   role: "admin",

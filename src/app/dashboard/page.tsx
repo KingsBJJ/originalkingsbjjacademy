@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useContext, useEffect, useState } from "react";
@@ -17,7 +18,7 @@ import {
   Users,
   Map,
   User as UserIcon,
-  Trophy,
+  PlusCircle,
 } from "lucide-react";
 import { UserContext } from "./client-layout";
 import { getBranches, getInstructors, getStudents, type Branch, type Instructor, type Student } from "@/lib/firestoreService";
@@ -45,12 +46,14 @@ const DataCard = ({ title, value, description, icon: Icon }: { title: string; va
 );
 
 const AdminDashboard = () => {
+  const user = useContext(UserContext);
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setLoading(true);
         const [branches, instructors, students] = await Promise.all([
           getBranches(),
           getInstructors(),
@@ -82,46 +85,33 @@ const AdminDashboard = () => {
       <DataCard title="Total de Filiais" value={data?.branches.length ?? 0} description="Filiais em operação" icon={Map} />
       <DataCard title="Total de Professores" value={data?.instructors.length ?? 0} description="Professores em todas as filiais" icon={UserIcon} />
       
-      <Card className="md:col-span-2 lg:col-span-3">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Trophy />
-            <span>Filial em Destaque no Mês</span>
-          </CardTitle>
-          <CardDescription>
-            A filial com melhor desempenho este mês.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center gap-4 rounded-lg border bg-muted/50 p-4">
-            <Map className="h-10 w-10 text-primary" />
-            <div>
-              <h3 className="text-xl font-bold">Kings BJJ - Centro</h3>
-              <p className="text-muted-foreground">
-                Parabéns pelo excelente trabalho!
-              </p>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <div className="rounded-lg border p-3 text-center">
-              <p className="text-2xl font-bold">+12%</p>
-              <p className="text-xs text-muted-foreground">
-                Crescimento de Alunos
-              </p>
-            </div>
-            <div className="rounded-lg border p-3 text-center">
-              <p className="text-2xl font-bold">95%</p>
-              <p className="text-xs text-muted-foreground">Retenção</p>
-            </div>
-            <div className="rounded-lg border p-3 text-center">
-              <p className="text-2xl font-bold">85%</p>
-              <p className="text-xs text-muted-foreground">
-                Engajamento nas Aulas
-              </p>
-            </div>
-          </div>
-        </CardContent>
+      <Card className="md:col-span-3">
+          <CardHeader>
+              <CardTitle>Acesso Rápido</CardTitle>
+              <CardDescription>Gerencie rapidamente as principais seções do sistema.</CardDescription>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
+              <Button asChild variant="outline" size="lg" className="h-24 flex-col gap-2">
+                  <Link href={`/dashboard/branches/new?role=${user?.role}`}>
+                      <PlusCircle className="h-6 w-6" />
+                      <span>Adicionar Filial</span>
+                  </Link>
+              </Button>
+              <Button asChild variant="outline" size="lg" className="h-24 flex-col gap-2">
+                   <Link href={`/dashboard/instructors/new?role=${user?.role}`}>
+                      <UserIcon className="h-6 w-6" />
+                      <span>Cadastrar Professor</span>
+                  </Link>
+              </Button>
+              <Button asChild variant="outline" size="lg" className="h-24 flex-col gap-2">
+                   <Link href={`/dashboard/manage-students?role=${user?.role}`}>
+                      <Users className="h-6 w-6" />
+                      <span>Gerenciar Alunos</span>
+                  </Link>
+              </Button>
+          </CardContent>
       </Card>
+
     </div>
   );
 };
@@ -240,7 +230,7 @@ const StudentDashboard = () => {
   }
 
   const nextClass = branches
-      .find(b => b.id === user.branchId)
+      .find(b => b.name === user.affiliation)
       ?.schedule?.[0];
 
   return (

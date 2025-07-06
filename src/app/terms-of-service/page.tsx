@@ -1,3 +1,4 @@
+
 import { Suspense } from 'react';
 import TermsContent from './TermsContent';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';

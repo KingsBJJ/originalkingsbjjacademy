@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useContext, useEffect, useState } from "react";
@@ -76,6 +77,7 @@ export default function BranchesPage() {
   useEffect(() => {
     const fetchBranches = async () => {
       try {
+        setLoading(true);
         const fetchedBranches = await getBranches();
         setBranches(fetchedBranches);
       } catch (error) {
@@ -91,7 +93,7 @@ export default function BranchesPage() {
     };
 
     fetchBranches();
-  }, []);
+  }, [toast]);
 
   const handleDeleteClick = (branch: Branch) => {
     setBranchToDelete(branch);

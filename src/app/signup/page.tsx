@@ -138,11 +138,11 @@ export default function SignUpPage() {
         }
     };
     fetchInitialData();
-  }, []);
+  }, [toast]);
 
   useEffect(() => {
     if (affiliation && branches.length > 0 && instructors.length > 0) {
-      const selectedBranch = branches.find(b => b.id === affiliation);
+      const selectedBranch = branches.find(b => b.name === affiliation);
       if (selectedBranch) {
         const branchInstructorsNames = [
           selectedBranch.responsible,
@@ -176,7 +176,7 @@ export default function SignUpPage() {
     }
     
     try {
-        const selectedBranch = branches.find(b => b.id === affiliation);
+        const selectedBranch = branches.find(b => b.name === affiliation);
         if (!selectedBranch) throw new Error("Filial selecionada não encontrada.");
 
         await saveTermsAcceptance({
@@ -301,7 +301,7 @@ export default function SignUpPage() {
                 </SelectTrigger>
                 <SelectContent>
                   {branches.map((branch) => (
-                    <SelectItem key={branch.id} value={branch.id}>
+                    <SelectItem key={branch.id} value={branch.name}>
                       {branch.name}
                     </SelectItem>
                   ))}

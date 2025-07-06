@@ -100,7 +100,7 @@ export default function DashboardClientLayout({
 }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const role = searchParams.get("role");
+  const roleParam = searchParams.get("role");
   const { toast } = useToast();
   
   const [user, setUser] = useState<User | null>(null);
@@ -109,6 +109,9 @@ export default function DashboardClientLayout({
   // This effect now handles fetching the user from Firestore, creating them if they don't exist,
   // and gracefully handling failures by falling back to mock data.
   useEffect(() => {
+    // Sanitize roleParam to get only the role name
+    const role = roleParam ? roleParam.split('?')[0] as 'student' | 'professor' | 'admin' : null;
+
     if (role) {
       const validRole = (role || 'student') as 'student' | 'professor' | 'admin';
       
@@ -136,7 +139,7 @@ export default function DashboardClientLayout({
 
       fetchUser();
     }
-  }, [role]);
+  }, [roleParam]);
 
   // The updateUser function will optimistically update the local state
   // and then attempt to write the changes to the database.
@@ -170,13 +173,13 @@ export default function DashboardClientLayout({
   }, [toast, authError]);
 
   const navItems: NavItem[] = useMemo(() => {
-    const userRole = user?.role || (role as User['role']) || 'student';
+    const userRole = user?.role || (roleParam?.split('?')[0] as User['role']) || 'student';
     if (userRole === 'admin') return adminNavItems;
     if (userRole === 'professor') return professorNavItems;
     return studentNavItems;
-  }, [user?.role, role]);
+  }, [user?.role, roleParam]);
 
-  const getHref = (href: string) => `${href}?role=${role}`;
+  const getHref = (href: string) => `${href}?role=${roleParam}`;
   
   if (!user) {
     return (
