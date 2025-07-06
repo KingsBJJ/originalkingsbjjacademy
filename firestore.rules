@@ -3,29 +3,25 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Permite leitura pública para filiais e instrutores, mas restringe a escrita
-    // a usuários autenticados. Isso é necessário para que a página de cadastro funcione corretamente.
+    // Regras para a coleção 'branches'
     match /branches/{branchId} {
-      allow read;
-      allow create, update, delete: if request.auth != null;
+      // Leitura e escrita abertas para fins de desenvolvimento.
+      // TODO: Restringir escrita para usuários autenticados (admins).
+      allow read, write: if true;
     }
 
+    // Regras para a coleção 'instructors'
     match /instructors/{instructorId} {
-      allow read;
-      allow create, update, delete: if request.auth != null;
+      // Leitura e escrita abertas para fins de desenvolvimento.
+      // TODO: Restringir escrita para usuários autenticados (admins).
+      allow read, write: if true;
     }
 
-    // Permite que qualquer pessoa crie (assine) um termo de aceitação,
-    // mas apenas usuários autenticados podem gerenciá-los posteriormente.
-    match /termsAcceptances/{document} {
-      allow create;
-      allow read, update, delete: if request.auth != null;
-    }
-
-    // Regra padrão para quaisquer outras coleções: apenas usuários autenticados podem acessar.
-    // Protege os dados dos alunos e outros dados sensíveis.
-    match /{document=**} {
-      allow read, write: if request.auth != null;
+    // Regras para a coleção 'termsAcceptances'
+    match /termsAcceptances/{acceptanceId} {
+      // Leitura e escrita abertas para fins de desenvolvimento.
+      // TODO: Restringir escrita para usuários autenticados.
+      allow read, write: if true;
     }
   }
 }

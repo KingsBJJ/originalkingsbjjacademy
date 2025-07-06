@@ -1,5 +1,5 @@
 Building: solaris amd64
-Building: freebsd 386
-Building: darwin amd64
-Building: linux ppc64le
+Building: freebsd amd64
+Building: netbsd amd64
+Building: darwin arm64
 build is not installed, but available in the following packages, pick one to run it, Ctrl+C to cancel.

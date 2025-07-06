@@ -1,12 +1,11 @@
-okay
 "use client";
 
-import { useContext, useEffect, useState } from 'react';
-import Link from 'next/link';
-import { useRouter, useParams } from 'next/navigation';
-import { useForm, useFieldArray } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
+import { useContext, useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter, useParams } from "next/navigation";
+import { useForm, useFieldArray } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import {
   Form,
   FormControl,
@@ -14,42 +13,81 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
+} from "@/components/ui/form";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { useToast } from '@/hooks/use-toast';
-import { UserContext } from '../../../client-layout';
-import { ArrowLeft, PlusCircle, Trash2 } from 'lucide-react';
-import { getBranch, updateBranch, getInstructors, type Branch, type Instructor } from '@/lib/firestoreService'; 
-import { Skeleton } from '@/components/ui/skeleton';
+} from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
+import { UserContext } from "../client-layout";
+import { ArrowLeft, PlusCircle, Trash2 } from "lucide-react";
+import { getBranch, updateBranch, getInstructors } from "@/lib/firestoreService";
+import { Skeleton } from "@/components/ui/skeleton";
 
+// Tipagem explícita para os dados
+interface Instructor {
+  id: string;
+  name: string;
+}
+
+interface Branch {
+  id: string;
+  name: string;
+  address: string;
+  phone: string;
+  responsible?: string;
+  additionalInstructors?: string[];
+  schedule?: ClassSchedule[];
+}
+
+interface ClassSchedule {
+  name: string;
+  day: string;
+  time: string;
+  instructor: string;
+  category: "Adults" | "Kids";
+}
+
+// Schema de validação com Zod
 const classScheduleSchema = z.object({
-  name: z.string().min(1, { message: 'O nome da aula é obrigatório.' }),
-  day: z.string().min(1, { message: 'O dia da semana é obrigatório.' }),
-  time: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)\s*-\s*([01]\d|2[0-3]):([0-5]\d)$/, { message: 'Use o formato HH:mm - HH:mm.' }),
-  instructor: z.string().min(1, { message: 'Selecione um instrutor.' }),
-  category: z.enum(['Adults', 'Kids'], { required_error: 'Selecione a categoria.' }),
+  name: z.string().min(1, { message: "O nome da aula é obrigatório." }),
+  day: z.string().min(1, { message: "O dia da semana é obrigatório." }),
+  time: z
+    .string()
+    .regex(/^([01]\d|2[0-3]):([0-5]\d)\s*-\s*([01]\d|2[0-3]):([0-5]\d)$/, {
+      message: "Use o formato HH:mm - HH:mm.",
+    }),
+  instructor: z.string().min(1, { message: "Selecione um instrutor." }),
+  category: z.enum(["Adults", "Kids"], {
+    required_error: "Selecione a categoria.",
+  }),
 });
 
 const branchFormSchema = z.object({
-  name: z.string().min(3, { message: 'O nome da filial deve ter pelo menos 3 caracteres.' }),
-  address: z.string().min(10, { message: 'O endereço deve ter pelo menos 10 caracteres.' }),
-  phone: z.string().min(10, { message: 'O telefone deve ter pelo menos 10 dígitos.' }),
+  name: z
+    .string()
+    .min(3, { message: "O nome da filial deve ter pelo menos 3 caracteres." }),
+  address: z
+    .string()
+    .min(10, { message: "O endereço deve ter pelo menos 10 caracteres." }),
+  phone: z
+    .string()
+    .regex(/^\(\d{2}\)\s*\d{4,5}-\d{4}$/, {
+      message: "Use o formato (XX) XXXXX-XXXX ou (XX) XXXX-XXXX.",
+    }),
   responsible: z.string().optional(),
   instructor2: z.string().optional(),
   instructor3: z.string().optional(),
@@ -59,33 +97,52 @@ const branchFormSchema = z.object({
 
 type BranchFormValues = z.infer<typeof branchFormSchema>;
 
+// Componente Skeleton para carregamento
 const EditBranchPageSkeleton = () => (
-    <div className="grid gap-6">
-        <div className="flex items-center gap-4">
-            <Skeleton className="h-10 w-10" />
-            <div>
-                <Skeleton className="h-8 w-64 mb-2" />
-                <Skeleton className="h-5 w-80" />
-            </div>
-        </div>
-        <Card>
-            <CardContent className="pt-6 space-y-6">
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                    <div className="space-y-2"><Skeleton className="h-4 w-24" /><Skeleton className="h-10 w-full" /></div>
-                    <div className="space-y-2"><Skeleton className="h-4 w-32" /><Skeleton className="h-10 w-full" /></div>
-                </div>
-                <div className="space-y-2"><Skeleton className="h-4 w-48" /><div className="grid grid-cols-1 md:grid-cols-3 gap-4"><Skeleton className="h-10 w-full" /><Skeleton className="h-10 w-full" /><Skeleton className="h-10 w-full" /></div></div>
-                <div className="space-y-2"><Skeleton className="h-4 w-20" /><Skeleton className="h-10 w-full" /></div>
-                 <div className="space-y-2"><Skeleton className="h-4 w-24" /><Skeleton className="h-10 w-full" /></div>
-                <div className="flex justify-end gap-2">
-                    <Skeleton className="h-10 w-24" />
-                    <Skeleton className="h-10 w-24" />
-                </div>
-            </CardContent>
-        </Card>
+  <div className="grid gap-6">
+    <div className="flex items-center gap-4">
+      <Skeleton className="h-10 w-10" />
+      <div>
+        <Skeleton className="h-8 w-64 mb-2" />
+        <Skeleton className="h-5 w-80" />
+      </div>
     </div>
+    <Card>
+      <CardContent className="pt-6 space-y-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+        </div>
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-48" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+        </div>
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-20" />
+          <Skeleton className="h-10 w-full" />
+        </div>
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-24" />
+          <Skeleton className="h-10 w-full" />
+        </div>
+        <div className="flex justify-end gap-2">
+          <Skeleton className="h-10 w-24" />
+          <Skeleton className="h-10 w-24" />
+        </div>
+      </CardContent>
+    </Card>
+  </div>
 );
-
 
 export default function EditBranchPage() {
   const user = useContext(UserContext);
@@ -96,10 +153,20 @@ export default function EditBranchPage() {
   const [loading, setLoading] = useState(true);
   const [instructors, setInstructors] = useState<Instructor[]>([]);
 
-  const branchId = params.id as string;
+  const branchId = typeof params.id === "string" ? params.id : "";
 
   const form = useForm<BranchFormValues>({
     resolver: zodResolver(branchFormSchema),
+    defaultValues: {
+      name: "",
+      address: "",
+      phone: "",
+      responsible: "",
+      instructor2: "",
+      instructor3: "",
+      instructor4: "",
+      schedule: [],
+    },
   });
 
   const { fields, append, remove } = useFieldArray({
@@ -109,14 +176,19 @@ export default function EditBranchPage() {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!branchId) return;
+      if (!branchId) {
+        toast({ variant: "destructive", title: "ID da filial inválido." });
+        router.push(`/dashboard/branches?role=${user?.role || "student"}`);
+        return;
+      }
+
       try {
         setLoading(true);
         const [branchData, instructorsData] = await Promise.all([
           getBranch(branchId),
           getInstructors(),
         ]);
-        
+
         setInstructors(instructorsData);
 
         if (branchData) {
@@ -125,23 +197,27 @@ export default function EditBranchPage() {
             name: branchData.name,
             address: branchData.address,
             phone: branchData.phone,
-            responsible: branchData.responsible || '',
-            instructor2: branchData.additionalInstructors?.[0] || '',
-            instructor3: branchData.additionalInstructors?.[1] || '',
-            instructor4: branchData.additionalInstructors?.[2] || '',
+            responsible: branchData.responsible || "",
+            instructor2: branchData.additionalInstructors?.[0] || "",
+            instructor3: branchData.additionalInstructors?.[1] || "",
+            instructor4: branchData.additionalInstructors?.[2] || "",
             schedule: branchData.schedule || [],
           });
         } else {
-            toast({ variant: "destructive", title: "Filial não encontrada." });
-            router.push(`/dashboard/branches?role=${user?.role}`);
+          toast({ variant: "destructive", title: "Filial não encontrada." });
+          router.push(`/dashboard/branches?role=${user?.role || "student"}`);
         }
       } catch (error) {
-        console.error("Failed to fetch data:", error);
-        toast({ variant: "destructive", title: "Erro ao carregar dados da página." });
+        console.error("Erro ao carregar dados:", error);
+        toast({
+          variant: "destructive",
+          title: "Erro ao carregar dados da página.",
+        });
       } finally {
         setLoading(false);
       }
     };
+
     fetchData();
   }, [branchId, form, router, toast, user?.role]);
 
@@ -149,28 +225,29 @@ export default function EditBranchPage() {
     try {
       const { responsible, instructor2, instructor3, instructor4, ...rest } = data;
       const additionalInstructors = [instructor2, instructor3, instructor4].filter(
-        (instructor) => instructor && instructor.trim() !== ''
+ (instructor): instructor is string => Boolean(instructor?.trim())
       );
 
-      const branchData = {
+      const branchData: Branch = {
         ...rest,
-        responsible: responsible || '',
+        id: branchId,
+        responsible: responsible || "",
         additionalInstructors,
       };
 
       await updateBranch(branchId, branchData);
 
       toast({
-        title: 'Filial Atualizada!',
+        title: "Filial Atualizada!",
         description: `A filial ${data.name} foi atualizada com sucesso.`,
       });
-      router.push(`/dashboard/branches?role=${user?.role}`);
+      router.push(`/dashboard/branches?role=${user?.role || "student"}`);
     } catch (error) {
-      console.error("Failed to update branch:", error);
+      console.error("Erro ao atualizar filial:", error);
       toast({
         variant: "destructive",
-        title: 'Erro ao atualizar',
-        description: 'Não foi possível salvar as alterações. Tente novamente.',
+        title: "Erro ao atualizar",
+        description: "Não foi possível salvar as alterações. Tente novamente.",
       });
     }
   };
@@ -179,7 +256,7 @@ export default function EditBranchPage() {
     return <EditBranchPageSkeleton />;
   }
 
-  if (user?.role !== 'admin') {
+  if (!user || user.role !== "admin") {
     return (
       <div className="flex items-center justify-center h-full">
         <Card className="w-full max-w-md">
@@ -192,7 +269,9 @@ export default function EditBranchPage() {
           <CardContent>
             <p>Esta área é restrita a administradores.</p>
             <Button asChild className="mt-4">
-              <Link href={`/dashboard?role=${user?.role || 'student'}`}>Voltar ao Painel</Link>
+              <Link href={`/dashboard?role=${user?.role || "student"}`}>
+                Voltar ao Painel
+              </Link>
             </Button>
           </CardContent>
         </Card>
@@ -201,12 +280,12 @@ export default function EditBranchPage() {
   }
 
   if (!branch) {
-      return null;
+    return null;
   }
 
   return (
     <div className="grid gap-6">
-       <div className="flex items-center gap-4">
+      <div className="flex items-center sift gap-4">
         <Button variant="outline" size="icon" asChild>
           <Link href={`/dashboard/branches?role=${user.role}`}>
             <ArrowLeft />
@@ -214,8 +293,8 @@ export default function EditBranchPage() {
           </Link>
         </Button>
         <div>
-            <h1 className="text-3xl font-bold tracking-tight">Editar Filial</h1>
-            <p className="text-muted-foreground">Atualize os dados da filial.</p>
+          <h1 className="text-3xl font-bold tracking-tight">Editar Filial</h1>
+          <p className="text-muted-foreground">Atualize os dados da filial.</p>
         </div>
       </div>
       <Card>
@@ -236,13 +315,16 @@ export default function EditBranchPage() {
                     </FormItem>
                   )}
                 />
-                 <FormField
+                <FormField
                   control={form.control}
                   name="responsible"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Professor Responsável (Opcional)</FormLabel>
-                       <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Selecione um professor" />
@@ -250,7 +332,12 @@ export default function EditBranchPage() {
                         </FormControl>
                         <SelectContent>
                           {instructors.map((instructor) => (
-                            <SelectItem key={instructor.id} value={instructor.name}>{instructor.name}</SelectItem>
+                            <SelectItem
+                              key={instructor.id}
+                              value={instructor.name}
+                            >
+                              {instructor.name}
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -263,72 +350,95 @@ export default function EditBranchPage() {
               <div className="space-y-2">
                 <Label>Professores Adicionais (Opcional)</Label>
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                    <FormField
-                      control={form.control}
-                      name="instructor2"
-                      render={({ field }) => (
-                        <FormItem>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="2º Professor" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {instructors.map((instructor) => (
-                                <SelectItem key={instructor.id} value={instructor.name}>{instructor.name}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="instructor3"
-                      render={({ field }) => (
-                        <FormItem>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="3º Professor" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {instructors.map((instructor) => (
-                                <SelectItem key={instructor.id} value={instructor.name}>{instructor.name}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="instructor4"
-                      render={({ field }) => (
-                        <FormItem>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="4º Professor" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {instructors.map((instructor) => (
-                                <SelectItem key={instructor.id} value={instructor.name}>{instructor.name}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                  <FormField
+                    control={form.control}
+                    name="instructor2"
+                    render={({ field }) => (
+                      <FormItem>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="2º Professor" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {instructors.map((instructor) => (
+                              <SelectItem
+                                key={instructor.id}
+                                value={instructor.name}
+                              >
+                                {instructor.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="instructor3"
+                    render={({ field }) => (
+                      <FormItem>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="3º Professor" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {instructors.map((instructor) => (
+                              <SelectItem
+                                key={instructor.id}
+                                value={instructor.name}
+                              >
+                                {instructor.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="instructor4"
+                    render={({ field }) => (
+                      <FormItem>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="4º Professor" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {instructors.map((instructor) => (
+                              <SelectItem
+                                key={instructor.id}
+                                value={instructor.name}
+                              >
+                                {instructor.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
               </div>
-
 
               <FormField
                 control={form.control}
@@ -337,82 +447,190 @@ export default function EditBranchPage() {
                   <FormItem>
                     <FormLabel>Endereço</FormLabel>
                     <FormControl>
-                      <Input placeholder="Rua, Número, Bairro, Cidade - Estado" {...field} />
+                      <Input
+                        placeholder="Rua, Número, Bairro, Cidade - Estado"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              
+
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                  <FormField
+                <FormField
                   control={form.control}
                   name="phone"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Telefone</FormLabel>
                       <FormControl>
-                        <Input placeholder="(00) 0000-0000" {...field} />
+                        <Input placeholder="(XX) XXXXX-XXXX" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
               </div>
-              
-              {/* Schedule Section */}
+
+              {/* Seção de Horários */}
               <div className="space-y-4 rounded-lg border p-4">
-                  <div className="flex items-center justify-between">
-                      <div>
-                          <h3 className="font-semibold">Horários das Aulas</h3>
-                          <p className="text-sm text-muted-foreground">Adicione as aulas e seus horários para esta filial.</p>
-                      </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-semibold">Horários das Aulas</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Adicione as aulas e seus horários para esta filial.
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      append({
+                        name: "",
+                        day: "",
+                        time: "",
+                        instructor: "",
+                        category: "Adults",
+                      })
+                    }
+                  >
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Adicionar Horário
+                  </Button>
+                </div>
+                <div className="space-y-4">
+                  {fields.map((field, index) => (
+                    <div
+                      key={field.id}
+                      className="grid grid-cols-1 md:grid-cols-[2fr,1.5fr,1fr,2fr,1fr,auto] gap-2 items-end border-t pt-4"
+                    >
+                      <FormField
+                        control={form.control}
+                        name={`schedule.${index}.name`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Aula</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Ex: Fundamentos" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name={`schedule.${index}.day`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Dia(s)</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Ex: Seg/Qua/Sex" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name={`schedule.${index}.time`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Horário</FormLabel>
+                            <FormControl>
+                              <Input placeholder="18:00 - 19:00" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name={`schedule.${index}.instructor`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Professor</FormLabel>
+                            <Select
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Selecione" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {instructors.map((instructor) => (
+                                  <SelectItem
+                                    key={instructor.id}
+                                    value={instructor.name}
+                                  >
+                                    {instructor.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name={`schedule.${index}.category`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Categoria</FormLabel>
+                            <Select
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="Adults">Adultos</SelectItem>
+                                <SelectItem value="Kids">Kids</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                       <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => append({ name: '', day: '', time: '', instructor: '', category: 'Adults' })}
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        onClick={() => remove(index)}
                       >
-                          <PlusCircle className="mr-2 h-4 w-4" />
-                          Adicionar Horário
+                        <Trash2 className="h-4 w-4" />
+                        <span className="sr-only">Remover</span>
                       </Button>
-                  </div>
-                  <div className="space-y-4">
-                    {fields.map((field, index) => (
-                        <div key={field.id} className="grid grid-cols-1 md:grid-cols-[2fr,1.5fr,1fr,2fr,1fr,auto] gap-2 items-end border-t pt-4">
-                            <FormField control={form.control} name={`schedule.${index}.name`} render={({ field }) => (
-                                <FormItem><FormLabel>Aula</FormLabel><FormControl><Input placeholder="Ex: Fundamentos" {...field} /></FormControl><FormMessage /></FormItem>
-                            )} />
-                            <FormField control={form.control} name={`schedule.${index}.day`} render={({ field }) => (
-                                <FormItem><FormLabel>Dia(s)</FormLabel><FormControl><Input placeholder="Ex: Seg/Qua/Sex" {...field} /></FormControl><FormMessage /></FormItem>
-                            )} />
-                            <FormField control={form.control} name={`schedule.${index}.time`} render={({ field }) => (
-                                <FormItem><FormLabel>Horário</FormLabel><FormControl><Input placeholder="18:00 - 19:00" {...field} /></FormControl><FormMessage /></FormItem>
-                            )} />
-                            <FormField control={form.control} name={`schedule.${index}.instructor`} render={({ field }) => (
-                                <FormItem><FormLabel>Professor</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Selecione"/></SelectTrigger></FormControl><SelectContent>{instructors.map(i => <SelectItem key={i.id} value={i.name}>{i.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
-                            )} />
-                            <FormField control={form.control} name={`schedule.${index}.category`} render={({ field }) => (
-                                <FormItem><FormLabel>Categoria</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl><SelectContent><SelectItem value="Adults">Adultos</SelectItem><SelectItem value="Kids">Kids</SelectItem></SelectContent></Select><FormMessage /></FormItem>
-                            )} />
-                            <Button type="button" variant="destructive" size="icon" onClick={() => remove(index)}>
-                                <Trash2 className="h-4 w-4" /><span className="sr-only">Remover</span>
-                            </Button>
-                        </div>
-                    ))}
-                  </div>
-                  {fields.length === 0 && (
-                      <p className="text-center text-sm text-muted-foreground py-4">Nenhum horário adicionado.</p>
-                  )}
+                    </div>
+                  ))}
+                </div>
+                {fields.length === 0 && (
+                  <p className="text-center text-sm text-muted-foreground py-4">
+                    Nenhum horário adicionado.
+                  </p>
+                )}
               </div>
-              
+
               <div className="flex justify-end gap-2">
-                  <Button variant="outline" type="button" onClick={() => router.back()}>
-                      Cancelar
-                  </Button>
-                  <Button type="submit" disabled={form.formState.isSubmitting}>
-                     {form.formState.isSubmitting ? 'Salvando...' : 'Salvar Alterações'}
-                  </Button>
+                <Button
+                  variant="outline"
+                  type="button"
+                  onClick={() => router.back()}
+                >
+                  Cancelar
+                </Button>
+                <Button type="submit" disabled={form.formState.isSubmitting}>
+                  {form.formState.isSubmitting
+                    ? "Salvando..."
+                    : "Salvar Alterações"}
+                </Button>
               </div>
             </form>
           </Form>
