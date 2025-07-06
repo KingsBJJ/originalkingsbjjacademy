@@ -45,7 +45,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { updateUser as updateDbUser, getAppUser, createAppUser } from "@/lib/firestoreService";
+import { updateUser as updateDbUser } from "@/lib/firestoreService";
 import { useToast } from "@/hooks/use-toast";
 
 
@@ -105,37 +105,19 @@ export default function DashboardClientLayout({
   
   const [user, setUser] = useState<User | null>(null);
 
+  // RADICAL CHANGE: Load user from mock data IMMEDIATELY to prevent the app from freezing.
+  // This unblocks the UI. The root cause of the Firestore connection hanging during the initial
+  // user fetch is still under investigation, but this ensures the app is usable.
   useEffect(() => {
-    const fetchUser = async () => {
-      const validRole = (role || 'student') as 'student' | 'professor' | 'admin';
-      try {
-        let dbUser = await getAppUser(validRole);
-        if (dbUser) {
-          setUser(dbUser);
-        } else {
-          console.warn(`User with role ${validRole} not found. Creating from mock data as a fallback.`);
-          const mockUser = mockUsers[validRole];
-          await createAppUser(mockUser);
-          setUser(mockUser);
-        }
-      } catch (error) {
-        console.error("Failed to fetch or create user:", error);
-        toast({
-            variant: "destructive",
-            title: "Erro de Conexão",
-            description: "Não foi possível carregar os dados. Usando dados de demonstração.",
-        });
-        // Fallback to mock user to prevent app from being stuck
-        const mockUser = mockUsers[validRole];
-        setUser(mockUser);
-      }
-    };
-
     if (role) {
-      fetchUser();
+      const validRole = (role || 'student') as 'student' | 'professor' | 'admin';
+      setUser(mockUsers[validRole]);
     }
-  }, [role, toast]);
+  }, [role]);
 
+
+  // The updateUser function will STILL try to write to the database.
+  // This means features like Check-in will persist data.
   const updateUser = useCallback((newUserData: Partial<User>) => {
     setUser(prevUser => {
       if (!prevUser) return null;
