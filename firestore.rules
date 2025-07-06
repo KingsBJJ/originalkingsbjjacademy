@@ -1,11 +1,7 @@
-
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // This rule allows anyone with your project's credentials to read and write
-    // to all documents in your Firestore database. For a real production app,
-    // you'll want to lock this down with more specific security rules.
     match /{document=**} {
       allow read, write: if true;
     }
