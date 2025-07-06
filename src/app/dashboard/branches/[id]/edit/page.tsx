@@ -93,7 +93,6 @@ export default function EditBranchPage() {
   const { toast } = useToast();
   const [branch, setBranch] = useState<Branch | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
   const [instructors, setInstructors] = useState<Instructor[]>([]);
 
   const branchId = params.id as string;
@@ -101,6 +100,8 @@ export default function EditBranchPage() {
   const form = useForm<BranchFormValues>({
     resolver: zodResolver(branchFormSchema),
   });
+
+  const { formState: { isSubmitting } } = form;
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
@@ -142,11 +143,12 @@ export default function EditBranchPage() {
         setLoading(false);
       }
     };
-    fetchData();
+    if (branchId) {
+        fetchData();
+    }
   }, [branchId, user, form, router, toast]);
 
   const onSubmit = async (data: BranchFormValues) => {
-    setIsSaving(true);
     try {
       const { name, address, phone, schedule, responsible, instructor2, instructor3, instructor4 } = data;
       
@@ -170,9 +172,7 @@ export default function EditBranchPage() {
         description: `A filial ${data.name} foi atualizada com sucesso.`,
       });
       
-      setTimeout(() => {
-        router.push(`/dashboard/branches?role=${user?.role}`);
-      }, 1000);
+      router.push(`/dashboard/branches?role=${user?.role}`);
 
     } catch (error) {
       console.error("Failed to update branch:", error);
@@ -181,8 +181,6 @@ export default function EditBranchPage() {
         title: 'Erro ao atualizar',
         description: 'Não foi possível salvar as alterações. Tente novamente.',
       });
-    } finally {
-      setIsSaving(false);
     }
   };
 
@@ -418,11 +416,11 @@ export default function EditBranchPage() {
               </div>
               
               <div className="flex justify-end gap-2">
-                  <Button variant="outline" type="button" onClick={() => router.back()}>
+                  <Button variant="outline" type="button" onClick={() => router.back()} disabled={isSubmitting}>
                       Cancelar
                   </Button>
-                  <Button type="submit" disabled={isSaving}>
-                     {isSaving ? 'Salvando...' : 'Salvar Alterações'}
+                  <Button type="submit" disabled={isSubmitting}>
+                     {isSubmitting ? 'Salvando...' : 'Salvar Alterações'}
                   </Button>
               </div>
             </form>

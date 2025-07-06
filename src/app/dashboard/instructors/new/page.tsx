@@ -57,7 +57,6 @@ export default function NewInstructorPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [branches, setBranches] = useState<Branch[]>([]);
-  const [isSaving, setIsSaving] = useState(false);
 
   const form = useForm<InstructorFormValues>({
     resolver: zodResolver(instructorFormSchema),
@@ -72,6 +71,8 @@ export default function NewInstructorPage() {
       stripes: 0,
     },
   });
+
+  const { formState: { isSubmitting } } = form;
 
   useEffect(() => {
     getBranches()
@@ -88,15 +89,14 @@ export default function NewInstructorPage() {
   const watchedBelt = form.watch("belt");
 
   const onSubmit = async (data: InstructorFormValues) => {
-    setIsSaving(true);
     try {
       const { name, email, phone, belt, affiliations, bio, avatar, stripes } = data;
       
       const instructorData: Omit<Instructor, 'id'> = {
-        name: name,
-        email: email,
-        phone: phone,
-        belt: belt,
+        name,
+        email,
+        phone,
+        belt,
         affiliations: affiliations ?? [],
         bio: bio ?? '',
         avatar: avatar ?? '',
@@ -110,9 +110,7 @@ export default function NewInstructorPage() {
         description: `O professor ${data.name} foi adicionado com sucesso.`,
       });
       
-      setTimeout(() => {
-        router.push(`/dashboard/instructors?role=${user?.role}`);
-      }, 1000);
+      router.push(`/dashboard/instructors?role=${user?.role}`);
 
     } catch (error) {
       console.error("Failed to add instructor:", error);
@@ -121,8 +119,6 @@ export default function NewInstructorPage() {
         title: 'Erro ao cadastrar',
         description: 'Não foi possível adicionar o professor. Tente novamente.',
       });
-    } finally {
-        setIsSaving(false);
     }
   };
   
@@ -334,11 +330,11 @@ export default function NewInstructorPage() {
                   )}
                 />
               <div className="flex justify-end gap-2">
-                  <Button variant="outline" type="button" onClick={() => router.back()} disabled={isSaving}>
+                  <Button variant="outline" type="button" onClick={() => router.back()} disabled={isSubmitting}>
                       Cancelar
                   </Button>
-                  <Button type="submit" disabled={isSaving}>
-                    {isSaving ? 'Salvando...' : 'Salvar Professor'}
+                  <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? 'Salvando...' : 'Salvar Professor'}
                   </Button>
               </div>
             </form>

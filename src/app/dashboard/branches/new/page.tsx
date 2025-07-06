@@ -62,7 +62,6 @@ export default function NewBranchPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [instructors, setInstructors] = useState<Instructor[]>([]);
-  const [isSaving, setIsSaving] = useState(false);
 
   const form = useForm<BranchFormValues>({
     resolver: zodResolver(branchFormSchema),
@@ -70,9 +69,15 @@ export default function NewBranchPage() {
       name: '',
       address: '',
       phone: '',
+      responsible: '',
+      instructor2: '',
+      instructor3: '',
+      instructor4: '',
       schedule: [],
     },
   });
+
+  const { formState: { isSubmitting } } = form;
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
@@ -93,7 +98,6 @@ export default function NewBranchPage() {
   }, [toast]);
 
   const onSubmit = async (data: BranchFormValues) => {
-    setIsSaving(true);
     try {
       const { name, address, phone, schedule, responsible, instructor2, instructor3, instructor4 } = data;
       
@@ -102,9 +106,9 @@ export default function NewBranchPage() {
       );
 
       const branchData = {
-        name: name,
-        address: address,
-        phone: phone,
+        name,
+        address,
+        phone,
         schedule: schedule ?? [],
         responsible: responsible ?? '',
         additionalInstructors: additionalInstructors ?? [],
@@ -117,9 +121,7 @@ export default function NewBranchPage() {
         description: `A filial ${data.name} foi adicionada com sucesso.`,
       });
       
-      setTimeout(() => {
-          router.push(`/dashboard/branches?role=${user?.role}`);
-      }, 1000);
+      router.push(`/dashboard/branches?role=${user?.role}`);
 
     } catch (error) {
       console.error("Failed to add branch:", error);
@@ -128,8 +130,6 @@ export default function NewBranchPage() {
         title: 'Erro ao cadastrar',
         description: 'Não foi possível adicionar a filial. Tente novamente.',
       });
-    } finally {
-        setIsSaving(false);
     }
   };
 
@@ -357,11 +357,11 @@ export default function NewBranchPage() {
               </div>
               
               <div className="flex justify-end gap-2">
-                  <Button variant="outline" type="button" onClick={() => router.back()} disabled={isSaving}>
+                  <Button variant="outline" type="button" onClick={() => router.back()} disabled={isSubmitting}>
                       Cancelar
                   </Button>
-                  <Button type="submit" disabled={isSaving}>
-                    {isSaving ? 'Salvando...' : 'Salvar Filial'}
+                  <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? 'Salvando...' : 'Salvar Filial'}
                   </Button>
               </div>
             </form>

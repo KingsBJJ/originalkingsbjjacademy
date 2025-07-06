@@ -88,7 +88,6 @@ export default function EditInstructorPage() {
   const { toast } = useToast();
   const [instructor, setInstructor] = useState<Instructor | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
   const [branches, setBranches] = useState<Branch[]>([]);
 
   const instructorId = params.id as string;
@@ -96,6 +95,8 @@ export default function EditInstructorPage() {
   const form = useForm<InstructorFormValues>({
     resolver: zodResolver(instructorFormSchema),
   });
+
+  const { formState: { isSubmitting } } = form;
   
   const watchedBelt = form.watch("belt");
   
@@ -134,12 +135,13 @@ export default function EditInstructorPage() {
         setLoading(false);
       }
     };
-    fetchData();
+    if (instructorId) {
+        fetchData();
+    }
   }, [instructorId, user, form, router, toast]);
 
 
   const onSubmit = async (data: InstructorFormValues) => {
-    setIsSaving(true);
     try {
         const { name, email, phone, belt, affiliations, bio, avatar, stripes } = data;
 
@@ -161,9 +163,7 @@ export default function EditInstructorPage() {
             description: `O professor ${data.name} foi atualizado com sucesso.`,
         });
       
-        setTimeout(() => {
-          router.push(`/dashboard/instructors?role=${user?.role}`);
-        }, 1000);
+        router.push(`/dashboard/instructors?role=${user?.role}`);
 
     } catch (error) {
       console.error("Failed to update instructor:", error);
@@ -172,8 +172,6 @@ export default function EditInstructorPage() {
         title: 'Erro ao atualizar',
         description: 'Não foi possível salvar as alterações. Tente novamente.',
       });
-    } finally {
-        setIsSaving(false);
     }
   };
   
@@ -393,11 +391,11 @@ export default function EditInstructorPage() {
                   )}
                 />
               <div className="flex justify-end gap-2">
-                  <Button variant="outline" type="button" onClick={() => router.back()} disabled={isSaving}>
+                  <Button variant="outline" type="button" onClick={() => router.back()} disabled={isSubmitting}>
                       Cancelar
                   </Button>
-                  <Button type="submit" disabled={isSaving}>
-                    {isSaving ? 'Salvando...' : 'Salvar Alterações'}
+                  <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? 'Salvando...' : 'Salvar Alterações'}
                   </Button>
               </div>
             </form>
