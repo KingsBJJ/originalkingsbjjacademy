@@ -35,6 +35,7 @@ import {
   QrCode,
   Calendar,
   FileText,
+  AlertTriangle,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -42,6 +43,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { getAppUser, createAppUser, updateUser as updateDbUser } from "@/lib/firestoreService";
 
 
@@ -99,18 +101,25 @@ export default function DashboardClientLayout({
   const role = (searchParams.get("role") || "student") as "student" | "professor" | "admin";
   
   const [user, setUser] = useState<User | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchUser = async () => {
-        const validRole = role === 'admin' || role === 'professor' ? role : 'student';
-        let appUser = await getAppUser(validRole);
+        try {
+            setError(null); // Reset error on new fetch
+            const validRole = role === 'admin' || role === 'professor' ? role : 'student';
+            let appUser = await getAppUser(validRole);
 
-        if (!appUser) {
-            // If user doesn't exist in DB, create it from mock data
-            const mockUser = mockUsers[validRole];
-            appUser = await createAppUser(mockUser);
+            if (!appUser) {
+                // If user doesn't exist in DB, create it from mock data
+                const mockUser = mockUsers[validRole];
+                appUser = await createAppUser(mockUser);
+            }
+            setUser(appUser);
+        } catch (err) {
+            console.error("FATAL: Failed to fetch or create user.", err);
+            setError("Não foi possível conectar ao banco de dados. Verifique sua conexão e tente novamente. Se o problema persistir, contate o suporte.");
         }
-        setUser(appUser);
     };
 
     fetchUser();
@@ -147,6 +156,20 @@ export default function DashboardClientLayout({
   }, [user?.role]);
 
   const getHref = (href: string) => `${href}?role=${role}`;
+
+  if (error) {
+    return (
+        <div className="flex h-screen w-full flex-col items-center justify-center gap-4 bg-background p-4">
+            <Alert variant="destructive" className="max-w-lg">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Erro Crítico de Conexão</AlertTitle>
+                <AlertDescription>
+                    {error}
+                </AlertDescription>
+            </Alert>
+        </div>
+    )
+  }
   
   if (!user) {
     return (
