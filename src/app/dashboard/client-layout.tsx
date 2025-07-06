@@ -45,7 +45,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { updateUser as updateDbUser } from "@/lib/firestoreService";
+import { updateUser as updateDbUser, getAppUser, createAppUser } from "@/lib/firestoreService";
 import { useToast } from "@/hooks/use-toast";
 
 
@@ -104,20 +104,42 @@ export default function DashboardClientLayout({
   const { toast } = useToast();
   
   const [user, setUser] = useState<User | null>(null);
+  const [authError, setAuthError] = useState<string | null>(null);
 
-  // RADICAL CHANGE: Load user from mock data IMMEDIATELY to prevent the app from freezing.
-  // This unblocks the UI. The root cause of the Firestore connection hanging during the initial
-  // user fetch is still under investigation, but this ensures the app is usable.
+  // This effect now handles fetching the user from Firestore, creating them if they don't exist,
+  // and gracefully handling failures by falling back to mock data.
   useEffect(() => {
     if (role) {
       const validRole = (role || 'student') as 'student' | 'professor' | 'admin';
-      setUser(mockUsers[validRole]);
+      
+      const fetchUser = async () => {
+        try {
+          let userFromDb = await getAppUser(validRole);
+          
+          if (!userFromDb) {
+            // User doesn't exist in DB, create them from mock data
+            console.log(`User with role '${validRole}' not found in Firestore. Creating...`);
+            const mockUser = mockUsers[validRole];
+            userFromDb = await createAppUser(mockUser);
+          }
+          
+          setUser(userFromDb);
+          setAuthError(null);
+
+        } catch (error) {
+          console.error("CRITICAL: Failed to connect to Firestore.", error);
+          setAuthError("Não foi possível conectar ao banco de dados. Exibindo dados de demonstração.");
+          // Fallback to mock data if Firestore is completely unreachable
+          setUser(mockUsers[validRole]);
+        }
+      };
+
+      fetchUser();
     }
   }, [role]);
 
-
-  // The updateUser function will STILL try to write to the database.
-  // This means features like Check-in will persist data.
+  // The updateUser function will optimistically update the local state
+  // and then attempt to write the changes to the database.
   const updateUser = useCallback((newUserData: Partial<User>) => {
     setUser(prevUser => {
       if (!prevUser) return null;
@@ -131,28 +153,28 @@ export default function DashboardClientLayout({
         };
       }
       
-      updateDbUser(prevUser.id, newUserData).catch(error => {
-          console.error("Failed to update user in DB:", error);
-          toast({
-            variant: "destructive",
-            title: "Erro de Sincronização",
-            description: "Não foi possível salvar as alterações no servidor.",
+      // Don't try to write to DB if we are in a fallback state
+      if (!authError) {
+          updateDbUser(prevUser.id, newUserData).catch(error => {
+              console.error("Failed to update user in DB:", error);
+              toast({
+                variant: "destructive",
+                title: "Erro de Sincronização",
+                description: "Não foi possível salvar as alterações no servidor.",
+              });
           });
-      });
+      }
       
       return updatedUser;
     });
-  }, [toast]);
+  }, [toast, authError]);
 
   const navItems: NavItem[] = useMemo(() => {
-    if (user?.role === 'admin') {
-      return adminNavItems;
-    }
-    if (user?.role === 'professor') {
-      return professorNavItems;
-    }
+    const userRole = user?.role || (role as User['role']) || 'student';
+    if (userRole === 'admin') return adminNavItems;
+    if (userRole === 'professor') return professorNavItems;
     return studentNavItems;
-  }, [user?.role]);
+  }, [user?.role, role]);
 
   const getHref = (href: string) => `${href}?role=${role}`;
   
@@ -221,11 +243,13 @@ export default function DashboardClientLayout({
             </SidebarFooter>
           </Sidebar>
           <SidebarInset>
-            <header className="sticky top-0 z-10 flex h-14 items-center justify-between gap-4 border-b bg-background/80 px-4 backdrop-blur-sm sm:px-6 md:justify-end print:hidden">
-                <SidebarTrigger className="md:hidden"/>
-                <h1 className="text-lg font-semibold md:hidden">
-                  {navItems.find(item => item.href === pathname)?.label || 'Painel'}
-                </h1>
+            <header className="sticky top-0 z-10 flex h-auto min-h-14 flex-col gap-2 border-b bg-background/80 px-4 py-2 backdrop-blur-sm sm:px-6 md:flex-row md:items-center md:justify-end print:hidden">
+                <div className="flex items-center justify-between gap-2 md:flex-1">
+                    <SidebarTrigger className="md:hidden"/>
+                    <h1 className="text-lg font-semibold md:hidden">
+                    {navItems.find(item => item.href === pathname)?.label || 'Painel'}
+                    </h1>
+                </div>
                  <div className="flex items-center gap-4">
                    <Popover>
                       <PopoverTrigger asChild>
@@ -261,6 +285,15 @@ export default function DashboardClientLayout({
                   </div>
                 </div>
             </header>
+             {authError && (
+              <Alert variant="destructive" className="m-4 rounded-lg">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Modo Offline</AlertTitle>
+                <AlertDescription>
+                  {authError} Algumas funcionalidades podem não funcionar corretamente.
+                </AlertDescription>
+              </Alert>
+            )}
             <main className="flex-1 overflow-auto p-4 sm:p-6">{children}</main>
           </SidebarInset>
         </SidebarProvider>
