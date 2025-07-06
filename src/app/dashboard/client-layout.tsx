@@ -106,10 +106,7 @@ export default function DashboardClientLayout({
   const [user, setUser] = useState<User | null>(null);
   const [authError, setAuthError] = useState<string | null>(null);
 
-  // This effect now handles fetching the user from Firestore, creating them if they don't exist,
-  // and gracefully handling failures by falling back to mock data.
   useEffect(() => {
-    // Sanitize roleParam to get only the role name
     const role = roleParam ? roleParam.split('?')[0] as 'student' | 'professor' | 'admin' : null;
 
     if (role) {
@@ -120,9 +117,11 @@ export default function DashboardClientLayout({
           let userFromDb = await getAppUser(validRole);
           
           if (!userFromDb) {
-            // User doesn't exist in DB, create them from mock data
             console.log(`User with role '${validRole}' not found in Firestore. Creating...`);
             const mockUser = mockUsers[validRole];
+            if (!mockUser) {
+              throw new Error(`Invalid role detected: ${validRole}`);
+            }
             userFromDb = await createAppUser(mockUser);
           }
           
@@ -130,19 +129,19 @@ export default function DashboardClientLayout({
           setAuthError(null);
 
         } catch (error) {
-          console.error("CRITICAL: Failed to connect to Firestore.", error);
+          console.error("CRITICAL: Failed to connect to Firestore or create user.", error);
           setAuthError("Não foi possível conectar ao banco de dados. Exibindo dados de demonstração.");
-          // Fallback to mock data if Firestore is completely unreachable
-          setUser(mockUsers[validRole]);
+          const mockUser = mockUsers[validRole];
+          if(mockUser) setUser(mockUser);
         }
       };
 
       fetchUser();
+    } else {
+        setAuthError("Perfil de usuário não especificado. Por favor, acesse através da página de login.");
     }
   }, [roleParam]);
 
-  // The updateUser function will optimistically update the local state
-  // and then attempt to write the changes to the database.
   const updateUser = useCallback((newUserData: Partial<User>) => {
     setUser(prevUser => {
       if (!prevUser) return null;
@@ -156,7 +155,6 @@ export default function DashboardClientLayout({
         };
       }
       
-      // Don't try to write to DB if we are in a fallback state
       if (!authError) {
           updateDbUser(prevUser.id, newUserData).catch(error => {
               console.error("Failed to update user in DB:", error);
@@ -179,13 +177,25 @@ export default function DashboardClientLayout({
     return studentNavItems;
   }, [user?.role, roleParam]);
 
-  const getHref = (href: string) => `${href}?role=${roleParam}`;
+  const getHref = (href: string) => {
+      const currentRole = roleParam?.split('?')[0];
+      return `${href}?role=${currentRole || 'student'}`;
+  }
   
   if (!user) {
     return (
       <div className="flex h-screen w-full flex-col items-center justify-center gap-4 bg-background">
         <KingsBjjLogo className="h-24 w-24 animate-pulse" />
         <p className="text-muted-foreground">Carregando painel...</p>
+         {authError && (
+              <Alert variant="destructive" className="max-w-md mt-4">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Erro Crítico</AlertTitle>
+                <AlertDescription>
+                  {authError}
+                </AlertDescription>
+              </Alert>
+            )}
       </div>
     );
   }

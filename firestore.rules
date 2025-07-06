@@ -1,10 +1,7 @@
 
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Para um ambiente de desenvolvimento, permita leitura e escrita em toda a base.
-    // ATENÇÃO: Em produção, estas regras devem ser mais restritivas.
     match /{document=**} {
       allow read, write: if true;
     }
