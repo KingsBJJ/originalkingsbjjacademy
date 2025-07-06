@@ -1,10 +1,11 @@
+
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Regra permissiva para o protótipo.
-    // Permite que qualquer cliente leia e escreva em qualquer coleção.
-    // ATENÇÃO: Em uma aplicação de produção, as regras devem ser
-    // mais restritivas para garantir a segurança dos dados.
+    // Para a fase de prototipagem, permitir leitura e escrita em todos os documentos.
+    // ATENÇÃO: Essas regras não são seguras para produção e devem ser
+    // refinadas com autenticação antes do lançamento.
     match /{document=**} {
       allow read, write: if true;
     }
