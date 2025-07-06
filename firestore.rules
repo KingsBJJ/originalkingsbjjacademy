@@ -1,26 +1,11 @@
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // Regras para a coleção 'branches'
-    match /branches/{branchId} {
-      // Leitura e escrita abertas para fins de desenvolvimento.
-      // TODO: Restringir escrita para usuários autenticados (admins).
-      allow read, write: if true;
-    }
-
-    // Regras para a coleção 'instructors'
-    match /instructors/{instructorId} {
-      // Leitura e escrita abertas para fins de desenvolvimento.
-      // TODO: Restringir escrita para usuários autenticados (admins).
-      allow read, write: if true;
-    }
-
-    // Regras para a coleção 'termsAcceptances'
-    match /termsAcceptances/{acceptanceId} {
-      // Leitura e escrita abertas para fins de desenvolvimento.
-      // TODO: Restringir escrita para usuários autenticados.
+    // Regra permissiva para o protótipo.
+    // Permite que qualquer cliente leia e escreva em qualquer coleção.
+    // ATENÇÃO: Em uma aplicação de produção, as regras devem ser
+    // mais restritivas para garantir a segurança dos dados.
+    match /{document=**} {
       allow read, write: if true;
     }
   }
