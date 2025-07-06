@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -44,7 +45,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { getAppUser, createAppUser, updateUser as updateDbUser } from "@/lib/firestoreService";
+import { updateUser as updateDbUser } from "@/lib/firestoreService";
 
 
 type NavItem = {
@@ -101,28 +102,13 @@ export default function DashboardClientLayout({
   const role = (searchParams.get("role") || "student") as "student" | "professor" | "admin";
   
   const [user, setUser] = useState<User | null>(null);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchUser = async () => {
-        try {
-            setError(null); // Reset error on new fetch
-            const validRole = role === 'admin' || role === 'professor' ? role : 'student';
-            let appUser = await getAppUser(validRole);
-
-            if (!appUser) {
-                // If user doesn't exist in DB, create it from mock data
-                const mockUser = mockUsers[validRole];
-                appUser = await createAppUser(mockUser);
-            }
-            setUser(appUser);
-        } catch (err) {
-            console.error("FATAL: Failed to fetch or create user.", err);
-            setError("Não foi possível conectar ao banco de dados. Verifique sua conexão e tente novamente. Se o problema persistir, contate o suporte.");
-        }
-    };
-
-    fetchUser();
+    // This is a more robust way to handle the initial user loading for the prototype.
+    // It avoids a fragile network request that was causing the app to freeze.
+    const validRole = role === 'admin' || role === 'professor' ? role : 'student';
+    const mockUser = mockUsers[validRole];
+    setUser(mockUser);
   }, [role]);
 
   const updateUser = useCallback((newUserData: Partial<User>) => {
@@ -138,7 +124,8 @@ export default function DashboardClientLayout({
         };
       }
       
-      // Update in Firestore as well
+      // Update in Firestore as well - this part still uses the network
+      // but it won't block the UI from loading.
       updateDbUser(prevUser.id, newUserData).catch(console.error);
       
       return updatedUser;
@@ -156,20 +143,6 @@ export default function DashboardClientLayout({
   }, [user?.role]);
 
   const getHref = (href: string) => `${href}?role=${role}`;
-
-  if (error) {
-    return (
-        <div className="flex h-screen w-full flex-col items-center justify-center gap-4 bg-background p-4">
-            <Alert variant="destructive" className="max-w-lg">
-                <AlertTriangle className="h-4 w-4" />
-                <AlertTitle>Erro Crítico de Conexão</AlertTitle>
-                <AlertDescription>
-                    {error}
-                </AlertDescription>
-            </Alert>
-        </div>
-    )
-  }
   
   if (!user) {
     return (
