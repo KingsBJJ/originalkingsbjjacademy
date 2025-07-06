@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from 'next/link';
@@ -20,7 +19,7 @@ export default function InvalidRoutePage() {
             Esta página não deve ser acessada diretamente.
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           <p>
             Para editar uma filial, por favor, vá para a lista de filiais e clique no botão "Editar" da filial desejada.
           </p>
