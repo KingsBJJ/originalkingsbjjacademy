@@ -168,7 +168,7 @@ export default function InstructorsPage() {
               <TableBody>
                 {loading ? (
                   Array.from({ length: 4 }).map((_, i) => <InstructorRowSkeleton key={i} />)
-                ) : (
+                ) : displayedInstructors.length > 0 ? (
                   displayedInstructors.map((instructor) => {
                     const beltKey = instructor.belt as keyof typeof beltColors;
                     const beltStyle = beltColors[beltKey] || beltColors.Branca;
@@ -228,6 +228,12 @@ export default function InstructorsPage() {
                       </TableRow>
                     );
                   })
+                ) : (
+                    <TableRow>
+                        <TableCell colSpan={5} className="h-24 text-center">
+                            Nenhum professor cadastrado ainda.
+                        </TableCell>
+                    </TableRow>
                 )}
               </TableBody>
             </Table>
