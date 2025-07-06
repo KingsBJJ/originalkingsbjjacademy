@@ -9,10 +9,10 @@ import {
   deleteDoc,
   query,
   orderBy,
-  where,
   serverTimestamp,
   Timestamp,
 } from 'firebase/firestore';
+import { mockBranches, mockInstructors } from './mock-data';
 
 // Tipo para itens do horário de aulas
 export type ClassScheduleItem = {
@@ -65,12 +65,23 @@ const instructorsCollection = collection(db, 'instructors');
 
 /**
  * Obtém todas as filiais ordenadas por nome.
+ * Se o banco de dados estiver vazio, ele o preenche com dados de exemplo.
  * @returns Lista de filiais.
  */
 export const getBranches = async (): Promise<Branch[]> => {
   try {
     const q = query(branchesCollection, orderBy('name'));
-    const snapshot = await getDocs(q);
+    let snapshot = await getDocs(q);
+
+    if (snapshot.empty) {
+      console.log('Populando filiais com dados de exemplo...');
+      for (const branch of mockBranches) {
+        const { id, ...branchData } = branch; // Excluir ID do mock
+        await addDoc(branchesCollection, branchData);
+      }
+      snapshot = await getDocs(q); // Re-buscar para obter os novos dados com IDs reais
+    }
+
     return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Branch));
   } catch (error) {
     console.error('Erro ao obter filiais:', error);
@@ -157,14 +168,26 @@ export const addInstructor = async (instructorData: Omit<Instructor, 'id'>) => {
 
 /**
  * Obtém todos os professores ordenados por nome.
+ * Se o banco de dados estiver vazio, ele o preenche com dados de exemplo.
  * @returns Lista de professores.
  */
 export const getInstructors = async (): Promise<Instructor[]> => {
   try {
     const q = query(instructorsCollection, orderBy('name'));
-    const snapshot = await getDocs(q);
+    let snapshot = await getDocs(q);
+
+    if (snapshot.empty) {
+      console.log('Populando instrutores com dados de exemplo...');
+      for (const instructor of mockInstructors) {
+        const { id, ...instructorData } = instructor; // Excluir ID do mock
+        await addDoc(instructorsCollection, instructorData);
+      }
+      snapshot = await getDocs(q); // Re-buscar para obter os novos dados com IDs reais
+    }
+
     return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Instructor));
-  } catch (error) {
+  } catch (error)
+  {
     console.error('Erro ao obter professores:', error);
     throw new Error('Não foi possível obter os professores.');
   }
