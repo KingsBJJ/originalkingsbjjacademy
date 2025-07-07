@@ -24,7 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { allBelts, allBeltsKids, mockInstructors } from "@/lib/mock-data";
+import { allBelts, allBeltsKids } from "@/lib/mock-data";
 import { useToast } from "@/hooks/use-toast";
 import { Check } from "lucide-react";
 import { 
@@ -106,9 +106,12 @@ function TermsDialog({ onAccept, isAccepted }: { onAccept: (parentName: string, 
 
 
 export default function SignUpPage() {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [role, setRole] = useState("student");
   const [belt, setBelt] = useState("");
+  const [stripes, setStripes] = useState(0);
   const [category, setCategory] = useState("adulto");
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [branches, setBranches] = useState<Branch[]>([]);
@@ -147,7 +150,7 @@ export default function SignUpPage() {
         const branchInstructorsNames = [
           selectedBranch.responsible,
           ...(selectedBranch.additionalInstructors || [])
-        ].filter(Boolean); // Filtra nomes vazios ou nulos
+        ].filter(Boolean);
         
         const filtered = instructors.filter(i => branchInstructorsNames.includes(i.name));
         setFilteredInstructors(filtered);
@@ -155,14 +158,14 @@ export default function SignUpPage() {
     } else {
       setFilteredInstructors([]);
     }
-    setMainInstructor(""); // Reseta a seleção do professor ao mudar a filial
+    setMainInstructor("");
   }, [affiliation, branches, instructors]);
 
 
   const handleCategoryChange = (newCategory: string) => {
     setCategory(newCategory);
-    setBelt(""); // Reseta a faixa ao mudar de categoria
-    setTermsAccepted(false); // Reseta o termo ao mudar a categoria
+    setBelt("");
+    setTermsAccepted(false);
   };
 
   const handleAcceptTerms = async (parentName: string, childName: string) => {
@@ -222,8 +225,23 @@ export default function SignUpPage() {
         description: "Seu cadastro como professor foi enviado para aprovação do administrador.",
       });
     }
-    // For simulation, we'll still navigate. In a real app, you'd wait for approval.
-    router.push(`/dashboard?role=${role}`);
+
+    const selectedBranch = branches.find(b => b.name === affiliation);
+    const branchId = selectedBranch ? selectedBranch.id : '';
+
+    const params = new URLSearchParams({
+        role,
+        name,
+        email,
+        affiliation,
+        branchId,
+        mainInstructor,
+        category: category === 'adulto' ? 'Adult' : 'Kids',
+        belt,
+        stripes: String(stripes),
+    });
+
+    router.push(`/dashboard?${params.toString()}`);
   };
 
   const currentBeltList = category === 'adulto' ? allBelts : allBeltsKids;
@@ -252,7 +270,7 @@ export default function SignUpPage() {
           <form onSubmit={handleSubmit} className="grid gap-4">
             <div className="grid gap-2">
               <Label htmlFor="name" className="text-white/80">Nome</Label>
-              <Input id="name" placeholder="Seu Nome" required className="bg-white/5 border-white/20 text-white placeholder:text-white/50" />
+              <Input id="name" placeholder="Seu Nome" required className="bg-white/5 border-white/20 text-white placeholder:text-white/50" value={name} onChange={e => setName(e.target.value)} />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="email" className="text-white/80">Email</Label>
@@ -268,7 +286,7 @@ export default function SignUpPage() {
             </div>
             <div className="grid gap-2">
               <Label htmlFor="password" className="text-white/80">Senha</Label>
-              <Input id="password" type="password" required className="bg-white/5 border-white/20 text-white" />
+              <Input id="password" type="password" required className="bg-white/5 border-white/20 text-white" value={password} onChange={e => setPassword(e.target.value)} />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="confirm-password" className="text-white/80">Confirmar Senha</Label>
@@ -365,6 +383,8 @@ export default function SignUpPage() {
                     max="6"
                     placeholder="Nº de graus (0-6)"
                     className="bg-white/5 border-white/20 text-white placeholder:text-white/50"
+                    value={String(stripes)}
+                    onChange={e => setStripes(Number(e.target.value))}
                   />
                 </div>
               )}

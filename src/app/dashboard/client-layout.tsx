@@ -100,23 +100,49 @@ export default function DashboardClientLayout({
 }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const roleParam = searchParams.get("role");
   const { toast } = useToast();
 
   const initialUser = useMemo(() => {
-    const role = roleParam ? roleParam.split('?')[0] as 'student' | 'professor' | 'admin' : 'student';
-    return mockUsers[role] || mockUsers.student;
-  }, [roleParam]);
+    const role = (searchParams.get("role") as User['role']) || 'student';
+    const name = searchParams.get("name");
+    const email = searchParams.get("email");
+    const affiliation = searchParams.get("affiliation");
+    const branchId = searchParams.get("branchId");
+    const mainInstructor = searchParams.get("mainInstructor");
+    const category = (searchParams.get("category") as User['category']) || 'Adult';
+    const belt = searchParams.get("belt");
+    const stripes = Number(searchParams.get("stripes") || 0);
+
+    // If email is present, we assume it's a new user from signup
+    if (email && name && affiliation && belt) {
+        const newUser: User = {
+            id: `user_${email.replace(/[@.]/g, '_')}`,
+            name,
+            email,
+            role,
+            affiliation,
+            branchId: branchId || '',
+            mainInstructor: mainInstructor || '',
+            category,
+            belt,
+            stripes,
+            avatar: "https://placehold.co/128x128.png",
+            attendance: { total: 0, lastMonth: 0 },
+            nextGraduationProgress: 5, // Start with a bit of progress
+        };
+        return newUser;
+    }
+
+    // Fallback to existing mock user logic for direct access
+    const mockRole = role ? role.split('?')[0] as 'student' | 'professor' | 'admin' : 'student';
+    return mockUsers[mockRole] || mockUsers.student;
+  }, [searchParams]);
 
   const [user, setUser] = useState<User>(initialUser);
 
   useEffect(() => {
-    // When the initial user is determined, sync it with Firestore.
-    // This happens in the background and does not block UI rendering.
-    if (initialUser) {
-      ensureUserExists(initialUser);
-      setUser(initialUser);
-    }
+    setUser(initialUser);
+    ensureUserExists(initialUser);
   }, [initialUser]);
 
 
@@ -131,7 +157,6 @@ export default function DashboardClientLayout({
         };
       }
       
-      // Update the DB in the background. Failures are logged but don't crash the app.
       updateDbUser(updatedUser.id, newUserData).catch(error => {
           console.error("Failed to update user in DB:", error);
           toast({
@@ -152,12 +177,11 @@ export default function DashboardClientLayout({
   }, [user.role]);
 
   const getHref = (href: string) => {
-      const currentRole = roleParam?.split('?')[0];
-      return `${href}?role=${currentRole || 'student'}`;
+    const params = new URLSearchParams(searchParams.toString());
+    return `${href}?${params.toString()}`;
   }
   
   if (!user) {
-    // This should no longer be visible to the user, but serves as a fallback.
     return (
       <div className="flex h-screen w-full flex-col items-center justify-center gap-4 bg-background">
         <KingsBjjLogo className="h-24 w-24 animate-pulse" />
