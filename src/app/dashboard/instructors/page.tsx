@@ -91,7 +91,7 @@ export default function InstructorsPage() {
     };
 
     fetchInstructors();
-  }, [toast]);
+  }, []);
 
   const handleDeleteClick = (instructor: Instructor) => {
     setInstructorToDelete(instructor);
@@ -145,7 +145,7 @@ export default function InstructorsPage() {
                 {`Total de ${displayedInstructors.length} professores em todas as filiais.`}
               </CardDescription>
             </div>
-            {user.role === 'admin' && (
+            {(user.role === 'admin' || user.role === 'professor') && (
               <Button asChild>
                   <Link href={`/dashboard/instructors/new?role=${user.role}`}>
                       <PlusCircle />
@@ -258,3 +258,5 @@ export default function InstructorsPage() {
     </>
   );
 }
+
+    
