@@ -212,5 +212,3 @@ export const mockInstructors: Instructor[] = [
     avatar: 'https://placehold.co/128x128.png',
   }
 ];
-
-    

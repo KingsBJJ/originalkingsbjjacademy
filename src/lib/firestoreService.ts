@@ -206,9 +206,6 @@ export const getInstructorsByAffiliation = async (affiliation: string): Promise<
     checkDb();
     if (!affiliation) return [];
     try {
-        // This is inefficient for large datasets, but simple for this project.
-        // A better approach would be to have a query like `where('affiliations', 'array-contains', affiliation)`
-        // which requires a composite index in Firestore.
         const allInstructors = await getInstructors();
         return allInstructors.filter(instructor => 
             instructor.affiliations?.includes(affiliation)
@@ -368,5 +365,3 @@ export const findInstructorByEmail = async (email: string): Promise<Instructor |
     throw new Error("Failed to find instructor by email.");
   }
 };
-
-    

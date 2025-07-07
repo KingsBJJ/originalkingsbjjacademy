@@ -300,5 +300,3 @@ export default function DashboardClientLayout({
     </UserContext.Provider>
   );
 }
-
-    
