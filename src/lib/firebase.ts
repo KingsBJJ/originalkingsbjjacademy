@@ -16,6 +16,7 @@ const firebaseConfig = {
 // Inicializa o Firebase
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 const db = getFirestore(app);
+console.log("Firestore DB initialized:", db);
 
 // Habilita a persistência offline para garantir que os dados não sejam perdidos.
 try {
