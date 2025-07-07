@@ -202,18 +202,6 @@ export const getInstructor = async (id: string): Promise<Instructor | null> => {
     }
 }
 
-export const getInstructorsByAffiliation = async (affiliation: string): Promise<Instructor[]> => {
-    checkDb();
-    try {
-        const q = query(collection(db, 'instructors'), where("affiliations", "array-contains", affiliation));
-        const querySnapshot = await getDocs(q);
-        return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Instructor));
-    } catch (error) {
-        console.error(`Error getting instructors for affiliation ${affiliation}: `, error);
-        throw new Error("Failed to fetch instructors for this affiliation.");
-    }
-};
-
 export const addInstructor = async (instructorData: Omit<Instructor, 'id'>) => {
     checkDb();
     try {

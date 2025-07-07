@@ -37,7 +37,7 @@ import {
   DialogTrigger
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { getBranches, saveTermsAcceptance, type Branch, getInstructorsByAffiliation, type Instructor } from "@/lib/firestoreService";
+import { getBranches, saveTermsAcceptance, type Branch, onInstructorsUpdate, type Instructor } from "@/lib/firestoreService";
 
 
 function TermsDialog({ onAccept, isAccepted }: { onAccept: (parentName: string, childName: string) => void, isAccepted: boolean }) {
@@ -115,6 +115,7 @@ export default function SignUpPage() {
   const [category, setCategory] = useState("adulto");
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [branches, setBranches] = useState<Branch[]>([]);
+  const [allInstructors, setAllInstructors] = useState<Instructor[]>([]);
   const [filteredInstructors, setFilteredInstructors] = useState<Instructor[]>([]);
   const [loadingInstructors, setLoadingInstructors] = useState(false);
   const [affiliation, setAffiliation] = useState("");
@@ -137,34 +138,31 @@ export default function SignUpPage() {
         }
     };
     fetchBranches();
+
+    setLoadingInstructors(true);
+    const unsubscribeInstructors = onInstructorsUpdate((instructors) => {
+        setAllInstructors(instructors);
+        setLoadingInstructors(false);
+    });
+
+    return () => {
+        unsubscribeInstructors();
+    };
   }, [toast]);
 
   useEffect(() => {
-    if (affiliation) {
-      const fetchInstructors = async () => {
-        setLoadingInstructors(true);
-        setFilteredInstructors([]);
-        setMainInstructor("");
-        try {
-          const fetchedInstructors = await getInstructorsByAffiliation(affiliation);
-          setFilteredInstructors(fetchedInstructors);
-        } catch (error) {
-          console.error(`Failed to fetch instructors for ${affiliation}:`, error);
-          toast({
-            variant: "destructive",
-            title: "Erro ao buscar professores",
-            description: "Não foi possível carregar a lista de professores para esta filial.",
-          });
-        } finally {
-          setLoadingInstructors(false);
-        }
-      };
-      fetchInstructors();
+    if (affiliation && allInstructors.length > 0) {
+      setFilteredInstructors([]);
+      setMainInstructor("");
+      const instructorsForAffiliation = allInstructors.filter(instructor => 
+        instructor.affiliations?.includes(affiliation)
+      );
+      setFilteredInstructors(instructorsForAffiliation);
     } else {
       setFilteredInstructors([]);
       setMainInstructor("");
     }
-  }, [affiliation, toast]);
+  }, [affiliation, allInstructors]);
 
 
   const handleCategoryChange = (newCategory: string) => {
