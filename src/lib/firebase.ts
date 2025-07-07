@@ -28,11 +28,16 @@ function initializeFirebase() {
 
   const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
   
-  // Use the modern initializeFirestore with persistent cache settings
-  // This replaces the deprecated enableIndexedDbPersistence call
-  const db = initializeFirestore(app, {
-    localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
-  });
+  let db = null;
+  try {
+    // Use the modern initializeFirestore with persistent cache settings
+    // This replaces the deprecated enableIndexedDbPersistence call
+    db = initializeFirestore(app, {
+      localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+    });
+  } catch(e) {
+    console.error("Error initializing Firestore:", e);
+  }
   
   return { app, db };
 }
