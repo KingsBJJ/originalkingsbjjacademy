@@ -57,10 +57,8 @@ export default async function DashboardLayout({
     user = mockUsers[mockRole] || mockUsers.student;
   }
 
-  if (user.role === 'admin') {
-      // Don't await this, let it run in the background
-      seedInitialData().catch(console.error);
-  }
+  // The unstable database call from the layout has been removed to prevent crashes.
+  // Seeding can be done manually from the admin dashboard.
 
   return (
     <Suspense fallback={<DashboardLoading />}>
