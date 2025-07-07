@@ -271,7 +271,7 @@ export const saveTermsAcceptance = async (data: Omit<TermsAcceptance, 'id' | 'ac
 export const ensureUserExists = async (user: User) => {
   try {
       const userRef = doc(db, 'users', user.id);
-      const userSnap = await getDoc(userRef);
+      const userSnap = await getDoc(userRef, { source: 'cache' });
       if (!userSnap.exists()) {
           console.log(`User ${user.id} not found in DB. Creating...`);
           await setDoc(userRef, user);

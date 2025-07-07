@@ -144,22 +144,16 @@ export default function SignUpPage() {
   }, [toast]);
 
   useEffect(() => {
-    if (affiliation && branches.length > 0 && instructors.length > 0) {
-      const selectedBranch = branches.find(b => b.name === affiliation);
-      if (selectedBranch) {
-        const branchInstructorsNames = [
-          selectedBranch.responsible,
-          ...(selectedBranch.additionalInstructors || [])
-        ].filter(Boolean);
-        
-        const filtered = instructors.filter(i => branchInstructorsNames.includes(i.name));
-        setFilteredInstructors(filtered);
-      }
+    if (affiliation && instructors.length > 0) {
+      const filtered = instructors.filter(instructor => 
+        instructor.affiliations?.includes(affiliation)
+      );
+      setFilteredInstructors(filtered);
     } else {
       setFilteredInstructors([]);
     }
     setMainInstructor("");
-  }, [affiliation, branches, instructors]);
+  }, [affiliation, instructors]);
 
 
   const handleCategoryChange = (newCategory: string) => {
