@@ -15,7 +15,9 @@ import {
     Timestamp,
     where,
     limit,
-    setDoc
+    setDoc,
+    onSnapshot,
+    type Unsubscribe
 } from 'firebase/firestore';
 
 // --- Types ---
@@ -78,7 +80,7 @@ export type Instructor = {
   avatar?: string;
 };
 
-export type Student = Omit<User, 'role'>;
+export type Student = User;
 
 
 // --- References to Firestore Collections ---
@@ -101,6 +103,17 @@ export const getBranches = async (): Promise<Branch[]> => {
     console.error("Error getting branches: ", error);
     throw new Error("Failed to fetch branches.");
   }
+};
+
+export const onBranchesUpdate = (callback: (branches: Branch[]) => void): Unsubscribe => {
+    const q = query(branchesCollection);
+    return onSnapshot(q, (querySnapshot) => {
+        const branches = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Branch));
+        callback(branches);
+    }, (error) => {
+        console.error("Error on branches snapshot: ", error);
+        callback([]);
+    });
 };
 
 export const getBranch = async (id: string): Promise<Branch | null> => {
@@ -160,6 +173,17 @@ export const getInstructors = async (): Promise<Instructor[]> => {
     }
 };
 
+export const onInstructorsUpdate = (callback: (instructors: Instructor[]) => void): Unsubscribe => {
+    const q = query(instructorsCollection);
+    return onSnapshot(q, (querySnapshot) => {
+        const instructors = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Instructor));
+        callback(instructors);
+    }, (error) => {
+        console.error("Error on instructors snapshot: ", error);
+        callback([]);
+    });
+};
+
 export const getInstructor = async (id: string): Promise<Instructor | null> => {
     try {
         const docRef = doc(db, 'instructors', id);
@@ -212,6 +236,17 @@ export const getStudents = async (): Promise<Student[]> => {
         console.error("Error getting students: ", error);
         throw new Error("Failed to fetch students.");
     }
+};
+
+export const onStudentsUpdate = (callback: (students: Student[]) => void): Unsubscribe => {
+    const q = query(usersCollection, where("role", "==", "student"));
+    return onSnapshot(q, (querySnapshot) => {
+        const students = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Student));
+        callback(students);
+    }, (error) => {
+        console.error("Error on students snapshot: ", error);
+        callback([]);
+    });
 };
 
 

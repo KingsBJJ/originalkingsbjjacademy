@@ -29,7 +29,7 @@ import {
   beltInfo,
   beltInfoKids,
 } from "@/lib/mock-data";
-import { getStudents, type Student } from "@/lib/firestoreService";
+import { onStudentsUpdate, type Student } from "@/lib/firestoreService";
 import { cn } from "@/lib/utils";
 import { CheckCircle, GraduationCap } from "lucide-react";
 import { UserContext } from "../client-layout";
@@ -131,10 +131,12 @@ const GraduationPlan = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        getStudents().then(data => {
+        setLoading(true);
+        const unsubscribe = onStudentsUpdate(data => {
             setStudents(data);
             setLoading(false);
-        }).catch(console.error);
+        });
+        return () => unsubscribe();
     }, []);
 
     const allBeltColors = { ...beltColors, ...beltColorsKids };

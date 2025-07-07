@@ -24,14 +24,15 @@ import {
 import { Bar, BarChart as RechartsBarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
 import { ChartConfig, ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
 import { UserContext } from "./client-layout";
-import { getBranches, getInstructors, getStudents, type Branch, type Instructor, type Student } from "@/lib/firestoreService";
+import { 
+    onBranchesUpdate, 
+    onInstructorsUpdate, 
+    onStudentsUpdate, 
+    type Branch, 
+    type Instructor, 
+    type Student 
+} from "@/lib/firestoreService";
 import { Skeleton } from "@/components/ui/skeleton";
-
-type DashboardData = {
-  branches: Branch[];
-  instructors: Instructor[];
-  students: Student[];
-};
 
 const DataCard = ({ title, value, description, icon: Icon }: { title: string; value: number | string; description: string; icon: React.ElementType }) => (
     <Card>
@@ -56,33 +57,30 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 const AdminDashboard = () => {
-  const user = useContext(UserContext);
-  const [data, setData] = useState<DashboardData | null>(null);
+  const [branches, setBranches] = useState<Branch[]>([]);
+  const [instructors, setInstructors] = useState<Instructor[]>([]);
+  const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const [branches, instructors, students] = await Promise.all([
-          getBranches(),
-          getInstructors(),
-          getStudents(),
-        ]);
-        setData({ branches, instructors, students });
-      } catch (error) {
-        console.error("Failed to fetch dashboard data", error);
-      } finally {
-        setLoading(false);
-      }
+    const unsubBranches = onBranchesUpdate(setBranches);
+    const unsubInstructors = onInstructorsUpdate(setInstructors);
+    const unsubStudents = onStudentsUpdate((fetchedStudents) => {
+        setStudents(fetchedStudents);
+        setLoading(false); // Consider loading done when students arrive
+    });
+
+    return () => {
+        unsubBranches();
+        unsubInstructors();
+        unsubStudents();
     };
-    fetchData();
   }, []);
 
   const branchStudentData = useMemo(() => {
-    if (!data?.students || !data?.branches) return [];
+    if (!students || !branches) return [];
     
-    const studentCounts = data.students.reduce((acc, student) => {
+    const studentCounts = students.reduce((acc, student) => {
         const affiliation = student.affiliation || "Sem Filial";
         acc[affiliation] = (acc[affiliation] || 0) + 1;
         return acc;
@@ -92,15 +90,15 @@ const AdminDashboard = () => {
       name: branchName,
       students: studentCount,
     }));
-  }, [data]);
+  }, [students, branches]);
 
   const bestBranch = useMemo(() => {
-    if (!data?.students || data.students.length === 0) {
+    if (!students || students.length === 0) {
       return null
     }
 
     const attendanceByBranch: Record<string, number> = {}
-    for (const student of data.students) {
+    for (const student of students) {
       const branchName = student.affiliation || 'Sem Filial'
       if (branchName !== 'Sem Filial') {
         attendanceByBranch[branchName] =
@@ -127,7 +125,7 @@ const AdminDashboard = () => {
       name: bestBranchName,
       attendance: maxAttendance,
     }
-  }, [data]);
+  }, [students]);
 
   if (loading) {
     return (
@@ -143,9 +141,9 @@ const AdminDashboard = () => {
 
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-      <DataCard title="Total de Alunos" value={data?.students.length ?? 0} description="Alunos ativos em todas as filiais" icon={Users} />
-      <DataCard title="Total de Filiais" value={data?.branches.length ?? 0} description="Filiais em operação" icon={Map} />
-      <DataCard title="Total de Professores" value={data?.instructors.length ?? 0} description="Professores em todas as filiais" icon={UserIcon} />
+      <DataCard title="Total de Alunos" value={students.length} description="Alunos ativos em todas as filiais" icon={Users} />
+      <DataCard title="Total de Filiais" value={branches.length} description="Filiais em operação" icon={Map} />
+      <DataCard title="Total de Professores" value={instructors.length} description="Professores em todas as filiais" icon={UserIcon} />
       
       <Card className="md:col-span-3">
           <CardHeader>
@@ -203,30 +201,23 @@ const AdminDashboard = () => {
 
 const ProfessorDashboard = () => {
   const user = useContext(UserContext);
-  const [data, setData] = useState<DashboardData | null>(null);
+  const [branches, setBranches] = useState<Branch[]>([]);
+  const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
-      if (!user?.affiliation) {
-          setLoading(false);
-          return;
-      }
-      try {
-        const [branches, students] = await Promise.all([
-          getBranches(),
-          getStudents(),
-        ]);
-        const affiliatedStudents = students.filter(s => s.affiliation === user.affiliation);
-        setData({ branches, instructors: [], students: affiliatedStudents });
-      } catch (error) {
-        console.error("Failed to fetch dashboard data", error);
-      } finally {
+    if (!user) return;
+    const unsubBranches = onBranchesUpdate(setBranches);
+    const unsubStudents = onStudentsUpdate((fetchedStudents) => {
+        setStudents(fetchedStudents.filter(s => s.affiliation === user.affiliation));
         setLoading(false);
-      }
+    });
+
+    return () => {
+        unsubBranches();
+        unsubStudents();
     };
-    fetchData();
-  }, [user?.affiliation]);
+  }, [user]);
 
   if (!user) return null;
 
@@ -234,13 +225,13 @@ const ProfessorDashboard = () => {
       return <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"><Skeleton className="h-36 md:col-span-1 lg:col-span-3" /><Skeleton className="h-36 md:col-span-1 lg:col-span-3" /></div>;
   }
 
-  const nextClass = data?.branches
+  const nextClass = branches
     .flatMap(b => b.schedule?.map(s => ({...s, branchName: b.name})))
     .find(c => c.instructor.includes(user.name.split(" ")[1]));
 
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <DataCard title="Seus Alunos" value={data?.students.length ?? 0} description={`Alunos na sua filial: ${user.affiliation}`} icon={Users} />
+        <DataCard title="Seus Alunos" value={students.length} description={`Alunos na sua filial: ${user.affiliation}`} icon={Users} />
         
         <Card className="col-span-1 lg:col-span-2">
             <CardHeader>
@@ -302,10 +293,11 @@ const StudentDashboard = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getBranches().then(data => {
+    const unsubscribe = onBranchesUpdate(data => {
         setBranches(data);
         setLoading(false);
-    }).catch(console.error);
+    });
+    return () => unsubscribe();
   }, []);
 
   if (!user) return null;

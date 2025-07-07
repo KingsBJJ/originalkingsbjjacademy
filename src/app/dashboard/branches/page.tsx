@@ -26,7 +26,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Skeleton } from "@/components/ui/skeleton";
-import { getBranches, deleteBranch, type Branch } from "@/lib/firestoreService";
+import { onBranchesUpdate, deleteBranch, type Branch } from "@/lib/firestoreService";
 import { useToast } from "@/hooks/use-toast";
 import {
   AlertDialog,
@@ -75,25 +75,14 @@ export default function BranchesPage() {
   const { toast } = useToast();
 
   useEffect(() => {
-    const fetchBranches = async () => {
-      try {
-        setLoading(true);
-        const fetchedBranches = await getBranches();
-        setBranches(fetchedBranches);
-      } catch (error) {
-        console.error("Failed to fetch branches:", error);
-        toast({
-          variant: "destructive",
-          title: "Erro ao carregar filiais",
-          description: "Não foi possível buscar os dados das filiais. Tente novamente mais tarde.",
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
+    setLoading(true);
+    const unsubscribe = onBranchesUpdate((fetchedBranches) => {
+      setBranches(fetchedBranches);
+      setLoading(false);
+    });
 
-    fetchBranches();
-  }, [toast]);
+    return () => unsubscribe();
+  }, []);
 
   const handleDeleteClick = (branch: Branch) => {
     setBranchToDelete(branch);
@@ -104,7 +93,7 @@ export default function BranchesPage() {
     if (!branchToDelete) return;
     try {
       await deleteBranch(branchToDelete.id);
-      setBranches(branches.filter(b => b.id !== branchToDelete.id));
+      // The list will update automatically via the onSnapshot listener
       toast({
         title: "Filial Excluída!",
         description: `A filial "${branchToDelete.name}" foi removida com sucesso.`,

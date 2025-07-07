@@ -158,26 +158,3 @@ export const mockAttendanceHistory = [
     { date: '28/06/2024', class: 'No-Gi', status: 'Presente' },
     { date: '26/06/2024', class: 'Fundamentos', status: 'Faltou' },
 ];
-
-export const mockInstructors = [
-  {
-    id: 'inst1',
-    name: 'Prof. Hélio Gracie',
-    email: 'helio@kingsbjj.com',
-    phone: '(21) 99999-1111',
-    affiliations: ['Kings BJJ - Centro'],
-    belt: 'Coral' as keyof typeof beltColors,
-    stripes: 9,
-    avatar: 'https://placehold.co/128x128.png'
-  },
-  {
-    id: 'inst2',
-    name: 'Prof. Carlson Gracie',
-    email: 'carlson@kingsbjj.com',
-    phone: '(21) 99999-2222',
-    affiliations: ['Kings BJJ - Zona Sul'],
-    belt: 'Preta' as keyof typeof beltColors,
-    stripes: 6,
-    avatar: 'https://placehold.co/128x128.png'
-  },
-];

@@ -21,8 +21,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { UserContext } from '../client-layout';
-import { beltColors, beltColorsKids, User as StudentUser } from '@/lib/mock-data';
-import { getStudents, type Student } from '@/lib/firestoreService';
+import { beltColors, beltColorsKids } from '@/lib/mock-data';
+import { onStudentsUpdate, type Student } from '@/lib/firestoreService';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { MoreHorizontal } from 'lucide-react';
@@ -143,18 +143,13 @@ export default function ManageStudentsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchStudents = async () => {
-      try {
-        setLoading(true);
-        const allStudents = await getStudents();
-        setStudents(allStudents);
-      } catch (error) {
-        console.error("Failed to fetch students", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchStudents();
+    setLoading(true);
+    const unsubscribe = onStudentsUpdate((fetchedStudents) => {
+      setStudents(fetchedStudents);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
   }, []);
 
   if (!user || user.role === 'student') {

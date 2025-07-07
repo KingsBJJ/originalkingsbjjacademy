@@ -42,7 +42,7 @@ import { cn } from "@/lib/utils";
 import { UserContext } from "../client-layout";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, MoreHorizontal } from "lucide-react";
-import { getInstructors, deleteInstructor, type Instructor } from "@/lib/firestoreService";
+import { onInstructorsUpdate, deleteInstructor, type Instructor } from "@/lib/firestoreService";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 
@@ -73,24 +73,13 @@ export default function InstructorsPage() {
   const { toast } = useToast();
 
   useEffect(() => {
-    const fetchInstructors = async () => {
-      try {
-        setLoading(true);
-        const fetchedInstructors = await getInstructors();
-        setInstructors(fetchedInstructors);
-      } catch (error) {
-        console.error("Failed to fetch instructors:", error);
-        toast({
-            variant: "destructive",
-            title: "Erro ao carregar instrutores.",
-            description: "Não foi possível carregar a lista de instrutores.",
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
+    setLoading(true);
+    const unsubscribe = onInstructorsUpdate((fetchedInstructors) => {
+      setInstructors(fetchedInstructors);
+      setLoading(false);
+    });
 
-    fetchInstructors();
+    return () => unsubscribe();
   }, []);
 
   const handleDeleteClick = (instructor: Instructor) => {
@@ -102,7 +91,7 @@ export default function InstructorsPage() {
     if (!instructorToDelete) return;
     try {
       await deleteInstructor(instructorToDelete.id);
-      setInstructors(instructors.filter(i => i.id !== instructorToDelete.id));
+      // The list will update automatically via the onSnapshot listener
       toast({
         title: "Professor Excluído!",
         description: `O professor "${instructorToDelete.name}" foi removido com sucesso.`,
@@ -258,5 +247,3 @@ export default function InstructorsPage() {
     </>
   );
 }
-
-    

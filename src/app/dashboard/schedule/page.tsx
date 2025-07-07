@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Clock } from "lucide-react";
 import { UserContext } from "../client-layout";
-import { getBranches, type Branch, type ClassScheduleItem } from "@/lib/firestoreService";
+import { onBranchesUpdate, type Branch, type ClassScheduleItem } from "@/lib/firestoreService";
 import { Skeleton } from "@/components/ui/skeleton";
 
 type ClassWithBranch = ClassScheduleItem & { branchName: string };
@@ -36,27 +36,19 @@ export default function SchedulePage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-      const fetchSchedules = async () => {
-          try {
-              setLoading(true);
-              const branches = await getBranches();
-              
-              const allClasses = branches.flatMap(branch => 
-                  (branch.schedule ?? []).map(item => ({
-                      ...item,
-                      branchName: branch.name,
-                  }))
-              );
-              
-              setAllClasses(allClasses);
-          } catch (error) {
-              console.error("Failed to fetch schedules:", error);
-          } finally {
-              setLoading(false);
-          }
-      };
+    setLoading(true);
+    const unsubscribe = onBranchesUpdate((branches) => {
+        const allClasses = branches.flatMap(branch => 
+            (branch.schedule ?? []).map(item => ({
+                ...item,
+                branchName: branch.name,
+            }))
+        );
+        setAllClasses(allClasses);
+        setLoading(false);
+    });
 
-      fetchSchedules();
+    return () => unsubscribe();
   }, []);
 
   if (!user) {
