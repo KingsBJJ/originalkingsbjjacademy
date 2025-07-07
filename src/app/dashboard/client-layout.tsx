@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { createContext, useMemo, useContext, useState, useEffect, useCallback } from "react";
+import { createContext, useState, useCallback, useMemo } from "react";
 import {
   Avatar,
   AvatarFallback,
@@ -23,7 +23,7 @@ import {
   SidebarInset,
 } from "@/components/ui/sidebar";
 import { KingsBjjLogo } from "@/components/kings-bjj-logo";
-import { User, mockUsers } from "@/lib/mock-data";
+import type { User } from "@/lib/mock-data";
 import {
   Award,
   Bell,
@@ -36,7 +36,6 @@ import {
   QrCode,
   Calendar,
   FileText,
-  AlertTriangle,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -44,8 +43,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { updateUser as updateDbUser, ensureUserExists, seedInitialData } from "@/lib/firestoreService";
+import { updateUser as updateDbUser } from "@/lib/firestoreService";
 import { useToast } from "@/hooks/use-toast";
 
 
@@ -94,62 +92,17 @@ export const UserContext = createContext<User | null>(null);
 export const UserUpdateContext = createContext<((newUserData: Partial<User>) => void) | null>(null);
 
 export default function DashboardClientLayout({
+  user: initialUser,
   children,
 }: {
+  user: User;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { toast } = useToast();
 
-  const initialUser = useMemo(() => {
-    const role = (searchParams.get("role") as User['role']) || 'student';
-    const name = searchParams.get("name");
-    const email = searchParams.get("email");
-    const affiliation = searchParams.get("affiliation");
-    const branchId = searchParams.get("branchId");
-    const mainInstructor = searchParams.get("mainInstructor");
-    const category = (searchParams.get("category") as User['category']) || 'Adult';
-    const belt = searchParams.get("belt");
-    const stripes = Number(searchParams.get("stripes") || 0);
-
-    // If email is present, we assume it's a new user from signup
-    if (email && name && affiliation && belt) {
-        const newUser: User = {
-            id: `user_${email.replace(/[@.]/g, '_')}`,
-            name,
-            email,
-            role,
-            affiliation,
-            branchId: branchId || '',
-            mainInstructor: mainInstructor || '',
-            category,
-            belt,
-            stripes,
-            avatar: "https://placehold.co/128x128.png",
-            attendance: { total: 0, lastMonth: 0 },
-            nextGraduationProgress: 5, // Start with a bit of progress
-        };
-        return newUser;
-    }
-
-    // Fallback to existing mock user logic for direct access
-    const mockRole = role ? role.split('?')[0] as 'student' | 'professor' | 'admin' : 'student';
-    return mockUsers[mockRole] || mockUsers.student;
-  }, [searchParams]);
-
   const [user, setUser] = useState<User>(initialUser);
-
-  useEffect(() => {
-    setUser(initialUser);
-    ensureUserExists(initialUser).then(() => {
-        if (initialUser.role === 'admin') {
-            console.log("Admin user detected, attempting to seed initial data...");
-            seedInitialData();
-        }
-    });
-  }, [initialUser]);
-
 
   const updateUser = useCallback((newUserData: Partial<User>) => {
     setUser(prevUser => {

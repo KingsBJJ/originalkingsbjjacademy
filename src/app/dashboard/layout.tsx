@@ -1,6 +1,8 @@
 import { Suspense } from "react";
 import DashboardClientLayout from "./client-layout";
 import { KingsBjjLogo } from "@/components/kings-bjj-logo";
+import { User, mockUsers } from "@/lib/mock-data";
+import { ensureUserExists, seedInitialData } from "@/lib/firestoreService";
 
 function DashboardLoading() {
   return (
@@ -11,14 +13,60 @@ function DashboardLoading() {
   );
 }
 
-export default function DashboardLayout({
+// This is now a Server Component that fetches user data
+export default async function DashboardLayout({
   children,
+  searchParams,
 }: {
   children: React.ReactNode;
+  searchParams: { [key: string]: string | string[] | undefined };
 }) {
+
+  // Logic to determine user is moved here, to the server
+  const role = (searchParams?.role as User['role']) || 'student';
+  const name = searchParams?.name as string;
+  const email = searchParams?.email as string;
+  const affiliation = searchParams?.affiliation as string;
+  const branchId = searchParams?.branchId as string;
+  const mainInstructor = searchParams?.mainInstructor as string;
+  const category = (searchParams?.category as User['category']) || 'Adult';
+  const belt = searchParams?.belt as string;
+  const stripes = Number(searchParams?.stripes || 0);
+
+  let user: User;
+
+  if (email && name && affiliation && belt) {
+      user = {
+          id: `user_${email.replace(/[@.]/g, '_')}`,
+          name,
+          email,
+          role,
+          affiliation,
+          branchId: branchId || '',
+          mainInstructor: mainInstructor || '',
+          category,
+          belt,
+          stripes,
+          avatar: "https://placehold.co/128x128.png",
+          attendance: { total: 0, lastMonth: 0 },
+          nextGraduationProgress: 5,
+      };
+  } else {
+    const mockRole = role ? role.split('?')[0] as 'student' | 'professor' | 'admin' : 'student';
+    user = mockUsers[mockRole] || mockUsers.student;
+  }
+
+  // Server-side data operations
+  await ensureUserExists(user);
+  if (user.role === 'admin') {
+      // Don't await this, let it run in the background
+      seedInitialData().catch(console.error);
+  }
+
   return (
     <Suspense fallback={<DashboardLoading />}>
-      <DashboardClientLayout>{children}</DashboardClientLayout>
+      {/* Pass the server-fetched user to the client layout */}
+      <DashboardClientLayout user={user}>{children}</DashboardClientLayout>
     </Suspense>
   );
 }
