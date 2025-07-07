@@ -1,10 +1,6 @@
 
 import { initializeApp, getApps, getApp, type FirebaseOptions } from "firebase/app";
-import { 
-    initializeFirestore, 
-    persistentLocalCache, 
-    persistentMultipleTabManager 
-} from "firebase/firestore";
+import { initializeFirestore, CACHE_SIZE_UNLIMITED } from "firebase/firestore";
 
 const firebaseConfig: FirebaseOptions = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -17,27 +13,19 @@ const firebaseConfig: FirebaseOptions = {
 
 // This function provides a single point of failure and clear error messaging.
 function initializeFirebase() {
-  // Check if the essential config is loaded. If not, the app is unusable.
+  // Check if the essential config is loaded.
   if (!firebaseConfig.projectId || !firebaseConfig.apiKey) {
-    console.error("FATAL: Firebase configuration is missing or incomplete.");
-    console.error("This is likely because the FIREBASE_WEBAPP_CONFIG environment variable is not set or is invalid.");
-    // We return nulls here to be handled by consuming code.
-    // The app is in an unrecoverable state.
+    console.error("FATAL: Firebase configuration is missing or incomplete. Data will not load.");
     return { app: null, db: null };
   }
 
   const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
   
-  let db = null;
-  try {
-    // Use the modern initializeFirestore with persistent cache settings
-    // This replaces the deprecated enableIndexedDbPersistence call
-    db = initializeFirestore(app, {
-      localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
-    });
-  } catch(e) {
-    console.error("Error initializing Firestore:", e);
-  }
+  // Using initializeFirestore with bare minimum config to ensure stability
+  // This avoids multi-tab persistence which might be causing issues in some environments.
+  const db = initializeFirestore(app, {
+      cacheSizeBytes: CACHE_SIZE_UNLIMITED,
+  });
   
   return { app, db };
 }
