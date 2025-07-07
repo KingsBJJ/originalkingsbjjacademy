@@ -1,6 +1,10 @@
 
 import { initializeApp, getApps, getApp, type FirebaseOptions } from "firebase/app";
-import { getFirestore, enableIndexedDbPersistence } from "firebase/firestore";
+import { 
+    initializeFirestore, 
+    persistentLocalCache, 
+    persistentMultipleTabManager 
+} from "firebase/firestore";
 
 const firebaseConfig: FirebaseOptions = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -23,21 +27,13 @@ function initializeFirebase() {
   }
 
   const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
-  const db = getFirestore(app);
   
-  // Enable offline persistence only in the browser
-  if (typeof window !== 'undefined') {
-      try {
-          enableIndexedDbPersistence(db)
-      } catch (error: any) {
-          if (error.code == 'failed-precondition') {
-              // Multiple tabs open, persistence can only be enabled in one.
-          } else if (error.code == 'unimplemented') {
-              // The browser does not support all of the features required to enable persistence
-          }
-      }
-  }
-
+  // Use the modern initializeFirestore with persistent cache settings
+  // This replaces the deprecated enableIndexedDbPersistence call
+  const db = initializeFirestore(app, {
+    localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+  });
+  
   return { app, db };
 }
 
