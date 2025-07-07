@@ -23,11 +23,9 @@ if (missingKeys.length > 0) {
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
-// Inicializa o Firestore com cache em memória e força o long-polling para
-// garantir uma conexão mais estável em ambientes de rede restritivos.
+// Inicializa o Firestore com cache em memória para estabilidade, contornando problemas de IndexedDB.
 const db = initializeFirestore(app, {
     localCache: memoryLocalCache(),
-    experimentalForceLongPolling: true,
 });
 
 export { app, db };

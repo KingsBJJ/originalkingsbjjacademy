@@ -98,6 +98,7 @@ function checkDb() {
 export const seedInitialData = async () => {
     checkDb();
     try {
+        console.log("Checking and seeding initial data if necessary...");
         // Check if branches collection is empty
         const branchesQuery = query(collection(db, 'branches'), limit(1));
         const branchesSnapshot = await getDocs(branchesQuery);
@@ -108,7 +109,9 @@ export const seedInitialData = async () => {
                 return setDoc(doc(db, 'branches', id), branchData);
             });
             await Promise.all(branchPromises);
-            console.log("Seeding branches completed.");
+            console.log("✅ Seeding branches completed.");
+        } else {
+            console.log("Branches collection already has data. Skipping seed.");
         }
 
         // Check if instructors collection is empty
@@ -121,12 +124,14 @@ export const seedInitialData = async () => {
                 return setDoc(doc(db, 'instructors', id), instructorData);
             });
             await Promise.all(instructorPromises);
-            console.log("Seeding instructors completed.");
+            console.log("✅ Seeding instructors completed.");
+        } else {
+            console.log("Instructors collection already has data. Skipping seed.");
         }
+        return { success: true, message: "Data seeding check completed." };
     } catch (error) {
-        console.error("Error seeding initial data:", error);
-        // We don't want to throw an error here, as it might break the app load.
-        // It's better to just log it.
+        console.error("❌ Error seeding initial data:", error);
+        throw new Error("Failed to seed initial data. Check Firestore connection and permissions.");
     }
 };
 
