@@ -1,8 +1,9 @@
+
 import { Suspense } from "react";
 import DashboardClientLayout from "./client-layout";
 import { KingsBjjLogo } from "@/components/kings-bjj-logo";
 import { User, mockUsers } from "@/lib/mock-data";
-import { ensureUserExists, seedInitialData } from "@/lib/firestoreService";
+import { seedInitialData } from "@/lib/firestoreService";
 
 function DashboardLoading() {
   return (
@@ -56,8 +57,6 @@ export default async function DashboardLayout({
     user = mockUsers[mockRole] || mockUsers.student;
   }
 
-  // Server-side data operations
-  await ensureUserExists(user);
   if (user.role === 'admin') {
       // Don't await this, let it run in the background
       seedInitialData().catch(console.error);
