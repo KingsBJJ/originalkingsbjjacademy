@@ -1,6 +1,10 @@
+
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Regra aberta para desenvolvimento: permite leitura e escrita em toda a base.
+    // ATENÇÃO: Para produção, estas regras devem ser mais restritivas.
     match /{document=**} {
       allow read, write: if true;
     }

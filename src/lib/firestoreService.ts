@@ -39,6 +39,8 @@ export type User = {
   branchId: string;
   category: "Adult" | "Kids";
   mainInstructor?: string;
+  isFirstLogin?: boolean;
+  password?: string;
 };
 
 export type ClassScheduleItem = {
@@ -78,6 +80,9 @@ export type Instructor = {
   stripes?: number;
   bio?: string;
   avatar?: string;
+  password?: string;
+  isFirstLogin?: boolean;
+  teachingCategories?: ('Adults' | 'Kids')[];
 };
 
 export type Student = User;
@@ -341,4 +346,20 @@ export const updateUser = async (id: string, userData: Partial<User>) => {
         console.error("Error updating user: ", error);
         throw new Error("Failed to update user.");
     }
+};
+
+export const findInstructorByEmail = async (email: string): Promise<Instructor | null> => {
+  checkDb();
+  try {
+    const q = query(collection(db, 'instructors'), where("email", "==", email), limit(1));
+    const querySnapshot = await getDocs(q);
+    if (querySnapshot.empty) {
+      return null;
+    }
+    const instructorDoc = querySnapshot.docs[0];
+    return { id: instructorDoc.id, ...instructorDoc.data() } as Instructor;
+  } catch (error) {
+    console.error("Error finding instructor by email: ", error);
+    throw new Error("Failed to find instructor by email.");
+  }
 };
