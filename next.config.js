@@ -1,9 +1,25 @@
 /** @type {import('next').NextConfig} */
 
-// Parse the Firebase web app config from the environment variable
-const webappConfig = process.env.FIREBASE_WEBAPP_CONFIG 
-  ? JSON.parse(process.env.FIREBASE_WEBAPP_CONFIG) 
-  : {};
+let webappConfig = {};
+
+try {
+  const firebaseConfigStr = process.env.FIREBASE_WEBAPP_CONFIG;
+  if (firebaseConfigStr) {
+    webappConfig = JSON.parse(firebaseConfigStr);
+  } else {
+    // This warning is crucial for debugging in environments where the variable might be missing.
+    console.warn(
+      "WARNING: The FIREBASE_WEBAPP_CONFIG environment variable is not set. Firebase will not be initialized."
+    );
+  }
+} catch (error) {
+  console.error(
+    "FATAL ERROR: Failed to parse FIREBASE_WEBAPP_CONFIG. The app cannot start. Check if it's valid JSON.",
+    error
+  );
+  webappConfig = {}; // Ensure it's empty on failure
+}
+
 
 const nextConfig = {
   /* config options here */

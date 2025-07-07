@@ -83,6 +83,15 @@ export type Instructor = {
 export type Student = User;
 
 
+// --- Helper to check for DB connection ---
+const isDbInitialized = () => {
+    if (!db) {
+        // The detailed error is logged in firebase.ts
+        return false;
+    }
+    return true;
+}
+
 // --- References to Firestore Collections ---
 const branchesCollection = collection(db, 'branches');
 const instructorsCollection = collection(db, 'instructors');
@@ -93,6 +102,7 @@ const termsCollection = collection(db, 'terms');
 // --- Branch Functions ---
 
 export const getBranches = async (): Promise<Branch[]> => {
+  if (!isDbInitialized()) return [];
   try {
     const querySnapshot = await getDocs(query(branchesCollection));
     if (querySnapshot.empty) {
@@ -106,6 +116,7 @@ export const getBranches = async (): Promise<Branch[]> => {
 };
 
 export const onBranchesUpdate = (callback: (branches: Branch[]) => void): Unsubscribe => {
+    if (!isDbInitialized()) return () => {};
     const q = query(branchesCollection);
     return onSnapshot(q, (querySnapshot) => {
         const branches = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Branch));
@@ -117,6 +128,7 @@ export const onBranchesUpdate = (callback: (branches: Branch[]) => void): Unsubs
 };
 
 export const getBranch = async (id: string): Promise<Branch | null> => {
+  if (!isDbInitialized()) return null;
   try {
     const docRef = doc(db, 'branches', id);
     const docSnap = await getDoc(docRef);
@@ -128,6 +140,7 @@ export const getBranch = async (id: string): Promise<Branch | null> => {
 };
 
 export const addBranch = async (branchData: Omit<Branch, 'id'>) => {
+  if (!isDbInitialized()) throw new Error("Database not initialized.");
   try {
     const docRef = await addDoc(branchesCollection, branchData);
     return { id: docRef.id };
@@ -138,6 +151,7 @@ export const addBranch = async (branchData: Omit<Branch, 'id'>) => {
 };
 
 export const updateBranch = async (id: string, branchData: Partial<Omit<Branch, 'id'>>) => {
+  if (!isDbInitialized()) throw new Error("Database not initialized.");
   try {
     const docRef = doc(db, 'branches', id);
     await updateDoc(docRef, branchData);
@@ -148,6 +162,7 @@ export const updateBranch = async (id: string, branchData: Partial<Omit<Branch, 
 };
 
 export const deleteBranch = async (id: string) => {
+  if (!isDbInitialized()) throw new Error("Database not initialized.");
   try {
     const docRef = doc(db, 'branches', id);
     await deleteDoc(docRef);
@@ -161,6 +176,7 @@ export const deleteBranch = async (id: string) => {
 // --- Instructor Functions ---
 
 export const getInstructors = async (): Promise<Instructor[]> => {
+    if (!isDbInitialized()) return [];
     try {
         const querySnapshot = await getDocs(query(instructorsCollection));
         if (querySnapshot.empty) {
@@ -174,6 +190,7 @@ export const getInstructors = async (): Promise<Instructor[]> => {
 };
 
 export const onInstructorsUpdate = (callback: (instructors: Instructor[]) => void): Unsubscribe => {
+    if (!isDbInitialized()) return () => {};
     const q = query(instructorsCollection);
     return onSnapshot(q, (querySnapshot) => {
         const instructors = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Instructor));
@@ -185,6 +202,7 @@ export const onInstructorsUpdate = (callback: (instructors: Instructor[]) => voi
 };
 
 export const getInstructor = async (id: string): Promise<Instructor | null> => {
+    if (!isDbInitialized()) return null;
     try {
         const docRef = doc(db, 'instructors', id);
         const docSnap = await getDoc(docRef);
@@ -196,6 +214,7 @@ export const getInstructor = async (id: string): Promise<Instructor | null> => {
 }
 
 export const getInstructorsByAffiliation = async (affiliation: string): Promise<Instructor[]> => {
+    if (!isDbInitialized()) return [];
     try {
         const q = query(instructorsCollection, where("affiliations", "array-contains", affiliation));
         const querySnapshot = await getDocs(q);
@@ -207,6 +226,7 @@ export const getInstructorsByAffiliation = async (affiliation: string): Promise<
 };
 
 export const addInstructor = async (instructorData: Omit<Instructor, 'id'>) => {
+    if (!isDbInitialized()) throw new Error("Database not initialized.");
     try {
         const docRef = await addDoc(instructorsCollection, instructorData);
         return { id: docRef.id };
@@ -217,6 +237,7 @@ export const addInstructor = async (instructorData: Omit<Instructor, 'id'>) => {
 };
 
 export const updateInstructor = async (id: string, instructorData: Partial<Omit<Instructor, 'id'>>) => {
+    if (!isDbInitialized()) throw new Error("Database not initialized.");
     try {
         const docRef = doc(db, 'instructors', id);
         await updateDoc(docRef, instructorData);
@@ -227,6 +248,7 @@ export const updateInstructor = async (id: string, instructorData: Partial<Omit<
 };
 
 export const deleteInstructor = async (id: string) => {
+    if (!isDbInitialized()) throw new Error("Database not initialized.");
     try {
         const docRef = doc(db, 'instructors', id);
         await deleteDoc(docRef);
@@ -239,6 +261,7 @@ export const deleteInstructor = async (id: string) => {
 
 // --- Student Functions ---
 export const getStudents = async (): Promise<Student[]> => {
+    if (!isDbInitialized()) return [];
     try {
         const q = query(usersCollection, where("role", "==", "student"));
         const querySnapshot = await getDocs(q);
@@ -250,6 +273,7 @@ export const getStudents = async (): Promise<Student[]> => {
 };
 
 export const onStudentsUpdate = (callback: (students: Student[]) => void): Unsubscribe => {
+    if (!isDbInitialized()) return () => {};
     const q = query(usersCollection, where("role", "==", "student"));
     return onSnapshot(q, (querySnapshot) => {
         const students = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Student));
@@ -264,6 +288,7 @@ export const onStudentsUpdate = (callback: (students: Student[]) => void): Unsub
 // --- Terms Acceptance Functions ---
 
 export const saveTermsAcceptance = async (data: Omit<TermsAcceptance, 'id' | 'acceptedAt'>) => {
+    if (!isDbInitialized()) throw new Error("Database not initialized.");
     try {
         const docRef = await addDoc(termsCollection, {
             ...data,
@@ -280,6 +305,7 @@ export const saveTermsAcceptance = async (data: Omit<TermsAcceptance, 'id' | 'ac
 // --- User Functions ---
 
 export const ensureUserExists = async (user: User) => {
+  if (!isDbInitialized()) return;
   try {
       const userRef = doc(db, 'users', user.id);
       const userSnap = await getDoc(userRef, { source: 'cache' });
@@ -295,6 +321,7 @@ export const ensureUserExists = async (user: User) => {
 
 
 export const getAppUser = async (role: 'student' | 'professor' | 'admin'): Promise<User | null> => {
+    if (!isDbInitialized()) return null;
     try {
         const q = query(usersCollection, where("role", "==", role), limit(1));
         const querySnapshot = await getDocs(q);
@@ -310,6 +337,7 @@ export const getAppUser = async (role: 'student' | 'professor' | 'admin'): Promi
 };
 
 export const createAppUser = async (userData: User) => {
+    if (!isDbInitialized()) throw new Error("Database not initialized.");
     try {
         const docRef = doc(db, 'users', userData.id);
         await setDoc(docRef, userData);
@@ -321,6 +349,7 @@ export const createAppUser = async (userData: User) => {
 }
 
 export const updateUser = async (id: string, userData: Partial<User>) => {
+    if (!isDbInitialized()) throw new Error("Database not initialized.");
     try {
         const docRef = doc(db, 'users', id);
         await updateDoc(docRef, userData);

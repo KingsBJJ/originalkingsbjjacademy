@@ -1,10 +1,8 @@
 
-import { initializeApp, getApps, getApp } from "firebase/app";
+import { initializeApp, getApps, getApp, type FirebaseOptions } from "firebase/app";
 import { getFirestore, enableIndexedDbPersistence } from "firebase/firestore";
 
-// As credenciais do Firebase são configuradas no ambiente de hospedagem.
-// Não é necessário preencher estes valores manualmente.
-const firebaseConfig = {
+const firebaseConfig: FirebaseOptions = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
@@ -13,21 +11,36 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Inicializa o Firebase
-const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
-const db = getFirestore(app);
-console.log("Firestore DB initialized:", db);
+// This function provides a single point of failure and clear error messaging.
+function initializeFirebase() {
+  // Check if the essential config is loaded. If not, the app is unusable.
+  if (!firebaseConfig.projectId || !firebaseConfig.apiKey) {
+    console.error("FATAL: Firebase configuration is missing or incomplete.");
+    console.error("This is likely because the FIREBASE_WEBAPP_CONFIG environment variable is not set or is invalid.");
+    // We return nulls here to be handled by consuming code.
+    // The app is in an unrecoverable state.
+    return { app: null, db: null };
+  }
 
-// Habilita a persistência offline para garantir que os dados não sejam perdidos.
-try {
-    enableIndexedDbPersistence(db)
-} catch (error: any) {
-    if (error.code == 'failed-precondition') {
-        // Múltiplas abas abertas, a persistência só pode ser ativada em uma.
-        // Isso é um comportamento esperado e não um erro crítico.
-    } else if (error.code == 'unimplemented') {
-        // O navegador não suporta todas as funcionalidades necessárias para a persistência.
-    }
+  const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  
+  // Enable offline persistence only in the browser
+  if (typeof window !== 'undefined') {
+      try {
+          enableIndexedDbPersistence(db)
+      } catch (error: any) {
+          if (error.code == 'failed-precondition') {
+              // Multiple tabs open, persistence can only be enabled in one.
+          } else if (error.code == 'unimplemented') {
+              // The browser does not support all of the features required to enable persistence
+          }
+      }
+  }
+
+  return { app, db };
 }
+
+const { app, db } = initializeFirebase();
 
 export { app, db };
