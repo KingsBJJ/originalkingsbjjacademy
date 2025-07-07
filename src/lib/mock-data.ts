@@ -158,3 +158,56 @@ export const mockAttendanceHistory = [
     { date: '28/06/2024', class: 'No-Gi', status: 'Presente' },
     { date: '26/06/2024', class: 'Fundamentos', status: 'Faltou' },
 ];
+
+export const mockBranches = [
+  {
+    id: 'b1',
+    name: 'Kings BJJ - Centro',
+    address: 'Rua Principal, 123, Centro, Cidade-Estado',
+    phone: '(11) 99999-1111',
+    responsible: 'Prof. Rickson Gracie',
+    additionalInstructors: ['Prof. Royce Gracie'],
+    schedule: [
+      { name: 'Fundamentos', day: 'Seg/Qua/Sex', time: '18:00 - 19:00', instructor: 'Prof. Rickson Gracie', category: 'Adults' as const },
+      { name: 'Avançado', day: 'Ter/Qui', time: '20:00 - 21:30', instructor: 'Prof. Royce Gracie', category: 'Adults' as const },
+      { name: 'Kids', day: 'Sab', time: '10:00 - 11:00', instructor: 'Prof. Rickson Gracie', category: 'Kids' as const },
+    ]
+  },
+  {
+    id: 'b2',
+    name: 'Kings BJJ - Sul',
+    address: 'Avenida Sul, 456, Bairro Sul, Cidade-Estado',
+    phone: '(11) 99999-2222',
+    responsible: 'Prof. Royce Gracie',
+    additionalInstructors: [],
+    schedule: [
+       { name: 'Iniciantes', day: 'Ter/Qui', time: '19:00 - 20:00', instructor: 'Prof. Royce Gracie', category: 'Adults' as const },
+       { name: 'No-Gi', day: 'Sex', time: '20:00 - 21:00', instructor: 'Prof. Royce Gracie', category: 'Adults' as const },
+    ]
+  }
+];
+
+export const mockInstructors = [
+  {
+    id: 'prof1',
+    name: 'Prof. Rickson Gracie',
+    email: 'professor@kingsbjj.com',
+    phone: '(11) 98888-1111',
+    affiliations: ['Kings BJJ - Centro'],
+    belt: 'Coral',
+    stripes: 7,
+    bio: 'Lenda viva do Jiu-Jitsu, conhecido por sua técnica impecável e filosofia de vida.',
+    avatar: 'https://placehold.co/128x128.png',
+  },
+  {
+    id: 'prof2',
+    name: 'Prof. Royce Gracie',
+    email: 'royce@kingsbjj.com',
+    phone: '(11) 98888-2222',
+    affiliations: ['Kings BJJ - Centro', 'Kings BJJ - Sul'],
+    belt: 'Preta',
+    stripes: 6,
+    bio: 'Pioneiro do UFC e um dos maiores divulgadores do Jiu-Jitsu no mundo.',
+    avatar: 'https://placehold.co/128x128.png',
+  }
+];

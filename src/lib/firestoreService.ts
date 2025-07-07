@@ -19,6 +19,7 @@ import {
     onSnapshot,
     type Unsubscribe
 } from 'firebase/firestore';
+import { mockBranches, mockInstructors } from './mock-data';
 
 // --- Types ---
 
@@ -93,6 +94,43 @@ function checkDb() {
         throw new Error("Firestore is not initialized. Check your Firebase configuration.");
     }
 }
+
+// --- Seeding Function ---
+
+export const seedInitialData = async () => {
+    checkDb();
+    try {
+        // Check if branches collection is empty
+        const branchesQuery = query(collection(db, 'branches'), limit(1));
+        const branchesSnapshot = await getDocs(branchesQuery);
+        if (branchesSnapshot.empty) {
+            console.log("Branches collection is empty. Seeding initial data...");
+            const branchPromises = mockBranches.map(branch => {
+                const { id, ...branchData } = branch;
+                return setDoc(doc(db, 'branches', id), branchData);
+            });
+            await Promise.all(branchPromises);
+            console.log("Seeding branches completed.");
+        }
+
+        // Check if instructors collection is empty
+        const instructorsQuery = query(collection(db, 'instructors'), limit(1));
+        const instructorsSnapshot = await getDocs(instructorsQuery);
+        if (instructorsSnapshot.empty) {
+            console.log("Instructors collection is empty. Seeding initial data...");
+            const instructorPromises = mockInstructors.map(instructor => {
+                const { id, ...instructorData } = instructor;
+                return setDoc(doc(db, 'instructors', id), instructorData);
+            });
+            await Promise.all(instructorPromises);
+            console.log("Seeding instructors completed.");
+        }
+    } catch (error) {
+        console.error("Error seeding initial data:", error);
+        // We don't want to throw an error here, as it might break the app load.
+        // It's better to just log it.
+    }
+};
 
 // --- Branch Functions ---
 
@@ -170,12 +208,8 @@ export const getInstructorsByAffiliation = async (affiliation: string): Promise<
     checkDb();
     if (!affiliation) return [];
     try {
-        const q = query(
-            collection(db, 'instructors'),
-            where("affiliations", "array-contains", affiliation)
-        );
-        const querySnapshot = await getDocs(q);
-        return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Instructor));
+        const instructors = await getInstructors();
+        return instructors.filter(instructor => instructor.affiliations?.includes(affiliation));
     } catch (error) {
         console.error("Error getting instructors by affiliation:", error);
         throw new Error("Failed to fetch instructors by affiliation.");

@@ -45,7 +45,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { updateUser as updateDbUser, ensureUserExists } from "@/lib/firestoreService";
+import { updateUser as updateDbUser, ensureUserExists, seedInitialData } from "@/lib/firestoreService";
 import { useToast } from "@/hooks/use-toast";
 
 
@@ -142,7 +142,12 @@ export default function DashboardClientLayout({
 
   useEffect(() => {
     setUser(initialUser);
-    ensureUserExists(initialUser);
+    ensureUserExists(initialUser).then(() => {
+        if (initialUser.role === 'admin') {
+            console.log("Admin user detected, attempting to seed initial data...");
+            seedInitialData();
+        }
+    });
   }, [initialUser]);
 
 
