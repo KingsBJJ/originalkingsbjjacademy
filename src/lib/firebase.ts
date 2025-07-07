@@ -1,3 +1,4 @@
+
 import { initializeApp, getApps, getApp, type FirebaseOptions } from "firebase/app";
 import { initializeFirestore, memoryLocalCache } from "firebase/firestore";
 
@@ -22,10 +23,11 @@ if (missingKeys.length > 0) {
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
-// Inicializa o Firestore com cache em memória para garantir estabilidade e evitar
-// os problemas de IndexedDB que os logs sugeriam.
+// Inicializa o Firestore com cache em memória e força o long-polling para
+// garantir uma conexão mais estável em ambientes de rede restritivos.
 const db = initializeFirestore(app, {
     localCache: memoryLocalCache(),
+    experimentalForceLongPolling: true,
 });
 
 export { app, db };
