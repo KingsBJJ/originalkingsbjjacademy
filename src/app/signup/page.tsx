@@ -37,7 +37,7 @@ import {
   DialogTrigger
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { getBranches, saveTermsAcceptance, type Branch, onInstructorsUpdate, type Instructor } from "@/lib/firestoreService";
+import { getBranches, saveTermsAcceptance, onInstructorsUpdateByAffiliation, type Branch, type Instructor } from "@/lib/firestoreService";
 
 
 function TermsDialog({ onAccept, isAccepted }: { onAccept: (parentName: string, childName: string) => void, isAccepted: boolean }) {
@@ -115,7 +115,6 @@ export default function SignUpPage() {
   const [category, setCategory] = useState("adulto");
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [branches, setBranches] = useState<Branch[]>([]);
-  const [allInstructors, setAllInstructors] = useState<Instructor[]>([]);
   const [filteredInstructors, setFilteredInstructors] = useState<Instructor[]>([]);
   const [loadingInstructors, setLoadingInstructors] = useState(false);
   const [affiliation, setAffiliation] = useState("");
@@ -138,31 +137,25 @@ export default function SignUpPage() {
         }
     };
     fetchBranches();
-
-    setLoadingInstructors(true);
-    const unsubscribeInstructors = onInstructorsUpdate((instructors) => {
-        setAllInstructors(instructors);
-        setLoadingInstructors(false);
-    });
-
-    return () => {
-        unsubscribeInstructors();
-    };
   }, [toast]);
 
   useEffect(() => {
-    if (affiliation && allInstructors.length > 0) {
+    if (!affiliation) {
       setFilteredInstructors([]);
       setMainInstructor("");
-      const instructorsForAffiliation = allInstructors.filter(instructor => 
-        instructor.affiliations?.includes(affiliation)
-      );
-      setFilteredInstructors(instructorsForAffiliation);
-    } else {
-      setFilteredInstructors([]);
-      setMainInstructor("");
+      return;
     }
-  }, [affiliation, allInstructors]);
+
+    setLoadingInstructors(true);
+    setMainInstructor(""); // Reset instructor on affiliation change
+
+    const unsubscribe = onInstructorsUpdateByAffiliation(affiliation, (instructors) => {
+        setFilteredInstructors(instructors);
+        setLoadingInstructors(false);
+    });
+
+    return () => unsubscribe(); // Cleanup listener on component unmount or when affiliation changes
+  }, [affiliation, toast]);
 
 
   const handleCategoryChange = (newCategory: string) => {

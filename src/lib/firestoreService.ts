@@ -190,6 +190,24 @@ export const onInstructorsUpdate = (callback: (instructors: Instructor[]) => voi
     });
 };
 
+export const onInstructorsUpdateByAffiliation = (affiliation: string, callback: (instructors: Instructor[]) => void): Unsubscribe => {
+    checkDb();
+    if (!affiliation) {
+        return () => {}; // Return an empty unsubscribe function if no affiliation is provided
+    }
+    const q = query(
+        collection(db, 'instructors'),
+        where("affiliations", "array-contains", affiliation)
+    );
+    return onSnapshot(q, (querySnapshot) => {
+        const instructors = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Instructor));
+        callback(instructors);
+    }, (error) => {
+        console.error("Error on instructors snapshot for affiliation:", error);
+        callback([]);
+    });
+};
+
 export const getInstructor = async (id: string): Promise<Instructor | null> => {
     checkDb();
     try {
