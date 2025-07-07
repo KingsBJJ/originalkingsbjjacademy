@@ -3,7 +3,6 @@ import { Suspense } from "react";
 import DashboardClientLayout from "./client-layout";
 import { KingsBjjLogo } from "@/components/kings-bjj-logo";
 import { User, mockUsers } from "@/lib/mock-data";
-import { seedInitialData } from "@/lib/firestoreService";
 
 function DashboardLoading() {
   return (
@@ -14,7 +13,7 @@ function DashboardLoading() {
   );
 }
 
-// This is now a Server Component that fetches user data
+// This is now a Server Component that determines the user
 export default async function DashboardLayout({
   children,
   searchParams,
@@ -53,16 +52,14 @@ export default async function DashboardLayout({
           nextGraduationProgress: 5,
       };
   } else {
+    // Fallback to mock user if params are not complete
     const mockRole = role ? role.split('?')[0] as 'student' | 'professor' | 'admin' : 'student';
     user = mockUsers[mockRole] || mockUsers.student;
   }
-
-  // The unstable database call from the layout has been removed to prevent crashes.
-  // Seeding can be done manually from the admin dashboard.
-
+  
   return (
     <Suspense fallback={<DashboardLoading />}>
-      {/* Pass the server-fetched user to the client layout */}
+      {/* Pass the server-determined user to the client layout */}
       <DashboardClientLayout user={user}>{children}</DashboardClientLayout>
     </Suspense>
   );

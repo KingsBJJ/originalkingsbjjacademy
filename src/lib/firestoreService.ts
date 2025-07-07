@@ -298,50 +298,6 @@ export const saveTermsAcceptance = async (data: Omit<TermsAcceptance, 'id' | 'ac
 
 // --- User Functions ---
 
-export const ensureUserExists = async (user: User) => {
-  checkDb();
-  try {
-      const userRef = doc(db, 'users', user.id);
-      const userSnap = await getDoc(userRef);
-      if (!userSnap.exists()) {
-          console.log(`User ${user.id} not found in DB. Creating...`);
-          await setDoc(userRef, user);
-      }
-  } catch (error) {
-      console.error(`Failed to ensure user ${user.id} exists in DB:`, error);
-  }
-};
-
-
-export const getAppUser = async (role: 'student' | 'professor' | 'admin'): Promise<User | null> => {
-    checkDb();
-    try {
-        const q = query(collection(db, 'users'), where("role", "==", role), limit(1));
-        const querySnapshot = await getDocs(q);
-        if (querySnapshot.empty) {
-            return null;
-        }
-        const userDoc = querySnapshot.docs[0];
-        return { id: userDoc.id, ...userDoc.data() } as User;
-    } catch (error) {
-        console.error(`Error getting user for role ${role}: `, error);
-        throw new Error("Failed to fetch user.");
-    }
-};
-
-export const createAppUser = async (userData: User) => {
-    checkDb();
-    try {
-        const docRef = doc(db, 'users', userData.id);
-        await setDoc(docRef, userData);
-        return userData;
-    } catch (error)
-    {
-        console.error("Error creating user: ", error);
-        throw new Error("Failed to create user.");
-    }
-}
-
 export const updateUser = async (id: string, userData: Partial<User>) => {
     checkDb();
     try {
@@ -351,20 +307,4 @@ export const updateUser = async (id: string, userData: Partial<User>) => {
         console.error("Error updating user: ", error);
         throw new Error("Failed to update user.");
     }
-};
-
-export const findInstructorByEmail = async (email: string): Promise<Instructor | null> => {
-  checkDb();
-  try {
-    const q = query(collection(db, 'instructors'), where("email", "==", email), limit(1));
-    const querySnapshot = await getDocs(q);
-    if (querySnapshot.empty) {
-      return null;
-    }
-    const instructorDoc = querySnapshot.docs[0];
-    return { id: instructorDoc.id, ...instructorDoc.data() } as Instructor;
-  } catch (error) {
-    console.error("Error finding instructor by email: ", error);
-    throw new Error("Failed to find instructor by email.");
-  }
 };
