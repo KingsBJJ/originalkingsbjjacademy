@@ -18,8 +18,8 @@ import {
   Users,
   Map,
   User as UserIcon,
-  PlusCircle,
   BarChart,
+  Trophy,
 } from "lucide-react";
 import { Bar, BarChart as RechartsBarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
 import { ChartConfig, ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
@@ -94,6 +94,41 @@ const AdminDashboard = () => {
     }));
   }, [data]);
 
+  const bestBranch = useMemo(() => {
+    if (!data?.students || data.students.length === 0) {
+      return null
+    }
+
+    const attendanceByBranch: Record<string, number> = {}
+    for (const student of data.students) {
+      const branchName = student.affiliation || 'Sem Filial'
+      if (branchName !== 'Sem Filial') {
+        attendanceByBranch[branchName] =
+          (attendanceByBranch[branchName] || 0) +
+          (student.attendance?.lastMonth || 0)
+      }
+    }
+
+    let bestBranchName: string | null = null
+    let maxAttendance = 0
+
+    for (const branch in attendanceByBranch) {
+      if (attendanceByBranch[branch] > maxAttendance) {
+        maxAttendance = attendanceByBranch[branch]
+        bestBranchName = branch
+      }
+    }
+
+    if (!bestBranchName || maxAttendance === 0) {
+      return null
+    }
+
+    return {
+      name: bestBranchName,
+      attendance: maxAttendance,
+    }
+  }, [data]);
+
   if (loading) {
     return (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -122,7 +157,7 @@ const AdminDashboard = () => {
                 <ChartContainer config={chartConfig} className="h-64 w-full">
                     <RechartsBarChart accessibilityLayer data={branchStudentData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
                         <XAxis dataKey="name" tickLine={false} axisLine={false} tickMargin={10} fontSize={12} angle={-15} textAnchor="end" />
-                        <YAxis tickLine={false} axisLine={false} tickMargin={10} fontSize={12} />
+                        <YAxis tickLine={false} axisLine={false} tickMargin={10} fontSize={12} allowDecimals={false} />
                         <Tooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
                         <Bar dataKey="students" fill="var(--color-students)" radius={4} />
                     </RechartsBarChart>
@@ -136,30 +171,30 @@ const AdminDashboard = () => {
       </Card>
       
       <Card className="md:col-span-3">
-          <CardHeader>
-              <CardTitle>Acesso Rápido</CardTitle>
-              <CardDescription>Gerencie rapidamente as principais seções do sistema.</CardDescription>
-          </CardHeader>
-          <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
-              <Button asChild variant="outline" size="lg" className="h-24 flex-col gap-2">
-                  <Link href={`/dashboard/branches/new?role=${user?.role}`}>
-                      <PlusCircle className="h-6 w-6" />
-                      <span>Adicionar Filial</span>
-                  </Link>
-              </Button>
-              <Button asChild variant="outline" size="lg" className="h-24 flex-col gap-2">
-                   <Link href={`/dashboard/instructors/new?role=${user?.role}`}>
-                      <UserIcon className="h-6 w-6" />
-                      <span>Cadastrar Professor</span>
-                  </Link>
-              </Button>
-              <Button asChild variant="outline" size="lg" className="h-24 flex-col gap-2">
-                   <Link href={`/dashboard/manage-students?role=${user?.role}`}>
-                      <Users className="h-6 w-6" />
-                      <span>Gerenciar Alunos</span>
-                  </Link>
-              </Button>
-          </CardContent>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Trophy className="text-yellow-400" />
+            Estatísticas do Mês
+          </CardTitle>
+          <CardDescription>Insights sobre o desempenho das filiais.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="rounded-lg border bg-card-foreground/5 p-6">
+            <h3 className="text-sm font-semibold text-muted-foreground">Melhor Academia do Mês</h3>
+            {bestBranch ? (
+              <div className="flex items-baseline gap-4 mt-2">
+                <p className="text-3xl font-bold text-primary">{bestBranch.name}</p>
+                <div>
+                  <span className="text-xl font-semibold">{bestBranch.attendance}</span>
+                  <span className="text-sm text-muted-foreground"> check-ins</span>
+                </div>
+              </div>
+            ) : (
+              <p className="mt-2 text-muted-foreground">Nenhum dado de check-in no último mês para determinar a melhor filial.</p>
+            )}
+            <p className="text-xs text-muted-foreground mt-1">Baseado no número de check-ins de alunos no último mês.</p>
+          </div>
+        </CardContent>
       </Card>
 
     </div>
