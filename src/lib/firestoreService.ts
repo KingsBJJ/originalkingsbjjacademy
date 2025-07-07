@@ -84,7 +84,6 @@ export type Student = Omit<User, 'role'>;
 // --- References to Firestore Collections ---
 const branchesCollection = collection(db, 'branches');
 const instructorsCollection = collection(db, 'instructors');
-const studentsCollection = collection(db, 'students');
 const usersCollection = collection(db, 'users');
 const termsCollection = collection(db, 'terms');
 
@@ -206,7 +205,8 @@ export const deleteInstructor = async (id: string) => {
 // --- Student Functions ---
 export const getStudents = async (): Promise<Student[]> => {
     try {
-        const querySnapshot = await getDocs(query(studentsCollection));
+        const q = query(usersCollection, where("role", "==", "student"));
+        const querySnapshot = await getDocs(q);
         return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Student));
     } catch (error) {
         console.error("Error getting students: ", error);
