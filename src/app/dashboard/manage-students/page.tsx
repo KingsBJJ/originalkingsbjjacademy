@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useContext, useState, useEffect } from 'react';
+import { useContext, useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/table";
 import { UserContext } from '../client-layout';
 import { beltColors, beltColorsKids } from '@/lib/mock-data';
-import { onStudentsUpdate, type Student } from '@/lib/firestoreService';
+import { getStudents, type Student } from '@/lib/firestoreService';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { MoreHorizontal } from 'lucide-react';
@@ -35,6 +35,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from '@/components/ui/skeleton';
+import { useToast } from '@/hooks/use-toast';
 
 const allBeltColors = { ...beltColors, ...beltColorsKids };
 
@@ -141,16 +142,27 @@ export default function ManageStudentsPage() {
   const user = useContext(UserContext);
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
-    setLoading(true);
-    const unsubscribe = onStudentsUpdate((fetchedStudents) => {
-      setStudents(fetchedStudents);
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, []);
+    const fetchStudents = async () => {
+        setLoading(true);
+        try {
+            const fetchedStudents = await getStudents();
+            setStudents(fetchedStudents);
+        } catch (error) {
+            console.error("Failed to fetch students:", error);
+            toast({
+                variant: "destructive",
+                title: "Erro ao buscar alunos.",
+                description: "Não foi possível carregar a lista de alunos. Tente recarregar a página.",
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
+    fetchStudents();
+  }, [toast]);
 
   if (!user || user.role === 'student') {
     return (

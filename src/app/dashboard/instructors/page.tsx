@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useContext, useState, useEffect } from "react";
+import { useContext, useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -42,7 +42,7 @@ import { cn } from "@/lib/utils";
 import { UserContext } from "../client-layout";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, MoreHorizontal } from "lucide-react";
-import { onInstructorsUpdate, deleteInstructor, type Instructor } from "@/lib/firestoreService";
+import { getInstructors, deleteInstructor, type Instructor } from "@/lib/firestoreService";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 
@@ -72,15 +72,26 @@ export default function InstructorsPage() {
   const [instructorToDelete, setInstructorToDelete] = useState<Instructor | null>(null);
   const { toast } = useToast();
 
-  useEffect(() => {
+  const fetchInstructors = useCallback(async () => {
     setLoading(true);
-    const unsubscribe = onInstructorsUpdate((fetchedInstructors) => {
+    try {
+      const fetchedInstructors = await getInstructors();
       setInstructors(fetchedInstructors);
+    } catch (error) {
+      console.error("Failed to fetch instructors:", error);
+      toast({
+        variant: "destructive",
+        title: "Erro ao buscar professores.",
+        description: "Não foi possível carregar a lista. Tente recarregar a página.",
+      });
+    } finally {
       setLoading(false);
-    });
+    }
+  }, [toast]);
 
-    return () => unsubscribe();
-  }, []);
+  useEffect(() => {
+    fetchInstructors();
+  }, [fetchInstructors]);
 
   const handleDeleteClick = (instructor: Instructor) => {
     setInstructorToDelete(instructor);
@@ -91,11 +102,11 @@ export default function InstructorsPage() {
     if (!instructorToDelete) return;
     try {
       await deleteInstructor(instructorToDelete.id);
-      // The list will update automatically via the onSnapshot listener
       toast({
         title: "Professor Excluído!",
         description: `O professor "${instructorToDelete.name}" foi removido com sucesso.`,
       });
+      fetchInstructors(); // Re-fetch the list
     } catch (error) {
       console.error("Failed to delete instructor:", error);
       toast({

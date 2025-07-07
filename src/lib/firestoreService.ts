@@ -107,18 +107,6 @@ export const getBranches = async (): Promise<Branch[]> => {
   }
 };
 
-export const onBranchesUpdate = (callback: (branches: Branch[]) => void): Unsubscribe => {
-    checkDb();
-    const q = query(collection(db, 'branches'));
-    return onSnapshot(q, (querySnapshot) => {
-        const branches = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Branch));
-        callback(branches);
-    }, (error) => {
-        console.error("Error on branches snapshot: ", error);
-        callback([]);
-    });
-};
-
 export const getBranch = async (id: string): Promise<Branch | null> => {
   checkDb();
   try {
@@ -178,34 +166,20 @@ export const getInstructors = async (): Promise<Instructor[]> => {
     }
 };
 
-export const onInstructorsUpdate = (callback: (instructors: Instructor[]) => void): Unsubscribe => {
+export const getInstructorsByAffiliation = async (affiliation: string): Promise<Instructor[]> => {
     checkDb();
-    const q = query(collection(db, 'instructors'));
-    return onSnapshot(q, (querySnapshot) => {
-        const instructors = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Instructor));
-        callback(instructors);
-    }, (error) => {
-        console.error("Error on instructors snapshot: ", error);
-        callback([]);
-    });
-};
-
-export const onInstructorsUpdateByAffiliation = (affiliation: string, callback: (instructors: Instructor[]) => void): Unsubscribe => {
-    checkDb();
-    if (!affiliation) {
-        return () => {}; // Return an empty unsubscribe function if no affiliation is provided
+    if (!affiliation) return [];
+    try {
+        const q = query(
+            collection(db, 'instructors'),
+            where("affiliations", "array-contains", affiliation)
+        );
+        const querySnapshot = await getDocs(q);
+        return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Instructor));
+    } catch (error) {
+        console.error("Error getting instructors by affiliation:", error);
+        throw new Error("Failed to fetch instructors by affiliation.");
     }
-    const q = query(
-        collection(db, 'instructors'),
-        where("affiliations", "array-contains", affiliation)
-    );
-    return onSnapshot(q, (querySnapshot) => {
-        const instructors = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Instructor));
-        callback(instructors);
-    }, (error) => {
-        console.error("Error on instructors snapshot for affiliation:", error);
-        callback([]);
-    });
 };
 
 export const getInstructor = async (id: string): Promise<Instructor | null> => {
@@ -265,18 +239,6 @@ export const getStudents = async (): Promise<Student[]> => {
         console.error("Error getting students: ", error);
         throw new Error("Failed to fetch students.");
     }
-};
-
-export const onStudentsUpdate = (callback: (students: Student[]) => void): Unsubscribe => {
-    checkDb();
-    const q = query(collection(db, 'users'), where("role", "==", "student"));
-    return onSnapshot(q, (querySnapshot) => {
-        const students = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Student));
-        callback(students);
-    }, (error) => {
-        console.error("Error on students snapshot: ", error);
-        callback([]);
-    });
 };
 
 

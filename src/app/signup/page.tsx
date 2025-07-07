@@ -37,7 +37,7 @@ import {
   DialogTrigger
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { getBranches, saveTermsAcceptance, onInstructorsUpdateByAffiliation, type Branch, type Instructor } from "@/lib/firestoreService";
+import { getBranches, saveTermsAcceptance, getInstructorsByAffiliation, type Branch, type Instructor } from "@/lib/firestoreService";
 
 
 function TermsDialog({ onAccept, isAccepted }: { onAccept: (parentName: string, childName: string) => void, isAccepted: boolean }) {
@@ -146,15 +146,25 @@ export default function SignUpPage() {
       return;
     }
 
-    setLoadingInstructors(true);
-    setMainInstructor(""); // Reset instructor on affiliation change
+    const fetchInstructors = async () => {
+        setLoadingInstructors(true);
+        setMainInstructor(""); // Reset instructor on affiliation change
+        try {
+            const instructors = await getInstructorsByAffiliation(affiliation);
+            setFilteredInstructors(instructors);
+        } catch (error) {
+            console.error("Failed to fetch instructors for affiliation:", error);
+            toast({
+                variant: "destructive",
+                title: "Erro ao buscar instrutores",
+                description: "Não foi possível carregar os instrutores desta filial.",
+            });
+        } finally {
+            setLoadingInstructors(false);
+        }
+    };
 
-    const unsubscribe = onInstructorsUpdateByAffiliation(affiliation, (instructors) => {
-        setFilteredInstructors(instructors);
-        setLoadingInstructors(false);
-    });
-
-    return () => unsubscribe(); // Cleanup listener on component unmount or when affiliation changes
+    fetchInstructors();
   }, [affiliation, toast]);
 
 

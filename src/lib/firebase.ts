@@ -13,7 +13,8 @@ const firebaseConfig: FirebaseOptions = {
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
-// Initialize Firestore with memory cache to prevent IndexedDB issues in some environments
+// Initialize Firestore with memory cache to prevent IndexedDB issues in some environments.
+// This provides a stable connection, especially for development environments.
 const db = initializeFirestore(app, {
     localCache: memoryLocalCache(),
 });

@@ -25,9 +25,9 @@ import { Bar, BarChart as RechartsBarChart, ResponsiveContainer, XAxis, YAxis, T
 import { ChartConfig, ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
 import { UserContext } from "./client-layout";
 import { 
-    onBranchesUpdate, 
-    onInstructorsUpdate, 
-    onStudentsUpdate, 
+    getBranches, 
+    getInstructors, 
+    getStudents, 
     type Branch, 
     type Instructor, 
     type Student 
@@ -63,18 +63,24 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubBranches = onBranchesUpdate(setBranches);
-    const unsubInstructors = onInstructorsUpdate(setInstructors);
-    const unsubStudents = onStudentsUpdate((fetchedStudents) => {
-        setStudents(fetchedStudents);
-        setLoading(false); // Consider loading done when students arrive
-    });
-
-    return () => {
-        unsubBranches();
-        unsubInstructors();
-        unsubStudents();
+    const fetchData = async () => {
+        setLoading(true);
+        try {
+            const [branchesData, instructorsData, studentsData] = await Promise.all([
+                getBranches(),
+                getInstructors(),
+                getStudents()
+            ]);
+            setBranches(branchesData);
+            setInstructors(instructorsData);
+            setStudents(studentsData);
+        } catch (error) {
+            console.error("Failed to fetch dashboard data", error);
+        } finally {
+            setLoading(false);
+        }
     };
+    fetchData();
   }, []);
 
   const branchStudentData = useMemo(() => {
@@ -207,16 +213,22 @@ const ProfessorDashboard = () => {
 
   useEffect(() => {
     if (!user) return;
-    const unsubBranches = onBranchesUpdate(setBranches);
-    const unsubStudents = onStudentsUpdate((fetchedStudents) => {
-        setStudents(fetchedStudents.filter(s => s.affiliation === user.affiliation));
-        setLoading(false);
-    });
-
-    return () => {
-        unsubBranches();
-        unsubStudents();
+    const fetchData = async () => {
+        setLoading(true);
+        try {
+            const [branchesData, studentsData] = await Promise.all([
+                getBranches(),
+                getStudents()
+            ]);
+            setBranches(branchesData);
+            setStudents(studentsData.filter(s => s.affiliation === user.affiliation));
+        } catch (error) {
+            console.error("Failed to fetch professor dashboard data", error);
+        } finally {
+            setLoading(false);
+        }
     };
+    fetchData();
   }, [user]);
 
   if (!user) return null;
@@ -293,11 +305,18 @@ const StudentDashboard = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onBranchesUpdate(data => {
-        setBranches(data);
-        setLoading(false);
-    });
-    return () => unsubscribe();
+    const fetchBranches = async () => {
+        setLoading(true);
+        try {
+            const data = await getBranches();
+            setBranches(data);
+        } catch (error) {
+            console.error("Failed to fetch branches for student", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+    fetchBranches();
   }, []);
 
   if (!user) return null;

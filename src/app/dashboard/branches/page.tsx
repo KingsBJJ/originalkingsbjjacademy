@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState, useCallback } from "react";
 import Link from 'next/link';
 import {
   Card,
@@ -26,7 +26,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Skeleton } from "@/components/ui/skeleton";
-import { onBranchesUpdate, deleteBranch, type Branch } from "@/lib/firestoreService";
+import { getBranches, deleteBranch, type Branch } from "@/lib/firestoreService";
 import { useToast } from "@/hooks/use-toast";
 import {
   AlertDialog,
@@ -74,15 +74,26 @@ export default function BranchesPage() {
   const [branchToDelete, setBranchToDelete] = useState<Branch | null>(null);
   const { toast } = useToast();
 
-  useEffect(() => {
+  const fetchBranches = useCallback(async () => {
     setLoading(true);
-    const unsubscribe = onBranchesUpdate((fetchedBranches) => {
+    try {
+      const fetchedBranches = await getBranches();
       setBranches(fetchedBranches);
+    } catch (error) {
+      console.error("Failed to fetch branches:", error);
+      toast({
+        variant: "destructive",
+        title: "Erro ao buscar filiais.",
+        description: "Não foi possível carregar a lista de filiais. Tente recarregar a página.",
+      });
+    } finally {
       setLoading(false);
-    });
+    }
+  }, [toast]);
 
-    return () => unsubscribe();
-  }, []);
+  useEffect(() => {
+    fetchBranches();
+  }, [fetchBranches]);
 
   const handleDeleteClick = (branch: Branch) => {
     setBranchToDelete(branch);
@@ -93,11 +104,11 @@ export default function BranchesPage() {
     if (!branchToDelete) return;
     try {
       await deleteBranch(branchToDelete.id);
-      // The list will update automatically via the onSnapshot listener
       toast({
         title: "Filial Excluída!",
         description: `A filial "${branchToDelete.name}" foi removida com sucesso.`,
       });
+      fetchBranches(); // Re-fetch the list after deletion
     } catch (error) {
       console.error("Failed to delete branch:", error);
       toast({

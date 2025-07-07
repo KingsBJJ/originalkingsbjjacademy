@@ -29,7 +29,7 @@ import {
   beltInfo,
   beltInfoKids,
 } from "@/lib/mock-data";
-import { onStudentsUpdate, type Student } from "@/lib/firestoreService";
+import { getStudents, type Student } from "@/lib/firestoreService";
 import { cn } from "@/lib/utils";
 import { CheckCircle, GraduationCap } from "lucide-react";
 import { UserContext } from "../client-layout";
@@ -131,12 +131,18 @@ const GraduationPlan = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        setLoading(true);
-        const unsubscribe = onStudentsUpdate(data => {
-            setStudents(data);
-            setLoading(false);
-        });
-        return () => unsubscribe();
+        const fetchStudents = async () => {
+            setLoading(true);
+            try {
+                const data = await getStudents();
+                setStudents(data);
+            } catch (error) {
+                console.error("Failed to fetch students for graduation plan", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchStudents();
     }, []);
 
     const allBeltColors = { ...beltColors, ...beltColorsKids };
