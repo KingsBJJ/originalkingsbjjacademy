@@ -1,4 +1,3 @@
-
 import { initializeApp, getApps, getApp, type FirebaseOptions } from "firebase/app";
 import { initializeFirestore, memoryLocalCache } from "firebase/firestore";
 
@@ -11,10 +10,20 @@ const firebaseConfig: FirebaseOptions = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
+// Valida se as chaves essenciais da configuração do Firebase estão presentes.
+// Se não estiverem, o app irá falhar com uma mensagem clara, em vez de quebrar silenciosamente.
+const requiredConfigKeys: (keyof FirebaseOptions)[] = ['apiKey', 'authDomain', 'projectId'];
+const missingKeys = requiredConfigKeys.filter(key => !firebaseConfig[key]);
+
+if (missingKeys.length > 0) {
+    // Este erro é INTENCIONAL. Ele para a execução se o Firebase não estiver configurado.
+    throw new Error(`CONFIGURAÇÃO DO FIREBASE INCOMPLETA. Chaves faltando: ${missingKeys.join(', ')}. Verifique as variáveis de ambiente.`);
+}
+
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
-// Initialize Firestore with memory cache to prevent IndexedDB issues in some environments.
-// This provides a stable connection, especially for development environments.
+// Inicializa o Firestore com cache em memória para garantir estabilidade e evitar
+// os problemas de IndexedDB que os logs sugeriam.
 const db = initializeFirestore(app, {
     localCache: memoryLocalCache(),
 });
