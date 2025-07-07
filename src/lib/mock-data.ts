@@ -1,4 +1,5 @@
-import type { User } from './firestoreService';
+
+import type { User, Branch, Instructor } from './firestoreService';
 
 export const beltColors = {
   Branca: { bg: "bg-white", text: "text-black" },
@@ -159,7 +160,7 @@ export const mockAttendanceHistory = [
     { date: '26/06/2024', class: 'Fundamentos', status: 'Faltou' },
 ];
 
-export const mockBranches = [
+export const mockBranches: Branch[] = [
   {
     id: 'b1',
     name: 'Kings BJJ - Centro',
@@ -187,7 +188,7 @@ export const mockBranches = [
   }
 ];
 
-export const mockInstructors = [
+export const mockInstructors: Instructor[] = [
   {
     id: 'prof1',
     name: 'Prof. Rickson Gracie',
@@ -211,3 +212,5 @@ export const mockInstructors = [
     avatar: 'https://placehold.co/128x128.png',
   }
 ];
+
+    
