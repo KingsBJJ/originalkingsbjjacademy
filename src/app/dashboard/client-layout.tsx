@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { createContext, useState, useCallback, useMemo } from "react";
+import { createContext, useState, useCallback, useMemo, useEffect } from "react";
 import {
   Avatar,
   AvatarFallback,
@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/sidebar";
 import { KingsBjjLogo } from "@/components/kings-bjj-logo";
 import type { User } from "@/lib/mock-data";
+import { mockUsers } from "@/lib/mock-data";
 import {
   Award,
   Bell,
@@ -92,20 +93,58 @@ export const UserContext = createContext<User | null>(null);
 export const UserUpdateContext = createContext<((newUserData: Partial<User>) => void) | null>(null);
 
 export default function DashboardClientLayout({
-  user: initialUser,
   children,
 }: {
-  user: User;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { toast } = useToast();
 
-  const [user, setUser] = useState<User>(initialUser);
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    const email = searchParams.get('email');
+    const cleanEmail = email?.trim().toLowerCase();
+
+    let userToSet: User;
+
+    if (cleanEmail === 'admin@kingsbjj.com' || cleanEmail === 'admin@kings.com') {
+      userToSet = mockUsers.admin;
+    } else if (cleanEmail === 'professor@kingsbjj.com' || cleanEmail === 'professor@kings.com') {
+      userToSet = mockUsers.professor;
+    } else {
+      const name = searchParams.get('name');
+      const affiliation = searchParams.get('affiliation');
+      const belt = searchParams.get('belt');
+      const role = searchParams.get('role') as User['role'];
+
+      if (name && affiliation && belt) {
+        userToSet = {
+          id: `user_${(email || Date.now().toString()).replace(/[@.]/g, '_')}`,
+          name,
+          email: email || '',
+          role: role || 'student',
+          affiliation,
+          branchId: searchParams.get('branchId') || '',
+          mainInstructor: searchParams.get('mainInstructor') || '',
+          category: (searchParams.get('category') as User['category']) || 'Adult',
+          belt,
+          stripes: Number(searchParams.get('stripes') || 0),
+          avatar: "https://placehold.co/128x128.png",
+          attendance: { total: 0, lastMonth: 0 },
+          nextGraduationProgress: 5,
+        };
+      } else {
+        userToSet = { ...mockUsers.student, email: email || mockUsers.student.email };
+      }
+    }
+    setUser(userToSet);
+  }, [searchParams]);
 
   const updateUser = useCallback((newUserData: Partial<User>) => {
     setUser(prevUser => {
+      if (!prevUser) return null;
       const updatedUser = { ...prevUser, ...newUserData };
       
       if (newUserData.attendance) {
@@ -129,10 +168,10 @@ export default function DashboardClientLayout({
   }, [toast]);
 
   const navItems: NavItem[] = useMemo(() => {
-    if (user.role === 'admin') return adminNavItems;
-    if (user.role === 'professor') return professorNavItems;
+    if (user?.role === 'admin') return adminNavItems;
+    if (user?.role === 'professor') return professorNavItems;
     return studentNavItems;
-  }, [user.role]);
+  }, [user?.role]);
 
   const getHref = (href: string) => {
     const params = new URLSearchParams(searchParams.toString());
