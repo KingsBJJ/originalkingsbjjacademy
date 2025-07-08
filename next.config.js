@@ -1,9 +1,17 @@
+
 /** @type {import('next').NextConfig} */
 
-// Parse the Firebase web app config from the environment variable
-const webappConfig = process.env.FIREBASE_WEBAPP_CONFIG 
-  ? JSON.parse(process.env.FIREBASE_WEBAPP_CONFIG) 
-  : {};
+// Safely parse the Firebase config to prevent server crashes during startup.
+let webappConfig = {};
+try {
+  const config = process.env.FIREBASE_WEBAPP_CONFIG;
+  if (config) {
+    webappConfig = JSON.parse(config);
+  }
+} catch (error) {
+  // Silently ignore parsing errors. The app will rely on runtime environment variables.
+  // This prevents server crashes during startup or build.
+}
 
 const nextConfig = {
   /* config options here */
@@ -29,14 +37,14 @@ const nextConfig = {
       }
     ],
   },
-  // Expose Firebase config to the client-side
+  // Expose Firebase config to the client-side, with fallbacks to prevent errors.
   env: {
-    NEXT_PUBLIC_FIREBASE_API_KEY: webappConfig.apiKey,
-    NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: webappConfig.authDomain,
-    NEXT_PUBLIC_FIREBASE_PROJECT_ID: webappConfig.projectId,
-    NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: webappConfig.storageBucket,
-    NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: webappConfig.messagingSenderId,
-    NEXT_PUBLIC_FIREBASE_APP_ID: webappConfig.appId,
+    NEXT_PUBLIC_FIREBASE_API_KEY: webappConfig.apiKey || "",
+    NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: webappConfig.authDomain || "",
+    NEXT_PUBLIC_FIREBASE_PROJECT_ID: webappConfig.projectId || "",
+    NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: webappConfig.storageBucket || "",
+    NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: webappConfig.messagingSenderId || "",
+    NEXT_PUBLIC_FIREBASE_APP_ID: webappConfig.appId || "",
   },
 };
 

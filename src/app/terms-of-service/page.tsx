@@ -5,14 +5,8 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import Image from 'next/image';
 import { KingsBjjLogo } from '@/components/kings-bjj-logo';
 
-// The Page component is a Server Component and can receive searchParams
-export default function TermsOfServicePage({
-  searchParams,
-}: {
-  searchParams: { [key: string]: string | string[] | undefined };
-}) {
-  const role = typeof searchParams.role === 'string' ? searchParams.role : null;
-
+// The Page component is a Server Component.
+export default function TermsOfServicePage() {
   return (
     <div className="relative flex min-h-screen w-full items-center justify-center p-4">
       <Image
@@ -37,7 +31,7 @@ export default function TermsOfServicePage({
         </CardHeader>
         <CardContent>
           <Suspense fallback={<div>Loading...</div>}>
-            <TermsContent role={role} />
+            <TermsContent />
           </Suspense>
         </CardContent>
       </Card>

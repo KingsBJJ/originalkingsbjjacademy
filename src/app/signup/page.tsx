@@ -37,7 +37,7 @@ import {
   DialogTrigger
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { getBranches, saveTermsAcceptance, type Branch, getInstructors, type Instructor } from "@/lib/firestoreService";
+import { getBranches, saveTermsAcceptance, getInstructorsByAffiliation, type Branch, type Instructor } from "@/lib/firestoreService";
 
 
 function TermsDialog({ onAccept, isAccepted }: { onAccept: (parentName: string, childName: string) => void, isAccepted: boolean }) {
@@ -115,45 +115,57 @@ export default function SignUpPage() {
   const [category, setCategory] = useState("adulto");
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [branches, setBranches] = useState<Branch[]>([]);
-  const [instructors, setInstructors] = useState<Instructor[]>([]);
   const [filteredInstructors, setFilteredInstructors] = useState<Instructor[]>([]);
+  const [loadingInstructors, setLoadingInstructors] = useState(false);
   const [affiliation, setAffiliation] = useState("");
   const [mainInstructor, setMainInstructor] = useState("");
   const router = useRouter();
   const { toast } = useToast();
 
   useEffect(() => {
-    const fetchInitialData = async () => {
+    const fetchBranches = async () => {
         try {
-            const [fetchedBranches, fetchedInstructors] = await Promise.all([
-              getBranches(),
-              getInstructors()
-            ]);
+            const fetchedBranches = await getBranches();
             setBranches(fetchedBranches);
-            setInstructors(fetchedInstructors);
         } catch (error) {
-            console.error("Failed to fetch initial data:", error);
+            console.error("Failed to fetch branches:", error);
             toast({
                 variant: "destructive",
-                title: "Erro ao carregar dados",
-                description: "Não foi possível buscar os dados de filiais e instrutores.",
+                title: "Erro ao carregar filiais",
+                description: "Não foi possível buscar os dados de filiais.",
             });
         }
     };
-    fetchInitialData();
+    fetchBranches();
   }, [toast]);
 
   useEffect(() => {
-    if (affiliation && instructors.length > 0) {
-      const filtered = instructors.filter(instructor => 
-        instructor.affiliations?.includes(affiliation)
-      );
-      setFilteredInstructors(filtered);
-    } else {
+    if (!affiliation) {
       setFilteredInstructors([]);
+      setMainInstructor("");
+      return;
     }
-    setMainInstructor("");
-  }, [affiliation, instructors]);
+
+    const fetchInstructors = async () => {
+        setLoadingInstructors(true);
+        setMainInstructor(""); // Reset instructor on affiliation change
+        try {
+            const instructors = await getInstructorsByAffiliation(affiliation);
+            setFilteredInstructors(instructors);
+        } catch (error) {
+            console.error("Failed to fetch instructors for affiliation:", error);
+            toast({
+                variant: "destructive",
+                title: "Erro ao buscar instrutores",
+                description: "Não foi possível carregar os instrutores desta filial.",
+            });
+        } finally {
+            setLoadingInstructors(false);
+        }
+    };
+
+    fetchInstructors();
+  }, [affiliation, toast]);
 
 
   const handleCategoryChange = (newCategory: string) => {
@@ -323,9 +335,17 @@ export default function SignUpPage() {
             
             <div className="grid gap-2">
                 <Label htmlFor="mainInstructor" className="text-white/80">Professor Responsável</Label>
-                <Select onValueChange={setMainInstructor} value={mainInstructor} disabled={!affiliation || filteredInstructors.length === 0}>
+                <Select onValueChange={setMainInstructor} value={mainInstructor} disabled={!affiliation || loadingInstructors || filteredInstructors.length === 0}>
                     <SelectTrigger id="mainInstructor" className="bg-white/5 border-white/20 text-white">
-                        <SelectValue placeholder={!affiliation ? "Selecione a filial primeiro" : "Selecione seu professor"} />
+                        <SelectValue placeholder={
+                            loadingInstructors 
+                                ? "Carregando professores..." 
+                                : !affiliation 
+                                ? "Selecione a filial primeiro" 
+                                : filteredInstructors.length === 0 
+                                ? "Nenhum professor encontrado" 
+                                : "Selecione seu professor"
+                        } />
                     </SelectTrigger>
                     <SelectContent>
                         {filteredInstructors.map((instructor) => (

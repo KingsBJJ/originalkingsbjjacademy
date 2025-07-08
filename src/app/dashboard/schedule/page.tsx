@@ -1,7 +1,4 @@
 
-"use client";
-
-import { useContext, useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -10,62 +7,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Clock } from "lucide-react";
-import { UserContext } from "../client-layout";
-import { onBranchesUpdate, type Branch, type ClassScheduleItem } from "@/lib/firestoreService";
-import { Skeleton } from "@/components/ui/skeleton";
+import { getBranches, type ClassScheduleItem } from "@/lib/firestoreService";
+import { User, mockUsers } from "@/lib/mock-data";
 
 type ClassWithBranch = ClassScheduleItem & { branchName: string };
 
-const ScheduleSkeleton = () => (
-    <Card>
-        <CardHeader>
-            <Skeleton className="h-6 w-48" />
-            <Skeleton className="h-4 w-72 mt-1" />
-        </CardHeader>
-        <CardContent className="space-y-4">
-            <Skeleton className="h-20 w-full" />
-            <Skeleton className="h-20 w-full" />
-            <Skeleton className="h-20 w-full" />
-        </CardContent>
-    </Card>
-);
-
-export default function SchedulePage() {
-  const user = useContext(UserContext);
-  const [allClasses, setAllClasses] = useState<ClassWithBranch[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    setLoading(true);
-    const unsubscribe = onBranchesUpdate((branches) => {
-        const allClasses = branches.flatMap(branch => 
-            (branch.schedule ?? []).map(item => ({
-                ...item,
-                branchName: branch.name,
-            }))
-        );
-        setAllClasses(allClasses);
-        setLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, []);
-
-  if (!user) {
-    return <ScheduleSkeleton />;
-  }
-
-  // Filter based on user role and affiliation
-  const displayedClasses = user.role === "admin"
-      ? allClasses
-      : allClasses.filter((c) => c.branchName === user.affiliation);
-
-  const adultClasses = displayedClasses.filter(
-    (c) => c.category === "Adults"
-  );
-  const kidsClasses = displayedClasses.filter((c) => c.category === "Kids");
-
-  const classListRenderer = (classes: ClassWithBranch[]) => {
+const ClassListRenderer = ({ classes, userRole }: { classes: ClassWithBranch[], userRole: User['role'] }) => {
     if (classes.length === 0) {
       return (
           <CardContent>
@@ -83,7 +30,7 @@ export default function SchedulePage() {
             <div>
                 <p className="font-semibold">{item.name}</p>
                 <p className="text-sm text-muted-foreground">
-                {item.instructor} {user.role === 'admin' && `(${item.branchName})`}
+                {item.instructor} {userRole === 'admin' && `(${item.branchName})`}
                 </p>
             </div>
             <div className="flex items-center gap-4 text-right">
@@ -99,22 +46,30 @@ export default function SchedulePage() {
         ))}
         </CardContent>
     );
-  };
-  
-  if (loading) {
-      return (
-          <div className="grid gap-6">
-              <div>
-                  <h1 className="text-3xl font-bold tracking-tight">Horários das Aulas</h1>
-                  <p className="text-muted-foreground">
-                      Encontre sua próxima aula e planeje sua semana.
-                  </p>
-              </div>
-              <ScheduleSkeleton />
-              <ScheduleSkeleton />
-          </div>
-      );
-  }
+};
+
+export default async function SchedulePage({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string | string[] | undefined };
+}) {
+  const role = (searchParams?.role || 'student') as User['role'];
+  const user = mockUsers[role] || mockUsers.student;
+
+  const branches = await getBranches();
+  const allClasses = branches.flatMap(branch => 
+      (branch.schedule ?? []).map(item => ({
+          ...item,
+          branchName: branch.name,
+      }))
+  );
+
+  const displayedClasses = role === "admin"
+      ? allClasses
+      : allClasses.filter((c) => c.branchName === user.affiliation);
+
+  const adultClasses = displayedClasses.filter(c => c.category === "Adults");
+  const kidsClasses = displayedClasses.filter(c => c.category === "Kids");
 
   return (
     <div className="grid gap-6">
@@ -132,7 +87,7 @@ export default function SchedulePage() {
             Horário de todas as aulas de Adulto com e sem kimono.
           </CardDescription>
         </CardHeader>
-        {classListRenderer(adultClasses)}
+        <ClassListRenderer classes={adultClasses} userRole={role} />
       </Card>
       
       <Card>
@@ -142,7 +97,7 @@ export default function SchedulePage() {
             Aulas de jiu-jitsu divertidas e seguras para os pequenos.
           </CardDescription>
         </CardHeader>
-        {classListRenderer(kidsClasses)}
+        <ClassListRenderer classes={kidsClasses} userRole={role} />
       </Card>
     </div>
   );

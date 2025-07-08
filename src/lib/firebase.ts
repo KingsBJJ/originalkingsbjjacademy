@@ -1,10 +1,7 @@
+import { initializeApp, getApps, getApp, type FirebaseOptions } from "firebase/app";
+import { getFirestore, connectFirestoreEmulator, enableIndexedDbPersistence } from "firebase/firestore";
 
-import { initializeApp, getApps, getApp } from "firebase/app";
-import { getFirestore, enableIndexedDbPersistence, connectFirestoreEmulator } from "firebase/firestore";
-
-// As credenciais do Firebase são configuradas no ambiente de hospedagem.
-// Não é necessário preencher estes valores manualmente.
-const firebaseConfig = {
+const firebaseConfig: FirebaseOptions = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
@@ -13,34 +10,32 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Inicializa o Firebase
+// Initialize Firebase
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// Conecta ao emulador do Firestore em ambiente de desenvolvimento
+// Connect to emulators in development mode.
 if (process.env.NODE_ENV === 'development') {
     try {
-        // Esta função deve ser chamada antes de qualquer outra operação do Firestore.
-        // O try/catch previne travamentos durante o hot-reload do Next.js.
+        // This connects the SDK to the local Firestore emulator.
+        // The try/catch prevents errors during Next.js hot-reloads.
         connectFirestoreEmulator(db, '127.0.0.1', 8080);
     } catch (e) {
-        console.warn("Firestore emulator may already be connected.");
+        // This can happen on hot-reloads, so we can safely ignore it.
     }
 }
 
-
-// Habilita a persistência offline para garantir que os dados não sejam perdidos.
+// Enable offline persistence on the client-side.
+// This check ensures the code only runs in the browser.
 if (typeof window !== 'undefined') {
-    try {
-        enableIndexedDbPersistence(db)
-    } catch (error: any) {
+    enableIndexedDbPersistence(db).catch((error) => {
         if (error.code == 'failed-precondition') {
-            // Múltiplas abas abertas, a persistência só pode ser ativada em uma.
-            // Isso é um comportamento esperado e não um erro crítico.
+            // This happens if multiple tabs are open. Persistence can only be enabled in one.
+            // It's a normal occurrence and not a critical error.
         } else if (error.code == 'unimplemented') {
-            // O navegador não suporta todas as funcionalidades necessárias para a persistência.
+            // The browser doesn't support all features for persistence.
         }
-    }
+    });
 }
 
 export { app, db };

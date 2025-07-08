@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { createContext, useMemo, useContext, useState, useEffect, useCallback } from "react";
+import { createContext, useState, useCallback, useMemo, useEffect } from "react";
 import {
   Avatar,
   AvatarFallback,
@@ -23,7 +23,8 @@ import {
   SidebarInset,
 } from "@/components/ui/sidebar";
 import { KingsBjjLogo } from "@/components/kings-bjj-logo";
-import { User, mockUsers } from "@/lib/mock-data";
+import type { User } from "@/lib/mock-data";
+import { mockUsers } from "@/lib/mock-data";
 import {
   Award,
   Bell,
@@ -36,7 +37,6 @@ import {
   QrCode,
   Calendar,
   FileText,
-  AlertTriangle,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -44,8 +44,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { updateUser as updateDbUser, ensureUserExists } from "@/lib/firestoreService";
+import { updateUser as updateDbUser } from "@/lib/firestoreService";
 import { useToast } from "@/hooks/use-toast";
 
 
@@ -102,52 +101,50 @@ export default function DashboardClientLayout({
   const searchParams = useSearchParams();
   const { toast } = useToast();
 
-  const initialUser = useMemo(() => {
-    const role = (searchParams.get("role") as User['role']) || 'student';
-    const name = searchParams.get("name");
-    const email = searchParams.get("email");
-    const affiliation = searchParams.get("affiliation");
-    const branchId = searchParams.get("branchId");
-    const mainInstructor = searchParams.get("mainInstructor");
-    const category = (searchParams.get("category") as User['category']) || 'Adult';
-    const belt = searchParams.get("belt");
-    const stripes = Number(searchParams.get("stripes") || 0);
-
-    // If email is present, we assume it's a new user from signup
-    if (email && name && affiliation && belt) {
-        const newUser: User = {
-            id: `user_${email.replace(/[@.]/g, '_')}`,
-            name,
-            email,
-            role,
-            affiliation,
-            branchId: branchId || '',
-            mainInstructor: mainInstructor || '',
-            category,
-            belt,
-            stripes,
-            avatar: "https://placehold.co/128x128.png",
-            attendance: { total: 0, lastMonth: 0 },
-            nextGraduationProgress: 5, // Start with a bit of progress
-        };
-        return newUser;
-    }
-
-    // Fallback to existing mock user logic for direct access
-    const mockRole = role ? role.split('?')[0] as 'student' | 'professor' | 'admin' : 'student';
-    return mockUsers[mockRole] || mockUsers.student;
-  }, [searchParams]);
-
-  const [user, setUser] = useState<User>(initialUser);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    setUser(initialUser);
-    ensureUserExists(initialUser);
-  }, [initialUser]);
+    const email = searchParams.get('email');
+    const cleanEmail = email?.trim().toLowerCase();
 
+    let userToSet: User;
+
+    if (cleanEmail === 'admin@kingsbjj.com' || cleanEmail === 'admin@kings.com') {
+      userToSet = mockUsers.admin;
+    } else if (cleanEmail === 'professor@kingsbjj.com' || cleanEmail === 'professor@kings.com') {
+      userToSet = mockUsers.professor;
+    } else {
+      const name = searchParams.get('name');
+      const affiliation = searchParams.get('affiliation');
+      const belt = searchParams.get('belt');
+      const role = searchParams.get('role') as User['role'];
+
+      if (name && affiliation && belt) {
+        userToSet = {
+          id: `user_${(email || Date.now().toString()).replace(/[@.]/g, '_')}`,
+          name,
+          email: email || '',
+          role: role || 'student',
+          affiliation,
+          branchId: searchParams.get('branchId') || '',
+          mainInstructor: searchParams.get('mainInstructor') || '',
+          category: (searchParams.get('category') as User['category']) || 'Adult',
+          belt,
+          stripes: Number(searchParams.get('stripes') || 0),
+          avatar: "https://placehold.co/128x128.png",
+          attendance: { total: 0, lastMonth: 0 },
+          nextGraduationProgress: 5,
+        };
+      } else {
+        userToSet = { ...mockUsers.student, email: email || mockUsers.student.email };
+      }
+    }
+    setUser(userToSet);
+  }, [searchParams]);
 
   const updateUser = useCallback((newUserData: Partial<User>) => {
     setUser(prevUser => {
+      if (!prevUser) return null;
       const updatedUser = { ...prevUser, ...newUserData };
       
       if (newUserData.attendance) {
@@ -171,10 +168,10 @@ export default function DashboardClientLayout({
   }, [toast]);
 
   const navItems: NavItem[] = useMemo(() => {
-    if (user.role === 'admin') return adminNavItems;
-    if (user.role === 'professor') return professorNavItems;
+    if (user?.role === 'admin') return adminNavItems;
+    if (user?.role === 'professor') return professorNavItems;
     return studentNavItems;
-  }, [user.role]);
+  }, [user?.role]);
 
   const getHref = (href: string) => {
     const params = new URLSearchParams(searchParams.toString());

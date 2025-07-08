@@ -1,4 +1,3 @@
-
 import Link from 'next/link';
 import { Suspense } from 'react';
 import { PlusCircle } from 'lucide-react';
@@ -11,14 +10,14 @@ import {
 import {
   Table,
   TableBody,
-  TableCell,
   TableHead,
   TableHeader,
   TableRow,
+  TableCell,
 } from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { getInstructors, getAppUser, type Instructor, type User } from '@/lib/firestoreService';
+import { getInstructors, type User } from '@/lib/firestoreService';
 import { mockUsers } from '@/lib/mock-data';
 import { InstructorActions } from './InstructorActionsClient';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -66,7 +65,7 @@ const InstructorsTableSkeleton = () => (
 
 async function InstructorsList({ user }: { user: User | null }) {
   const instructors = await getInstructors();
-
+  
   return (
     <Card>
       <CardContent className="p-0">
@@ -139,19 +138,11 @@ export default async function InstructorsPage({
 }: {
   searchParams: { [key: string]: string | string[] | undefined };
 }) {
-  const email = searchParams.email as string | undefined;
-  const role = searchParams.role as 'student' | 'professor' | 'admin' | undefined;
+  const role = searchParams?.role as User['role'] | undefined;
   
-  let user: User | null = null;
-  if (email === 'admin@kings.com' || email === 'admin@kingsbjj.com') {
-      user = mockUsers.admin;
-  } else if (email === 'professor@kingsbjj.com') {
-      user = mockUsers.professor;
-  } else if (role) {
-      user = await getAppUser(role);
-  } else {
-      user = null;
-  }
+  // Use a mock user based on the role from URL for server-side permission checks.
+  // The full user state is managed on the client in `client-layout.tsx`.
+  const user = role ? mockUsers[role] : null;
 
 
   return (

@@ -20,19 +20,22 @@ import {
   User as UserIcon,
   BarChart,
   Trophy,
+  DatabaseZap,
 } from "lucide-react";
 import { Bar, BarChart as RechartsBarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
 import { ChartConfig, ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
 import { UserContext } from "./client-layout";
 import { 
-    onBranchesUpdate, 
-    onInstructorsUpdate, 
-    onStudentsUpdate, 
+    getBranches, 
+    getInstructors, 
+    getStudents, 
+    seedInitialData,
     type Branch, 
     type Instructor, 
     type Student 
 } from "@/lib/firestoreService";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "@/hooks/use-toast";
 
 const DataCard = ({ title, value, description, icon: Icon }: { title: string; value: number | string; description: string; icon: React.ElementType }) => (
     <Card>
@@ -61,20 +64,51 @@ const AdminDashboard = () => {
   const [instructors, setInstructors] = useState<Instructor[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+  const [isSeeding, setIsSeeding] = useState(false);
+
+  const handleForceSeed = async () => {
+    setIsSeeding(true);
+    try {
+      await seedInitialData();
+      toast({
+        title: "Dados Carregados!",
+        description: "Os dados de exemplo foram carregados. Recarregue a página para ver as listas.",
+      });
+      // Optionally re-fetch data right after seeding
+      fetchData();
+    } catch (error) {
+      console.error(error);
+      toast({
+        variant: "destructive",
+        title: "Erro ao carregar dados",
+        description: "Não foi possível carregar os dados. Verifique o console para mais detalhes.",
+      });
+    } finally {
+      setIsSeeding(false);
+    }
+  };
+
+  const fetchData = async () => {
+      setLoading(true);
+      try {
+          const [branchesData, instructorsData, studentsData] = await Promise.all([
+              getBranches(),
+              getInstructors(),
+              getStudents()
+          ]);
+          setBranches(branchesData);
+          setInstructors(instructorsData);
+          setStudents(studentsData);
+      } catch (error) {
+          console.error("Failed to fetch dashboard data", error);
+      } finally {
+          setLoading(false);
+      }
+  };
 
   useEffect(() => {
-    const unsubBranches = onBranchesUpdate(setBranches);
-    const unsubInstructors = onInstructorsUpdate(setInstructors);
-    const unsubStudents = onStudentsUpdate((fetchedStudents) => {
-        setStudents(fetchedStudents);
-        setLoading(false); // Consider loading done when students arrive
-    });
-
-    return () => {
-        unsubBranches();
-        unsubInstructors();
-        unsubStudents();
-    };
+    fetchData();
   }, []);
 
   const branchStudentData = useMemo(() => {
@@ -140,11 +174,31 @@ const AdminDashboard = () => {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-      <DataCard title="Total de Alunos" value={students.length} description="Alunos ativos em todas as filiais" icon={Users} />
-      <DataCard title="Total de Filiais" value={branches.length} description="Filiais em operação" icon={Map} />
-      <DataCard title="Total de Professores" value={instructors.length} description="Professores em todas as filiais" icon={UserIcon} />
+    <div className="grid grid-cols-1 gap-6">
+      <Card className="col-span-1 md:col-span-3">
+        <CardHeader>
+          <CardTitle>Ferramentas Administrativas</CardTitle>
+          <CardDescription>Ações para gerenciamento do sistema.</CardDescription>
+        </CardHeader>
+        <CardContent>
+           <div className="flex flex-col items-start gap-2">
+            <Button onClick={handleForceSeed} disabled={isSeeding}>
+              <DatabaseZap className="mr-2" />
+              {isSeeding ? "Carregando..." : "Forçar Carregamento de Dados"}
+            </Button>
+            <p className="text-xs text-muted-foreground">
+              Se as listas de filiais ou professores estiverem vazias, clique aqui para popular o banco de dados com dados de exemplo.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
       
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+        <DataCard title="Total de Alunos" value={students.length} description="Alunos ativos em todas as filiais" icon={Users} />
+        <DataCard title="Total de Filiais" value={branches.length} description="Filiais em operação" icon={Map} />
+        <DataCard title="Total de Professores" value={instructors.length} description="Professores em todas as filiais" icon={UserIcon} />
+      </div>
+
       <Card className="md:col-span-3">
           <CardHeader>
               <CardTitle className="flex items-center gap-2"><BarChart/>Distribuição de Alunos por Filial</CardTitle>
@@ -207,16 +261,22 @@ const ProfessorDashboard = () => {
 
   useEffect(() => {
     if (!user) return;
-    const unsubBranches = onBranchesUpdate(setBranches);
-    const unsubStudents = onStudentsUpdate((fetchedStudents) => {
-        setStudents(fetchedStudents.filter(s => s.affiliation === user.affiliation));
-        setLoading(false);
-    });
-
-    return () => {
-        unsubBranches();
-        unsubStudents();
+    const fetchData = async () => {
+        setLoading(true);
+        try {
+            const [branchesData, studentsData] = await Promise.all([
+                getBranches(),
+                getStudents()
+            ]);
+            setBranches(branchesData);
+            setStudents(studentsData.filter(s => s.affiliation === user.affiliation));
+        } catch (error) {
+            console.error("Failed to fetch professor dashboard data", error);
+        } finally {
+            setLoading(false);
+        }
     };
+    fetchData();
   }, [user]);
 
   if (!user) return null;
@@ -293,11 +353,18 @@ const StudentDashboard = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onBranchesUpdate(data => {
-        setBranches(data);
-        setLoading(false);
-    });
-    return () => unsubscribe();
+    const fetchBranches = async () => {
+        setLoading(true);
+        try {
+            const data = await getBranches();
+            setBranches(data);
+        } catch (error) {
+            console.error("Failed to fetch branches for student", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+    fetchBranches();
   }, []);
 
   if (!user) return null;
@@ -430,7 +497,7 @@ export default function DashboardPage() {
   const welcomeMessage = {
     admin: "Visão geral da Kings Bjj",
     professor: `Bem-vindo de volta, ${user.name.split(" ")[0]}!`,
-    student: `Welcome to the Game, ${user.name.split(" ")[0]}!`,
+    student: `Seja bem-vindo(a), ${user.name.split(" ")[0]}!`,
   };
 
   const subMessage = {
