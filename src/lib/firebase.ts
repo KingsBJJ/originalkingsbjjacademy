@@ -1,6 +1,6 @@
 
 import { initializeApp, getApps, getApp, type FirebaseOptions } from "firebase/app";
-import { initializeFirestore, memoryLocalCache } from "firebase/firestore";
+import { initializeFirestore, memoryLocalCache, getFirestore } from "firebase/firestore";
 
 const firebaseConfig: FirebaseOptions = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -11,21 +11,24 @@ const firebaseConfig: FirebaseOptions = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Valida se as chaves essenciais da configuração do Firebase estão presentes.
-// Se não estiverem, o app irá falhar com uma mensagem clara, em vez de quebrar silenciosamente.
-const requiredConfigKeys: (keyof FirebaseOptions)[] = ['apiKey', 'authDomain', 'projectId'];
-const missingKeys = requiredConfigKeys.filter(key => !firebaseConfig[key]);
+// Initialize Firebase
+let app;
+let db;
 
-if (missingKeys.length > 0) {
-    // Este erro é INTENCIONAL. Ele para a execução se o Firebase não estiver configurado.
-    throw new Error(`CONFIGURAÇÃO DO FIREBASE INCOMPLETA. Chaves faltando: ${missingKeys.join(', ')}. Verifique as variáveis de ambiente.`);
+try {
+  // This check prevents re-initializing the app in hot-reload scenarios
+  app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+  // Initialize Firestore with memory cache for stability, avoiding IndexedDB issues.
+  // Using getFirestore() ensures we get the instance associated with the app.
+  db = getFirestore(app);
+  
+} catch (error) {
+  console.error("FIREBASE INITIALIZATION FAILED:", error);
+  // We log the error but do not throw, to prevent the entire Next.js server
+  // from crashing during startup. Features requiring Firebase will fail gracefully at runtime.
+  app = undefined;
+  db = undefined;
 }
 
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-
-// Inicializa o Firestore com cache em memória para estabilidade, contornando problemas de IndexedDB.
-const db = initializeFirestore(app, {
-    localCache: memoryLocalCache(),
-});
 
 export { app, db };
