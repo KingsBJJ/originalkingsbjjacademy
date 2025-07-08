@@ -11,6 +11,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { getBranches, getAppUser, type Branch, type User } from '@/lib/firestoreService';
+import { mockUsers } from '@/lib/mock-data';
 import { BranchActions } from './BranchActionsClient';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -83,8 +84,20 @@ export default async function BranchesPage({
 }: {
   searchParams: { [key: string]: string | string[] | undefined };
 }) {
+  const email = searchParams.email as string | undefined;
   const role = searchParams.role as 'student' | 'professor' | 'admin' | undefined;
-  const user = role ? await getAppUser(role) : null;
+  
+  let user: User | null = null;
+  if (email === 'admin@kings.com' || email === 'admin@kingsbjj.com') {
+      user = mockUsers.admin;
+  } else if (email === 'professor@kingsbjj.com') {
+      user = mockUsers.professor;
+  } else if (role) {
+      user = await getAppUser(role);
+  } else {
+      user = null; // Default to no user if no info
+  }
+
 
   return (
     <div className="grid gap-6">
