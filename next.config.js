@@ -1,22 +1,23 @@
 /** @type {import('next').NextConfig} */
 
-let webappConfig = {};
-
-try {
-  // This will only attempt to parse the variable if it exists.
-  // It prevents a warning from being logged if the variable is missing,
-  // which was causing the dev server to enter a crash loop.
-  if (process.env.FIREBASE_WEBAPP_CONFIG) {
-    webappConfig = JSON.parse(process.env.FIREBASE_WEBAPP_CONFIG);
+// Safely parse the Firebase config to prevent server crashes during startup.
+const getFirebaseConfig = () => {
+  try {
+    const config = process.env.FIREBASE_WEBAPP_CONFIG;
+    if (config) {
+      return JSON.parse(config);
+    }
+  } catch (error) {
+    // This warning is for debugging and will not crash the server.
+    console.warn(
+      "Warning: Could not parse FIREBASE_WEBAPP_CONFIG. Firebase might not be initialized properly.",
+      error
+    );
   }
-} catch (error) {
-  console.error(
-    "ERROR: Failed to parse FIREBASE_WEBAPP_CONFIG. Check if it's valid JSON.",
-    error
-  );
-  webappConfig = {}; // Ensure it's empty on failure
-}
+  return {}; // Return an empty object on failure to ensure stability.
+};
 
+const webappConfig = getFirebaseConfig();
 
 const nextConfig = {
   /* config options here */
