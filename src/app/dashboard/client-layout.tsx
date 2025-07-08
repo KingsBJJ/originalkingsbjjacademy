@@ -104,20 +104,20 @@ export default function DashboardClientLayout({
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
+    const role = searchParams.get('role') as User['role'];
     const email = searchParams.get('email');
     const cleanEmail = email?.trim().toLowerCase();
 
     let userToSet: User;
 
-    if (cleanEmail === 'admin@kingsbjj.com' || cleanEmail === 'admin@kings.com') {
+    if (role === 'admin' || cleanEmail === 'admin@kingsbjj.com' || cleanEmail === 'admin@kings.com') {
       userToSet = mockUsers.admin;
-    } else if (cleanEmail === 'professor@kingsbjj.com' || cleanEmail === 'professor@kings.com') {
+    } else if (role === 'professor' || cleanEmail === 'professor@kingsbjj.com' || cleanEmail === 'professor@kings.com') {
       userToSet = mockUsers.professor;
     } else {
       const name = searchParams.get('name');
       const affiliation = searchParams.get('affiliation');
       const belt = searchParams.get('belt');
-      const role = searchParams.get('role') as User['role'];
 
       if (name && affiliation && belt) {
         userToSet = {
@@ -174,7 +174,13 @@ export default function DashboardClientLayout({
   }, [user?.role]);
 
   const getHref = (href: string) => {
-    const params = new URLSearchParams(searchParams.toString());
+    if (!user) return href;
+    const params = new URLSearchParams();
+    // Persist role primarily, but also other identifying info if needed
+    params.set('role', user.role);
+    if(user.email) {
+      params.set('email', user.email);
+    }
     return `${href}?${params.toString()}`;
   }
   

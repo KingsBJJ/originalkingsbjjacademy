@@ -3,7 +3,7 @@
 
 import { useContext, useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -56,6 +56,7 @@ type InstructorFormValues = z.infer<typeof instructorFormSchema>;
 export default function NewInstructorPage() {
   const user = useContext(UserContext);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { toast } = useToast();
   const [branches, setBranches] = useState<Branch[]>([]);
   const [isSaving, setIsSaving] = useState(false);
@@ -87,6 +88,7 @@ export default function NewInstructorPage() {
   }, [toast]);
 
   const watchedBelt = form.watch("belt");
+  const role = searchParams.get('role');
 
   const onSubmit = async (data: InstructorFormValues) => {
     setIsSaving(true);
@@ -100,7 +102,7 @@ export default function NewInstructorPage() {
         belt,
         affiliations: affiliations ?? [],
         bio: bio ?? '',
-        avatar: avatar ?? '',
+        avatar: avatar ?? `https://placehold.co/128x128.png?text=${name.charAt(0)}`,
         stripes: stripes ?? 0,
       };
 
@@ -111,7 +113,8 @@ export default function NewInstructorPage() {
         description: `O professor ${data.name} foi adicionado com sucesso.`,
       });
       
-      router.push(`/dashboard/instructors?role=${user?.role}`);
+      router.push(`/dashboard/instructors?role=${role}`);
+      router.refresh();
 
     } catch (error) {
       console.error("Failed to add instructor:", error);
@@ -150,7 +153,7 @@ export default function NewInstructorPage() {
     <div className="grid gap-6">
       <div className="flex items-center gap-4">
         <Button variant="outline" size="icon" asChild>
-          <Link href={`/dashboard/instructors?role=${user?.role}`}>
+          <Link href={`/dashboard/instructors?role=${role}`}>
             <ArrowLeft />
             <span className="sr-only">Voltar</span>
           </Link>

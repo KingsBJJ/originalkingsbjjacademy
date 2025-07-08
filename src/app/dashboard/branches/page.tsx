@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { getBranches, type Branch, type User } from '@/lib/firestoreService';
+import { getBranches, type User } from '@/lib/firestoreService';
 import { mockUsers } from '@/lib/mock-data';
 import { BranchActions } from './BranchActionsClient';
 import { Skeleton } from '@/components/ui/skeleton';
