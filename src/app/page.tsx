@@ -21,10 +21,10 @@ export default function LoginPage() {
   const getRole = () => {
     const cleanEmail = email.trim().toLowerCase();
     
-    if (cleanEmail === 'admin@kingsbjj.com') {
+    if (cleanEmail === 'admin@kingsbjj.com' || cleanEmail === 'admin@kings.com') {
       return "admin";
     }
-    if (cleanEmail === 'professor@kingsbjj.com') {
+    if (cleanEmail === 'professor@kingsbjj.com' || cleanEmail === 'professor@kings.com') {
       return "professor";
     }
     // Default to student for any other email
