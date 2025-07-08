@@ -22,42 +22,42 @@ export default async function DashboardLayout({
   searchParams: { [key: string]: string | string[] | undefined };
 }) {
 
-  // Logic to determine user is moved here, to the server
   const email = searchParams?.email as string;
-  const name = searchParams?.name as string;
-  const affiliation = searchParams?.affiliation as string;
-  const belt = searchParams?.belt as string;
-  // Note: 'role' from searchParams is now primarily for the signup flow
-  const role = (searchParams?.role as User['role']); 
+  const cleanEmail = email?.trim().toLowerCase();
 
   let user: User;
 
-  // This block is for SIGNUP flow, which provides all details in params
-  if (email && name && affiliation && belt) {
-      user = {
-          id: `user_${email.replace(/[@.]/g, '_')}`,
-          name,
-          email,
-          role: role || 'student', // Fallback to student if role isn't specified on signup
-          affiliation,
-          branchId: (searchParams?.branchId as string) || '',
-          mainInstructor: (searchParams?.mainInstructor as string) || '',
-          category: (searchParams?.category as User['category']) || 'Adult',
-          belt,
-          stripes: Number(searchParams?.stripes || 0),
-          avatar: "https://placehold.co/128x128.png",
-          attendance: { total: 0, lastMonth: 0 },
-          nextGraduationProgress: 5,
-      };
+  // New, more robust logic: check for special roles first.
+  if (cleanEmail === 'admin@kingsbjj.com' || cleanEmail === 'admin@kings.com') {
+    user = mockUsers.admin;
+  } else if (cleanEmail === 'professor@kingsbjj.com' || cleanEmail === 'professor@kings.com') {
+    user = mockUsers.professor;
   } else {
-    // This block is for LOGIN flow, which only provides email
-    const cleanEmail = email?.trim().toLowerCase();
-    if (cleanEmail === 'admin@kingsbjj.com' || cleanEmail === 'admin@kings.com') {
-      user = mockUsers.admin;
-    } else if (cleanEmail === 'professor@kingsbjj.com' || cleanEmail === 'professor@kings.com') {
-      user = mockUsers.professor;
+    // Handle student login or new student signup
+    const name = searchParams?.name as string;
+    const affiliation = searchParams?.affiliation as string;
+    const belt = searchParams?.belt as string;
+    const role = (searchParams?.role as User['role']);
+
+    // If all signup params are present, it's a new user.
+    if (name && affiliation && belt) {
+      user = {
+        id: `user_${email.replace(/[@.]/g, '_')}`,
+        name,
+        email,
+        role: role || 'student',
+        affiliation,
+        branchId: (searchParams?.branchId as string) || '',
+        mainInstructor: (searchParams?.mainInstructor as string) || '',
+        category: (searchParams?.category as User['category']) || 'Adult',
+        belt,
+        stripes: Number(searchParams?.stripes || 0),
+        avatar: "https://placehold.co/128x128.png",
+        attendance: { total: 0, lastMonth: 0 },
+        nextGraduationProgress: 5,
+      };
     } else {
-      // Default to student for any other email
+      // Otherwise, it's a standard student login.
       user = { ...mockUsers.student, email: email || mockUsers.student.email };
     }
   }
