@@ -1,6 +1,6 @@
 
 import { initializeApp, getApps, getApp, type FirebaseOptions } from "firebase/app";
-import { initializeFirestore, memoryLocalCache, getFirestore } from "firebase/firestore";
+import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig: FirebaseOptions = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -16,19 +16,16 @@ let app;
 let db;
 
 try {
-  // This check prevents re-initializing the app in hot-reload scenarios
-  app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-  // Initialize Firestore with memory cache for stability, avoiding IndexedDB issues.
-  // Using getFirestore() ensures we get the instance associated with the app.
-  db = getFirestore(app);
-  
+  // Only initialize if a projectId is available.
+  if (firebaseConfig.projectId) {
+      app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+      db = getFirestore(app);
+  }
 } catch (error) {
-  console.error("FIREBASE INITIALIZATION FAILED:", error);
-  // We log the error but do not throw, to prevent the entire Next.js server
-  // from crashing during startup. Features requiring Firebase will fail gracefully at runtime.
-  app = undefined;
-  db = undefined;
+    // Silently catch the error. The app will run, but Firebase features will be disabled.
+    // This prevents a server crash if the config is missing or invalid.
+    app = undefined;
+    db = undefined;
 }
-
 
 export { app, db };

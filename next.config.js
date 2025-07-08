@@ -1,23 +1,17 @@
+
 /** @type {import('next').NextConfig} */
 
 // Safely parse the Firebase config to prevent server crashes during startup.
-const getFirebaseConfig = () => {
-  try {
-    const config = process.env.FIREBASE_WEBAPP_CONFIG;
-    if (config) {
-      return JSON.parse(config);
-    }
-  } catch (error) {
-    // This warning is for debugging and will not crash the server.
-    console.warn(
-      "Warning: Could not parse FIREBASE_WEBAPP_CONFIG. Firebase might not be initialized properly.",
-      error
-    );
+let webappConfig = {};
+try {
+  const config = process.env.FIREBASE_WEBAPP_CONFIG;
+  if (config) {
+    webappConfig = JSON.parse(config);
   }
-  return {}; // Return an empty object on failure to ensure stability.
-};
-
-const webappConfig = getFirebaseConfig();
+} catch (error) {
+  // Silently ignore parsing errors. The app will rely on runtime environment variables.
+  // This prevents server crashes during startup or build.
+}
 
 const nextConfig = {
   /* config options here */
