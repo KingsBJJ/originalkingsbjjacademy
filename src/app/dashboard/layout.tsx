@@ -23,38 +23,43 @@ export default async function DashboardLayout({
 }) {
 
   // Logic to determine user is moved here, to the server
-  const role = (searchParams?.role as User['role']) || 'student';
-  const name = searchParams?.name as string;
   const email = searchParams?.email as string;
+  const name = searchParams?.name as string;
   const affiliation = searchParams?.affiliation as string;
-  const branchId = searchParams?.branchId as string;
-  const mainInstructor = searchParams?.mainInstructor as string;
-  const category = (searchParams?.category as User['category']) || 'Adult';
   const belt = searchParams?.belt as string;
-  const stripes = Number(searchParams?.stripes || 0);
+  // Note: 'role' from searchParams is now primarily for the signup flow
+  const role = (searchParams?.role as User['role']); 
 
   let user: User;
 
+  // This block is for SIGNUP flow, which provides all details in params
   if (email && name && affiliation && belt) {
       user = {
           id: `user_${email.replace(/[@.]/g, '_')}`,
           name,
           email,
-          role,
+          role: role || 'student', // Fallback to student if role isn't specified on signup
           affiliation,
-          branchId: branchId || '',
-          mainInstructor: mainInstructor || '',
-          category,
+          branchId: (searchParams?.branchId as string) || '',
+          mainInstructor: (searchParams?.mainInstructor as string) || '',
+          category: (searchParams?.category as User['category']) || 'Adult',
           belt,
-          stripes,
+          stripes: Number(searchParams?.stripes || 0),
           avatar: "https://placehold.co/128x128.png",
           attendance: { total: 0, lastMonth: 0 },
           nextGraduationProgress: 5,
       };
   } else {
-    // Fallback to mock user if params are not complete
-    const mockRole = role ? role.split('?')[0] as 'student' | 'professor' | 'admin' : 'student';
-    user = mockUsers[mockRole] || mockUsers.student;
+    // This block is for LOGIN flow, which only provides email
+    const cleanEmail = email?.trim().toLowerCase();
+    if (cleanEmail === 'admin@kingsbjj.com' || cleanEmail === 'admin@kings.com') {
+      user = mockUsers.admin;
+    } else if (cleanEmail === 'professor@kingsbjj.com' || cleanEmail === 'professor@kings.com') {
+      user = mockUsers.professor;
+    } else {
+      // Default to student for any other email
+      user = { ...mockUsers.student, email: email || mockUsers.student.email };
+    }
   }
   
   return (

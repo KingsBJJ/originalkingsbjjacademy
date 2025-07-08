@@ -18,19 +18,6 @@ import { KingsBjjLogo } from "@/components/kings-bjj-logo";
 export default function LoginPage() {
   const [email, setEmail] = useState("");
 
-  const getRole = () => {
-    const cleanEmail = email.trim().toLowerCase();
-    
-    if (cleanEmail === 'admin@kingsbjj.com' || cleanEmail === 'admin@kings.com') {
-      return "admin";
-    }
-    if (cleanEmail === 'professor@kingsbjj.com' || cleanEmail === 'professor@kings.com') {
-      return "professor";
-    }
-    // Default to student for any other email
-    return "student";
-  };
-
   return (
     <div className="relative flex min-h-screen w-full items-center justify-center p-4">
       <Image
@@ -78,7 +65,7 @@ export default function LoginPage() {
               <Input id="password" type="password" required className="bg-white/5 border-white/20 text-white" />
             </div>
             <Button asChild type="submit" className="w-full">
-              <Link href={`/dashboard?role=${getRole()}`}>Entrar</Link>
+              <Link href={`/dashboard?email=${encodeURIComponent(email)}`}>Entrar</Link>
             </Button>
           </div>
           <div className="mt-4 text-center text-sm text-white/80">
