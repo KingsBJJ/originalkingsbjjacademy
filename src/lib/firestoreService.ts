@@ -84,10 +84,22 @@ export type Instructor = {
 
 export type Student = User;
 
+// Helper to ensure the database connection is valid before making a call.
+// This prevents "Invalid segment" errors caused by a missing projectId.
+const ensureDbReady = () => {
+    if (!db || !db.app.options.projectId) {
+        const errorMsg = "Firestore não está inicializado ou o projectId está faltando. Verifique as variáveis de ambiente e a configuração do Firebase.";
+        console.error(errorMsg);
+        throw new Error(errorMsg);
+    }
+};
+
+
 // --- Seeding Function ---
 
 export const seedInitialData = async () => {
     try {
+        ensureDbReady();
         console.log("Checking and seeding initial data if necessary...");
         // Check if branches collection is empty
         const branchesQuery = query(collection(db, 'branches'), limit(1));
@@ -129,10 +141,7 @@ export const seedInitialData = async () => {
 
 export const getBranches = async (): Promise<Branch[]> => {
   try {
-    if (!db) {
-      console.error("Firestore DB is not initialized.");
-      return []; // Return empty array if DB is not available
-    }
+    ensureDbReady();
     const branchesCollection = collection(db, 'branches');
     const snapshot = await getDocs(branchesCollection);
     if (snapshot.empty) {
@@ -148,6 +157,7 @@ export const getBranches = async (): Promise<Branch[]> => {
 
 export const getBranch = async (id: string): Promise<Branch | null> => {
   try {
+    ensureDbReady();
     const docRef = doc(db, 'branches', id);
     const docSnap = await getDoc(docRef);
     return docSnap.exists() ? { id: docSnap.id, ...docSnap.data() } as Branch : null;
@@ -159,6 +169,7 @@ export const getBranch = async (id: string): Promise<Branch | null> => {
 
 export const addBranch = async (branchData: Omit<Branch, 'id'>) => {
   try {
+    ensureDbReady();
     const docRef = await addDoc(collection(db, 'branches'), branchData);
     return { id: docRef.id };
   } catch (error) {
@@ -169,6 +180,7 @@ export const addBranch = async (branchData: Omit<Branch, 'id'>) => {
 
 export const updateBranch = async (id: string, branchData: Partial<Omit<Branch, 'id'>>) => {
   try {
+    ensureDbReady();
     const docRef = doc(db, 'branches', id);
     await updateDoc(docRef, branchData);
   } catch (error) {
@@ -179,6 +191,7 @@ export const updateBranch = async (id: string, branchData: Partial<Omit<Branch, 
 
 export const deleteBranch = async (id: string) => {
   try {
+    ensureDbReady();
     const docRef = doc(db, 'branches', id);
     await deleteDoc(docRef);
   } catch (error) {
@@ -192,10 +205,7 @@ export const deleteBranch = async (id: string) => {
 
 export const getInstructors = async (): Promise<Instructor[]> => {
     try {
-        if (!db) {
-            console.error("Firestore DB is not initialized.");
-            return [];
-        }
+        ensureDbReady();
         const instructorsCollection = collection(db, 'instructors');
         const querySnapshot = await getDocs(query(instructorsCollection));
         if (querySnapshot.empty) {
@@ -212,6 +222,7 @@ export const getInstructors = async (): Promise<Instructor[]> => {
 export const getInstructorsByAffiliation = async (affiliation: string): Promise<Instructor[]> => {
     if (!affiliation) return [];
     try {
+        ensureDbReady();
         const allInstructors = await getInstructors();
         return allInstructors.filter(instructor => 
             instructor.affiliations?.includes(affiliation)
@@ -224,6 +235,7 @@ export const getInstructorsByAffiliation = async (affiliation: string): Promise<
 
 export const getInstructor = async (id: string): Promise<Instructor | null> => {
     try {
+        ensureDbReady();
         const docRef = doc(db, 'instructors', id);
         const docSnap = await getDoc(docRef);
         return docSnap.exists() ? { id: docSnap.id, ...docSnap.data() } as Instructor : null;
@@ -235,6 +247,7 @@ export const getInstructor = async (id: string): Promise<Instructor | null> => {
 
 export const addInstructor = async (instructorData: Omit<Instructor, 'id'>) => {
     try {
+        ensureDbReady();
         const docRef = await addDoc(collection(db, 'instructors'), instructorData);
         return { id: docRef.id };
     } catch (error) {
@@ -245,6 +258,7 @@ export const addInstructor = async (instructorData: Omit<Instructor, 'id'>) => {
 
 export const updateInstructor = async (id: string, instructorData: Partial<Omit<Instructor, 'id'>>) => {
     try {
+        ensureDbReady();
         const docRef = doc(db, 'instructors', id);
         await updateDoc(docRef, instructorData);
     } catch (error) {
@@ -255,6 +269,7 @@ export const updateInstructor = async (id: string, instructorData: Partial<Omit<
 
 export const deleteInstructor = async (id: string) => {
     try {
+        ensureDbReady();
         const docRef = doc(db, 'instructors', id);
         await deleteDoc(docRef);
     } catch (error) {
@@ -267,6 +282,7 @@ export const deleteInstructor = async (id: string) => {
 // --- Student Functions ---
 export const getStudents = async (): Promise<Student[]> => {
     try {
+        ensureDbReady();
         const q = query(collection(db, 'users'), where("role", "==", "student"));
         const querySnapshot = await getDocs(q);
         return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Student));
@@ -281,6 +297,7 @@ export const getStudents = async (): Promise<Student[]> => {
 
 export const saveTermsAcceptance = async (data: Omit<TermsAcceptance, 'id' | 'acceptedAt'>) => {
     try {
+        ensureDbReady();
         const docRef = await addDoc(collection(db, 'terms'), {
             ...data,
             acceptedAt: serverTimestamp(),
@@ -297,6 +314,7 @@ export const saveTermsAcceptance = async (data: Omit<TermsAcceptance, 'id' | 'ac
 
 export const updateUser = async (id: string, userData: Partial<User>) => {
     try {
+        ensureDbReady();
         const docRef = doc(db, 'users', id);
         await updateDoc(docRef, userData);
     } catch (error) {
