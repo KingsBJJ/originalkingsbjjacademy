@@ -204,12 +204,14 @@ export const getInstructors = async (): Promise<Instructor[]> => {
         return [];
     }
     try {
-        const instructorsCollection = collection(db, 'instructors');
-        const querySnapshot = await getDocs(instructorsCollection);
-        console.log(`Firestore: Successfully fetched ${querySnapshot.docs.length} documents from 'instructors' collection.`);
-        return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Instructor));
+        console.log('Tentando acessar coleção instructors...');
+        const instructorsRef = collection(db, 'instructors');
+        console.log('Coleção referenciada:', instructorsRef.path);
+        const snapshot = await getDocs(instructorsRef);
+        console.log('Dados obtidos:', snapshot.size);
+        return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Instructor));
     } catch (error) {
-        console.error("Error getting instructors: ", error);
+        console.error('Erro ao obter instructors:', error);
         return [];
     }
 };
