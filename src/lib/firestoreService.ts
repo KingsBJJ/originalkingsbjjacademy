@@ -204,6 +204,14 @@ export const getInstructors = async (): Promise<Instructor[]> => {
         return [];
     }
     try {
+        // Test query requested by user
+        try {
+            const testSnapshot = await getDocs(collection(db, 'teste'));
+            console.log('Teste bem-sucedido:', testSnapshot.size);
+        } catch (testError) {
+            console.error('Erro no teste:', testError);
+        }
+
         console.log('Tentando acessar coleção instructors...');
         const instructorsRef = collection(db, 'instructors');
         console.log('Coleção referenciada:', instructorsRef.path);
