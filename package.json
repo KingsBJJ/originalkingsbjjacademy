@@ -37,7 +37,7 @@
     "clsx": "^2.1.1",
     "date-fns": "^3.6.0",
     "dotenv": "^16.5.0",
-    "firebase": "10.14.1",
+    "firebase": "^11.10.0",
     "jsqr": "^1.4.0",
     "lucide-react": "^0.475.0",
     "next": "^15.3.5",
@@ -52,7 +52,7 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
-    "@types/node": "^20",
+    "@types/node": "^20.19.6",
     "@types/qrcode": "^1.5.5",
     "@types/react": "^18",
     "@types/react-dom": "^18",

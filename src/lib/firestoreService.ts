@@ -206,38 +206,12 @@ export const getInstructors = async (): Promise<Instructor[]> => {
         return [];
     }
     try {
-        // Test query requested by user
-        try {
-            const testSnapshot = await getDocs(collection(db, 'teste'));
-            console.log('Teste bem-sucedido:', testSnapshot.size);
-        } catch (testError) {
-            console.error('Erro no teste:', testError);
-        }
-
-        console.log('Tentando acessar coleção instructors...');
-        const instructorsRef = collection(db, 'instructors');
-        console.log('Coleção referenciada:', instructorsRef.path);
-        let snapshot = await getDocs(instructorsRef);
-
+        const instructorsCollection = collection(db, 'instructors');
+        const snapshot = await getDocs(instructorsCollection);
+        console.log(`Firestore: Successfully fetched ${snapshot.docs.length} documents from 'instructors' collection.`);
         if (snapshot.empty) {
-            console.log("Coleção 'instructors' vazia. Criando documento de teste conforme solicitado.");
-            await setDoc(doc(db, "instructors", "teste"), { 
-                name: 'Teste',
-                email: 'teste@kingsbjj.com',
-                phone: '(00) 00000-0000',
-                belt: 'Preta',
-                stripes: 1,
-                affiliations: [],
-                avatar: 'https://placehold.co/128x128.png',
-                bio: 'Documento de teste criado dinamicamente.',
-            });
-            // Re-fetch after creation to return the new data
-            snapshot = await getDocs(instructorsRef);
-            console.log('Dados obtidos após criação:', snapshot.size);
-        } else {
-            console.log('Dados obtidos:', snapshot.size);
+            console.log("The 'instructors' collection is empty. Use the seed data button on the dashboard if needed.");
         }
-        
         return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Instructor));
     } catch (error) {
         console.error('Erro ao obter instructors:', error);
