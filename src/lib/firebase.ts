@@ -1,5 +1,6 @@
+
 import { initializeApp, getApps, getApp, type FirebaseOptions } from "firebase/app";
-import { getFirestore, enableIndexedDbPersistence } from "firebase/firestore";
+import { getFirestore, initializeFirestore, persistentLocalCache, memoryLocalCache, connectFirestoreEmulator } from "firebase/firestore";
 
 const firebaseConfig: FirebaseOptions = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -10,19 +11,33 @@ const firebaseConfig: FirebaseOptions = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Inicializa o Firebase
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
-const db = getFirestore(app);
 
-// Habilita persistência offline no navegador
-if (typeof window !== 'undefined') {
-  enableIndexedDbPersistence(db).catch((error) => {
-    if (error.code == 'failed-precondition') {
-      // Persistência não pode ser ativada com múltiplas abas abertas
-    } else if (error.code == 'unimplemented') {
-      // O navegador não suporta a persistência
-    }
+let db;
+
+try {
+  // Inicializa o Firestore com cache persistente para o navegador e em memória para o servidor.
+  // Isso previne erros durante a renderização no lado do servidor (SSR).
+  db = initializeFirestore(app, {
+    localCache: typeof window !== 'undefined'
+      ? persistentLocalCache({ tabManager: 'NONE' }) // 'NONE' evita conflitos entre abas
+      : memoryLocalCache(),
   });
+} catch (e) {
+  // Se o Firestore já foi inicializado (ex: durante o hot-reload), pega a instância existente.
+  db = getFirestore(app);
 }
+
+// Conecta ao emulador do Firestore apenas em ambiente de desenvolvimento.
+if (process.env.NODE_ENV === 'development') {
+    try {
+        connectFirestoreEmulator(db, '127.0.0.1', 8080);
+        console.log("🔥 Connected to Firestore Emulator");
+    } catch (e) {
+        // O emulador pode já estar conectado, o que é seguro ignorar.
+        // console.warn("Could not connect to Firestore emulator", e);
+    }
+}
+
 
 export { app, db };

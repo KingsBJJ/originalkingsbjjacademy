@@ -1,5 +1,6 @@
+
 import { initializeApp, getApps, getApp, type FirebaseOptions } from "firebase/app";
-import { initializeFirestore, persistentLocalCache } from "firebase/firestore";
+import { getFirestore, initializeFirestore, persistentLocalCache, memoryLocalCache, connectFirestoreEmulator } from "firebase/firestore";
 
 const firebaseConfig: FirebaseOptions = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -12,9 +13,31 @@ const firebaseConfig: FirebaseOptions = {
 
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
-// Inicializando Firestore com cache persistente
-const db = initializeFirestore(app, {
-  localCache: persistentLocalCache(),
-});
+let db;
+
+try {
+  // Inicializa o Firestore com cache persistente para o navegador e em memória para o servidor.
+  // Isso previne erros durante a renderização no lado do servidor (SSR).
+  db = initializeFirestore(app, {
+    localCache: typeof window !== 'undefined'
+      ? persistentLocalCache({ tabManager: 'NONE' }) // 'NONE' evita conflitos entre abas
+      : memoryLocalCache(),
+  });
+} catch (e) {
+  // Se o Firestore já foi inicializado (ex: durante o hot-reload), pega a instância existente.
+  db = getFirestore(app);
+}
+
+// Conecta ao emulador do Firestore apenas em ambiente de desenvolvimento.
+if (process.env.NODE_ENV === 'development') {
+    try {
+        connectFirestoreEmulator(db, '127.0.0.1', 8080);
+        console.log("🔥 Connected to Firestore Emulator");
+    } catch (e) {
+        // O emulador pode já estar conectado, o que é seguro ignorar.
+        // console.warn("Could not connect to Firestore emulator", e);
+    }
+}
+
 
 export { app, db };
