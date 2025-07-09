@@ -84,17 +84,9 @@ export type Instructor = {
 
 export type Student = User;
 
-// Helper to check for DB initialization
-function checkDb() {
-    if (!db) {
-        throw new Error("Firestore is not initialized. Check your Firebase configuration.");
-    }
-}
-
 // --- Seeding Function ---
 
 export const seedInitialData = async () => {
-    checkDb();
     try {
         console.log("Checking and seeding initial data if necessary...");
         // Check if branches collection is empty
@@ -136,30 +128,27 @@ export const seedInitialData = async () => {
 // --- Branch Functions ---
 
 export const getBranches = async (): Promise<Branch[]> => {
-  checkDb();
   try {
     const querySnapshot = await getDocs(query(collection(db, 'branches')));
     return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Branch));
   } catch (error) {
-    console.error("Error getting branches: ", error);
-    throw new Error("Failed to fetch branches.");
+    console.error("Error getting branches:", error);
+    return []; // Return empty array on error to prevent crashing
   }
 };
 
 export const getBranch = async (id: string): Promise<Branch | null> => {
-  checkDb();
   try {
     const docRef = doc(db, 'branches', id);
     const docSnap = await getDoc(docRef);
     return docSnap.exists() ? { id: docSnap.id, ...docSnap.data() } as Branch : null;
   } catch (error) {
-    console.error("Error getting branch: ", error);
-    throw new Error("Failed to fetch branch.");
+    console.error(`Error getting branch with id ${id}:`, error);
+    return null; // Return null on error
   }
 };
 
 export const addBranch = async (branchData: Omit<Branch, 'id'>) => {
-  checkDb();
   try {
     const docRef = await addDoc(collection(db, 'branches'), branchData);
     return { id: docRef.id };
@@ -170,7 +159,6 @@ export const addBranch = async (branchData: Omit<Branch, 'id'>) => {
 };
 
 export const updateBranch = async (id: string, branchData: Partial<Omit<Branch, 'id'>>) => {
-  checkDb();
   try {
     const docRef = doc(db, 'branches', id);
     await updateDoc(docRef, branchData);
@@ -181,7 +169,6 @@ export const updateBranch = async (id: string, branchData: Partial<Omit<Branch, 
 };
 
 export const deleteBranch = async (id: string) => {
-  checkDb();
   try {
     const docRef = doc(db, 'branches', id);
     await deleteDoc(docRef);
@@ -195,18 +182,16 @@ export const deleteBranch = async (id: string) => {
 // --- Instructor Functions ---
 
 export const getInstructors = async (): Promise<Instructor[]> => {
-    checkDb();
     try {
         const querySnapshot = await getDocs(query(collection(db, 'instructors')));
         return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Instructor));
     } catch (error) {
         console.error("Error getting instructors: ", error);
-        throw new Error("Failed to fetch instructors.");
+        return []; // Return empty array on error
     }
 };
 
 export const getInstructorsByAffiliation = async (affiliation: string): Promise<Instructor[]> => {
-    checkDb();
     if (!affiliation) return [];
     try {
         const allInstructors = await getInstructors();
@@ -215,24 +200,22 @@ export const getInstructorsByAffiliation = async (affiliation: string): Promise<
         );
     } catch (error) {
         console.error(`Error getting instructors for affiliation ${affiliation}:`, error);
-        throw new Error("Failed to fetch instructors for the selected affiliation.");
+        return []; // Return empty array on error
     }
 };
 
 export const getInstructor = async (id: string): Promise<Instructor | null> => {
-    checkDb();
     try {
         const docRef = doc(db, 'instructors', id);
         const docSnap = await getDoc(docRef);
         return docSnap.exists() ? { id: docSnap.id, ...docSnap.data() } as Instructor : null;
     } catch (error) {
-        console.error("Error getting instructor: ", error);
-        throw new Error("Failed to fetch instructor.");
+        console.error(`Error getting instructor with id ${id}:`, error);
+        return null; // Return null on error
     }
 }
 
 export const addInstructor = async (instructorData: Omit<Instructor, 'id'>) => {
-    checkDb();
     try {
         const docRef = await addDoc(collection(db, 'instructors'), instructorData);
         return { id: docRef.id };
@@ -243,7 +226,6 @@ export const addInstructor = async (instructorData: Omit<Instructor, 'id'>) => {
 };
 
 export const updateInstructor = async (id: string, instructorData: Partial<Omit<Instructor, 'id'>>) => {
-    checkDb();
     try {
         const docRef = doc(db, 'instructors', id);
         await updateDoc(docRef, instructorData);
@@ -254,7 +236,6 @@ export const updateInstructor = async (id: string, instructorData: Partial<Omit<
 };
 
 export const deleteInstructor = async (id: string) => {
-    checkDb();
     try {
         const docRef = doc(db, 'instructors', id);
         await deleteDoc(docRef);
@@ -267,14 +248,13 @@ export const deleteInstructor = async (id: string) => {
 
 // --- Student Functions ---
 export const getStudents = async (): Promise<Student[]> => {
-    checkDb();
     try {
         const q = query(collection(db, 'users'), where("role", "==", "student"));
         const querySnapshot = await getDocs(q);
         return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Student));
     } catch (error) {
         console.error("Error getting students: ", error);
-        throw new Error("Failed to fetch students.");
+        return []; // Return empty array on error
     }
 };
 
@@ -282,7 +262,6 @@ export const getStudents = async (): Promise<Student[]> => {
 // --- Terms Acceptance Functions ---
 
 export const saveTermsAcceptance = async (data: Omit<TermsAcceptance, 'id' | 'acceptedAt'>) => {
-    checkDb();
     try {
         const docRef = await addDoc(collection(db, 'terms'), {
             ...data,
@@ -299,7 +278,6 @@ export const saveTermsAcceptance = async (data: Omit<TermsAcceptance, 'id' | 'ac
 // --- User Functions ---
 
 export const updateUser = async (id: string, userData: Partial<User>) => {
-    checkDb();
     try {
         const docRef = doc(db, 'users', id);
         await updateDoc(docRef, userData);

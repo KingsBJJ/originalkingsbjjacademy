@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp, type FirebaseOptions } from "firebase/app";
-import { getFirestore, enableIndexedDbPersistence } from "firebase/firestore";
+import { initializeFirestore, persistentLocalCache } from "firebase/firestore";
 
 const firebaseConfig: FirebaseOptions = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -10,19 +10,11 @@ const firebaseConfig: FirebaseOptions = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Inicializa o Firebase
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
-const db = getFirestore(app);
 
-// Habilita persistência offline no navegador
-if (typeof window !== 'undefined') {
-  enableIndexedDbPersistence(db).catch((error) => {
-    if (error.code == 'failed-precondition') {
-      // Persistência não pode ser ativada com múltiplas abas abertas
-    } else if (error.code == 'unimplemented') {
-      // O navegador não suporta a persistência
-    }
-  });
-}
+// Inicializando Firestore com cache persistente
+const db = initializeFirestore(app, {
+  localCache: persistentLocalCache(),
+});
 
 export { app, db };
