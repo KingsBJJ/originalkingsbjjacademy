@@ -129,8 +129,17 @@ export const seedInitialData = async () => {
 
 export const getBranches = async (): Promise<Branch[]> => {
   try {
-    const querySnapshot = await getDocs(query(collection(db, 'branches')));
-    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Branch));
+    if (!db) {
+      console.error("Firestore DB is not initialized.");
+      return []; // Return empty array if DB is not available
+    }
+    const branchesCollection = collection(db, 'branches');
+    const snapshot = await getDocs(branchesCollection);
+    if (snapshot.empty) {
+      console.log("No branches found in the collection.");
+      return [];
+    }
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Branch));
   } catch (error) {
     console.error("Error getting branches:", error);
     return []; // Return empty array on error to prevent crashing
@@ -183,7 +192,16 @@ export const deleteBranch = async (id: string) => {
 
 export const getInstructors = async (): Promise<Instructor[]> => {
     try {
-        const querySnapshot = await getDocs(query(collection(db, 'instructors')));
+        if (!db) {
+            console.error("Firestore DB is not initialized.");
+            return [];
+        }
+        const instructorsCollection = collection(db, 'instructors');
+        const querySnapshot = await getDocs(query(instructorsCollection));
+        if (querySnapshot.empty) {
+            console.log("No instructors found in the collection.");
+            return [];
+        }
         return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Instructor));
     } catch (error) {
         console.error("Error getting instructors: ", error);
