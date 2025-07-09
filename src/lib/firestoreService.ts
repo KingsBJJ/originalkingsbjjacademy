@@ -84,92 +84,83 @@ export type Instructor = {
 
 export type Student = User;
 
-// Helper to ensure the database connection is valid before making a call.
-// This prevents "Invalid segment" errors caused by a missing projectId.
-const ensureDbReady = () => {
-    if (!db || !db.app.options.projectId) {
-        const errorMsg = "Firestore não está inicializado ou o projectId está faltando. Verifique as variáveis de ambiente e a configuração do Firebase.";
-        console.error(errorMsg);
-        throw new Error(errorMsg);
-    }
-};
-
-
 // --- Seeding Function ---
 
 export const seedInitialData = async () => {
+    if (!db) {
+        console.error("❌ Firestore not initialized. Skipping data seeding.");
+        throw new Error("Firestore not initialized.");
+    }
     try {
-        ensureDbReady();
         console.log("Checking and seeding initial data if necessary...");
-        // Check if branches collection is empty
         const branchesQuery = query(collection(db, 'branches'), limit(1));
         const branchesSnapshot = await getDocs(branchesQuery);
         if (branchesSnapshot.empty) {
-            console.log("Branches collection is empty. Seeding initial data...");
+            console.log("Seeding branches...");
             const branchPromises = mockBranches.map(branch => {
                 const { id, ...branchData } = branch;
                 return setDoc(doc(db, 'branches', id), branchData);
             });
             await Promise.all(branchPromises);
             console.log("✅ Seeding branches completed.");
-        } else {
-            console.log("Branches collection already has data. Skipping seed.");
         }
 
-        // Check if instructors collection is empty
         const instructorsQuery = query(collection(db, 'instructors'), limit(1));
         const instructorsSnapshot = await getDocs(instructorsQuery);
         if (instructorsSnapshot.empty) {
-            console.log("Instructors collection is empty. Seeding initial data...");
+            console.log("Seeding instructors...");
             const instructorPromises = mockInstructors.map(instructor => {
                 const { id, ...instructorData } = instructor;
                 return setDoc(doc(db, 'instructors', id), instructorData);
             });
             await Promise.all(instructorPromises);
             console.log("✅ Seeding instructors completed.");
-        } else {
-            console.log("Instructors collection already has data. Skipping seed.");
         }
         return { success: true, message: "Data seeding check completed." };
     } catch (error) {
         console.error("❌ Error seeding initial data:", error);
-        throw new Error("Failed to seed initial data. Check Firestore connection and permissions.");
+        throw new Error("Failed to seed initial data.");
     }
 };
 
 // --- Branch Functions ---
 
 export const getBranches = async (): Promise<Branch[]> => {
+  if (!db) {
+    console.error("Error getting branches: Firestore is not initialized.");
+    return [];
+  }
   try {
-    ensureDbReady();
     const branchesCollection = collection(db, 'branches');
     const snapshot = await getDocs(branchesCollection);
-    if (snapshot.empty) {
-      console.log("No branches found in the collection.");
-      return [];
-    }
+    console.log(`Firestore: Successfully fetched ${snapshot.docs.length} documents from 'branches' collection.`);
     return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Branch));
   } catch (error) {
     console.error("Error getting branches:", error);
-    return []; // Return empty array on error to prevent crashing
+    return [];
   }
 };
 
 export const getBranch = async (id: string): Promise<Branch | null> => {
+  if (!db) {
+    console.error(`Error getting branch with id ${id}: Firestore is not initialized.`);
+    return null;
+  }
   try {
-    ensureDbReady();
     const docRef = doc(db, 'branches', id);
     const docSnap = await getDoc(docRef);
     return docSnap.exists() ? { id: docSnap.id, ...docSnap.data() } as Branch : null;
   } catch (error) {
     console.error(`Error getting branch with id ${id}:`, error);
-    return null; // Return null on error
+    return null;
   }
 };
 
 export const addBranch = async (branchData: Omit<Branch, 'id'>) => {
+  if (!db) {
+    throw new Error("Failed to add branch: Firestore is not initialized.");
+  }
   try {
-    ensureDbReady();
     const docRef = await addDoc(collection(db, 'branches'), branchData);
     return { id: docRef.id };
   } catch (error) {
@@ -179,8 +170,10 @@ export const addBranch = async (branchData: Omit<Branch, 'id'>) => {
 };
 
 export const updateBranch = async (id: string, branchData: Partial<Omit<Branch, 'id'>>) => {
+  if (!db) {
+    throw new Error("Failed to update branch: Firestore is not initialized.");
+  }
   try {
-    ensureDbReady();
     const docRef = doc(db, 'branches', id);
     await updateDoc(docRef, branchData);
   } catch (error) {
@@ -190,8 +183,10 @@ export const updateBranch = async (id: string, branchData: Partial<Omit<Branch, 
 };
 
 export const deleteBranch = async (id: string) => {
+  if (!db) {
+    throw new Error("Failed to delete branch: Firestore is not initialized.");
+  }
   try {
-    ensureDbReady();
     const docRef = doc(db, 'branches', id);
     await deleteDoc(docRef);
   } catch (error) {
@@ -204,50 +199,58 @@ export const deleteBranch = async (id: string) => {
 // --- Instructor Functions ---
 
 export const getInstructors = async (): Promise<Instructor[]> => {
+    if (!db) {
+        console.error("Error getting instructors: Firestore is not initialized.");
+        return [];
+    }
     try {
-        ensureDbReady();
         const instructorsCollection = collection(db, 'instructors');
-        const querySnapshot = await getDocs(query(instructorsCollection));
-        if (querySnapshot.empty) {
-            console.log("No instructors found in the collection.");
-            return [];
-        }
+        const querySnapshot = await getDocs(instructorsCollection);
+        console.log(`Firestore: Successfully fetched ${querySnapshot.docs.length} documents from 'instructors' collection.`);
         return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Instructor));
     } catch (error) {
         console.error("Error getting instructors: ", error);
-        return []; // Return empty array on error
+        return [];
     }
 };
 
 export const getInstructorsByAffiliation = async (affiliation: string): Promise<Instructor[]> => {
     if (!affiliation) return [];
+    if (!db) {
+        console.error(`Error getting instructors for affiliation ${affiliation}: Firestore is not initialized.`);
+        return [];
+    }
     try {
-        ensureDbReady();
-        const allInstructors = await getInstructors();
-        return allInstructors.filter(instructor => 
-            instructor.affiliations?.includes(affiliation)
-        );
+        const q = query(collection(db, 'instructors'), where("affiliations", "array-contains", affiliation));
+        const querySnapshot = await getDocs(q);
+        console.log(`Firestore: Found ${querySnapshot.docs.length} instructors for affiliation '${affiliation}'.`);
+        return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Instructor));
     } catch (error) {
         console.error(`Error getting instructors for affiliation ${affiliation}:`, error);
-        return []; // Return empty array on error
+        return [];
     }
 };
 
 export const getInstructor = async (id: string): Promise<Instructor | null> => {
+    if (!db) {
+        console.error(`Error getting instructor with id ${id}: Firestore is not initialized.`);
+        return null;
+    }
     try {
-        ensureDbReady();
         const docRef = doc(db, 'instructors', id);
         const docSnap = await getDoc(docRef);
         return docSnap.exists() ? { id: docSnap.id, ...docSnap.data() } as Instructor : null;
     } catch (error) {
         console.error(`Error getting instructor with id ${id}:`, error);
-        return null; // Return null on error
+        return null;
     }
 }
 
 export const addInstructor = async (instructorData: Omit<Instructor, 'id'>) => {
+    if (!db) {
+        throw new Error("Failed to add instructor: Firestore is not initialized.");
+    }
     try {
-        ensureDbReady();
         const docRef = await addDoc(collection(db, 'instructors'), instructorData);
         return { id: docRef.id };
     } catch (error) {
@@ -257,8 +260,10 @@ export const addInstructor = async (instructorData: Omit<Instructor, 'id'>) => {
 };
 
 export const updateInstructor = async (id: string, instructorData: Partial<Omit<Instructor, 'id'>>) => {
+    if (!db) {
+        throw new Error("Failed to update instructor: Firestore is not initialized.");
+    }
     try {
-        ensureDbReady();
         const docRef = doc(db, 'instructors', id);
         await updateDoc(docRef, instructorData);
     } catch (error) {
@@ -268,8 +273,10 @@ export const updateInstructor = async (id: string, instructorData: Partial<Omit<
 };
 
 export const deleteInstructor = async (id: string) => {
+    if (!db) {
+        throw new Error("Failed to delete instructor: Firestore is not initialized.");
+    }
     try {
-        ensureDbReady();
         const docRef = doc(db, 'instructors', id);
         await deleteDoc(docRef);
     } catch (error) {
@@ -281,14 +288,17 @@ export const deleteInstructor = async (id: string) => {
 
 // --- Student Functions ---
 export const getStudents = async (): Promise<Student[]> => {
+    if (!db) {
+        console.error("Error getting students: Firestore is not initialized.");
+        return [];
+    }
     try {
-        ensureDbReady();
         const q = query(collection(db, 'users'), where("role", "==", "student"));
         const querySnapshot = await getDocs(q);
         return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Student));
     } catch (error) {
         console.error("Error getting students: ", error);
-        return []; // Return empty array on error
+        return [];
     }
 };
 
@@ -296,8 +306,10 @@ export const getStudents = async (): Promise<Student[]> => {
 // --- Terms Acceptance Functions ---
 
 export const saveTermsAcceptance = async (data: Omit<TermsAcceptance, 'id' | 'acceptedAt'>) => {
+    if (!db) {
+        throw new Error("Failed to save terms acceptance: Firestore is not initialized.");
+    }
     try {
-        ensureDbReady();
         const docRef = await addDoc(collection(db, 'terms'), {
             ...data,
             acceptedAt: serverTimestamp(),
@@ -313,8 +325,10 @@ export const saveTermsAcceptance = async (data: Omit<TermsAcceptance, 'id' | 'ac
 // --- User Functions ---
 
 export const updateUser = async (id: string, userData: Partial<User>) => {
+    if (!db) {
+        throw new Error("Failed to update user: Firestore is not initialized.");
+    }
     try {
-        ensureDbReady();
         const docRef = doc(db, 'users', id);
         await updateDoc(docRef, userData);
     } catch (error) {
