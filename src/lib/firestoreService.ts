@@ -1,4 +1,6 @@
 
+'use server';
+
 import { db } from '@/lib/firebase';
 import { 
     collection, 
@@ -365,3 +367,5 @@ export const updateUser = async (id: string, userData: Partial<User>) => {
         throw new Error("Failed to update user.");
     }
 };
+
+    
