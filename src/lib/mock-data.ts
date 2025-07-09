@@ -1,20 +1,4 @@
 
-// firestoreService.ts
-
-import { collection, getDocs } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { Branch } from './firestoreService'; // ou ajuste conforme o local do tipo
-
-export async function getBranches(): Promise<Branch[]> {
-  if (!db) {
-    throw new Error("Firestore não está inicializado.");
-  }
-
-  const snapshot = await getDocs(collection(db, 'branches'));
-  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Branch));
-}
-
-
 import type { User, Branch, Instructor } from './firestoreService';
 
 export const beltColors = {
