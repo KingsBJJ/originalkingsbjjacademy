@@ -207,8 +207,27 @@ export const getInstructors = async (): Promise<Instructor[]> => {
         console.log('Tentando acessar coleção instructors...');
         const instructorsRef = collection(db, 'instructors');
         console.log('Coleção referenciada:', instructorsRef.path);
-        const snapshot = await getDocs(instructorsRef);
-        console.log('Dados obtidos:', snapshot.size);
+        let snapshot = await getDocs(instructorsRef);
+
+        if (snapshot.empty) {
+            console.log("Coleção 'instructors' vazia. Criando documento de teste conforme solicitado.");
+            await setDoc(doc(db, "instructors", "teste"), { 
+                name: 'Teste',
+                email: 'teste@kingsbjj.com',
+                phone: '(00) 00000-0000',
+                belt: 'Preta',
+                stripes: 1,
+                affiliations: [],
+                avatar: 'https://placehold.co/128x128.png',
+                bio: 'Documento de teste criado dinamicamente.',
+            });
+            // Re-fetch after creation to return the new data
+            snapshot = await getDocs(instructorsRef);
+            console.log('Dados obtidos após criação:', snapshot.size);
+        } else {
+            console.log('Dados obtidos:', snapshot.size);
+        }
+        
         return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Instructor));
     } catch (error) {
         console.error('Erro ao obter instructors:', error);
