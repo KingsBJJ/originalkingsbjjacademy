@@ -11,30 +11,37 @@ const firebaseConfig: FirebaseOptions = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
+// This check prevents invalid path errors by ensuring the config is loaded.
+if (!firebaseConfig.projectId) {
+  console.error(
+    "Firebase projectId is not configured. Check your environment variables and next.config.js. Firestore will not be initialized."
+  );
+}
+
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
 let db;
 
 try {
-  // Inicializa o Firestore com cache persistente para o navegador e em memória para o servidor.
-  // Isso previne erros durante a renderização no lado do servidor (SSR).
+  // Initialize Firestore with modern cache settings.
+  // This prevents errors during Server-Side Rendering (SSR).
   db = initializeFirestore(app, {
-    localCache: typeof window !== 'undefined'
-      ? persistentLocalCache({ tabManager: 'NONE' }) // 'NONE' evita conflitos entre abas
-      : memoryLocalCache(),
+    cache: typeof window !== 'undefined'
+      ? persistentLocalCache({ tabManager: 'NONE' }) // Use IndexedDB for browsers
+      : memoryLocalCache(), // Use in-memory cache for the server
   });
 } catch (e) {
-  // Se o Firestore já foi inicializado (ex: durante o hot-reload), pega a instância existente.
+  // If Firestore has already been initialized (e.g., during hot-reloading), get the existing instance.
   db = getFirestore(app);
 }
 
-// Conecta ao emulador do Firestore apenas em ambiente de desenvolvimento.
+// Connect to the Firestore emulator only in the development environment.
 if (process.env.NODE_ENV === 'development') {
     try {
         connectFirestoreEmulator(db, '127.0.0.1', 8080);
         console.log("🔥 Connected to Firestore Emulator");
     } catch (e) {
-        // O emulador pode já estar conectado, o que é seguro ignorar.
+        // The emulator might already be connected, which is safe to ignore.
         // console.warn("Could not connect to Firestore emulator", e);
     }
 }
