@@ -1,5 +1,8 @@
+
+'use client';
+
 import Link from 'next/link';
-import { Suspense } from 'react';
+import { Suspense, useState, useEffect, useContext } from 'react';
 import { PlusCircle } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -17,10 +20,11 @@ import {
 } from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { getInstructors, type User } from '@/lib/firestoreService';
+import { getInstructors, type User, type Instructor } from '@/lib/firestoreService';
 import { mockUsers } from '@/lib/mock-data';
 import { InstructorActions } from './InstructorActionsClient';
 import { Skeleton } from '@/components/ui/skeleton';
+import { UserContext } from '../client-layout';
 
 const BeltBadge = ({ belt, stripes }: { belt: string; stripes?: number }) => {
   const isBlackBelt = belt === 'Preta' || belt === 'Coral';
@@ -63,87 +67,27 @@ const InstructorsTableSkeleton = () => (
   </Table>
 );
 
-async function InstructorsList({ user }: { user: User | null }) {
-  const instructors = await getInstructors();
-  
-  return (
-    <Card>
-      <CardContent className="p-0">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Professor</TableHead>
-              <TableHead>Filiais</TableHead>
-              <TableHead>Graduação</TableHead>
-              <TableHead>
-                <span className="sr-only">Ações</span>
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {instructors.length > 0 ? (
-              instructors.map((instructor) => (
-                <TableRow key={instructor.id}>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-10 w-10">
-                        <AvatarImage src={instructor.avatar} alt={instructor.name} />
-                        <AvatarFallback>{instructor.name.charAt(0)}</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-medium">{instructor.name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {instructor.email}
-                        </p>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    {instructor.affiliations && instructor.affiliations.length > 0 ? (
-                      <div className="flex flex-wrap gap-1">
-                        {instructor.affiliations.map((affiliation) => (
-                          <Badge key={affiliation} variant="outline">
-                            {affiliation}
-                          </Badge>
-                        ))}
-                      </div>
-                    ) : (
-                      <span className="text-sm text-muted-foreground">-</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <BeltBadge belt={instructor.belt} stripes={instructor.stripes} />
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <InstructorActions instructor={instructor} user={user} />
-                  </TableCell>
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={4} className="h-24 text-center">
-                  Nenhum professor cadastrado.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </CardContent>
-    </Card>
-  );
-}
 
-export default async function InstructorsPage({
-  searchParams,
-}: {
-  searchParams: { [key: string]: string | string[] | undefined };
-}) {
-  const role = searchParams?.role as User['role'] | undefined;
-  
-  // Use a mock user based on the role from URL for server-side permission checks.
-  // The full user state is managed on the client in `client-layout.tsx`.
-  const user = role ? mockUsers[role] : null;
+export default function InstructorsPage() {
+  const user = useContext(UserContext);
+  const [instructors, setInstructors] = useState<Instructor[]>([]);
+  const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    async function fetchInstructors() {
+      try {
+        const data = await getInstructors();
+        setInstructors(data);
+      } catch (error) {
+        console.error('Failed to fetch instructors:', error);
+        // Optionally, show a toast notification here
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchInstructors();
+  }, []);
 
   return (
     <div className="grid gap-6">
@@ -163,9 +107,78 @@ export default async function InstructorsPage({
           </Button>
         )}
       </div>
-      <Suspense fallback={<InstructorsTableSkeleton />}>
-        <InstructorsList user={user} />
-      </Suspense>
+      
+      {loading ? (
+        <Card>
+          <CardContent className="p-0">
+            <InstructorsTableSkeleton />
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Professor</TableHead>
+                  <TableHead>Filiais</TableHead>
+                  <TableHead>Graduação</TableHead>
+                  <TableHead>
+                    <span className="sr-only">Ações</span>
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {instructors.length > 0 ? (
+                  instructors.map((instructor) => (
+                    <TableRow key={instructor.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-10 w-10">
+                            <AvatarImage src={instructor.avatar} alt={instructor.name} />
+                            <AvatarFallback>{instructor.name.charAt(0)}</AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="font-medium">{instructor.name}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {instructor.email}
+                            </p>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {instructor.affiliations && instructor.affiliations.length > 0 ? (
+                          <div className="flex flex-wrap gap-1">
+                            {instructor.affiliations.map((affiliation) => (
+                              <Badge key={affiliation} variant="outline">
+                                {affiliation}
+                              </Badge>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-sm text-muted-foreground">-</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <BeltBadge belt={instructor.belt} stripes={instructor.stripes} />
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <InstructorActions instructor={instructor} user={user} />
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={4} className="h-24 text-center">
+                      Nenhum professor cadastrado.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
