@@ -11,7 +11,8 @@ const firebaseConfig: FirebaseOptions = {
   appId: "1:662081766502:web:30c8fb4798aca5a32c59a7"
 };
 
-const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
-const db = getFirestore(app);
+console.log('Firebase config:', firebaseConfig); // Log para depuração
+const app = initializeApp(firebaseConfig);
+export const db = getFirestore(app);
+console.log('Firestore db initialized:', db); // Log para depuração
 
-export { app, db };

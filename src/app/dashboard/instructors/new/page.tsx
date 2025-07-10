@@ -1,5 +1,4 @@
-
-"use client";
+'use client';
 
 import { useContext, useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -21,7 +20,7 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-  CardDescription
+  CardDescription,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -77,24 +76,28 @@ export default function NewInstructorPage() {
 
   useEffect(() => {
     getBranches()
-      .then(setBranches)
+      .then((data) => {
+        console.log('Branches loaded:', data);
+        setBranches(data);
+      })
       .catch((error) => {
-        console.error("Failed to fetch branches:", error);
+        console.error('Failed to fetch branches:', error);
         toast({
-          variant: "destructive",
-          title: "Erro ao carregar filiais.",
+          variant: 'destructive',
+          title: 'Erro ao carregar filiais',
+          description: 'Não foi possível carregar as filiais. Verifique sua conexão ou tente novamente.',
         });
       });
   }, [toast]);
 
-  const watchedBelt = form.watch("belt");
+  const watchedBelt = form.watch('belt');
   const role = searchParams.get('role');
 
   const onSubmit = async (data: InstructorFormValues) => {
     setIsSaving(true);
     try {
+      console.log('onSubmit called with data:', JSON.stringify(data, null, 2));
       const { name, email, phone, belt, affiliations, bio, avatar, stripes } = data;
-      
       const instructorData: Omit<Instructor, 'id'> = {
         name,
         email,
@@ -106,37 +109,38 @@ export default function NewInstructorPage() {
         stripes: stripes ?? 0,
       };
 
-      await addInstructor(instructorData);
+      const response = await addInstructor(instructorData);
+      console.log('Server Action response:', response);
+
+      if (!response.success) {
+        throw new Error(response.message);
+      }
 
       toast({
         title: 'Professor Cadastrado!',
         description: `O professor ${data.name} foi adicionado com sucesso.`,
       });
-      
       router.push(`/dashboard/instructors?role=${role}`);
       router.refresh();
-
     } catch (error) {
-      console.error("Failed to add instructor:", error);
+      console.error('Failed to add instructor:', error);
       toast({
-        variant: "destructive",
+        variant: 'destructive',
         title: 'Erro ao cadastrar',
-        description: 'Não foi possível adicionar o professor. Tente novamente.',
+        description: error instanceof Error ? error.message : 'Não foi possível adicionar o professor. Tente novamente.',
       });
     } finally {
-        setIsSaving(false);
+      setIsSaving(false);
     }
   };
-  
+
   if (user?.role !== 'admin' && user?.role !== 'professor') {
     return (
       <div className="flex items-center justify-center h-full">
         <Card className="w-full max-w-md">
           <CardHeader>
             <CardTitle>Acesso Negado</CardTitle>
-            <CardDescription>
-              Você não tem permissão para acessar esta página.
-            </CardDescription>
+            <CardDescription>Você não tem permissão para acessar esta página.</CardDescription>
           </CardHeader>
           <CardContent>
             <p>Esta área é restrita a administradores e professores.</p>
@@ -159,8 +163,8 @@ export default function NewInstructorPage() {
           </Link>
         </Button>
         <div>
-            <h1 className="text-3xl font-bold tracking-tight">Cadastrar Professor</h1>
-            <p className="text-muted-foreground">Preencha os dados do novo professor.</p>
+          <h1 className="text-3xl font-bold tracking-tight">Cadastrar Professor</h1>
+          <p className="text-muted-foreground">Preencha os dados do novo professor.</p>
         </div>
       </div>
       <Card>
@@ -244,14 +248,14 @@ export default function NewInstructorPage() {
                             placeholder="Nº de graus (0-6)"
                             {...field}
                             onChange={(e) => field.onChange(parseInt(e.target.value, 10) || 0)}
-                           />
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                 )}
-                 <FormField
+                <FormField
                   control={form.control}
                   name="avatar"
                   render={({ field }) => (
@@ -296,10 +300,10 @@ export default function NewInstructorPage() {
                                       return checked
                                         ? field.onChange([...(field.value ?? []), branch.name])
                                         : field.onChange(
-                                            field.value?.filter(
-                                              (value) => value !== branch.name
-                                            )
+                                          field.value?.filter(
+                                            (value) => value !== branch.name
                                           )
+                                        )
                                     }}
                                   />
                                 </FormControl>
@@ -317,31 +321,31 @@ export default function NewInstructorPage() {
                 )}
               />
 
-               <FormField
-                  control={form.control}
-                  name="bio"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Biografia (Opcional)</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Fale um pouco sobre a jornada do professor..."
-                          className="resize-none"
-                          {...field}
-                          value={field.value ?? ''}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              <FormField
+                control={form.control}
+                name="bio"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Biografia (Opcional)</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Fale um pouco sobre a jornada do professor..."
+                        className="resize-none"
+                        {...field}
+                        value={field.value ?? ''}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <div className="flex justify-end gap-2">
-                  <Button variant="outline" type="button" onClick={() => router.back()} disabled={isSaving}>
-                      Cancelar
-                  </Button>
-                  <Button type="submit" disabled={isSaving}>
-                    {isSaving ? 'Salvando...' : 'Salvar Professor'}
-                  </Button>
+                <Button variant="outline" type="button" onClick={() => router.back()} disabled={isSaving}>
+                  Cancelar
+                </Button>
+                <Button type="submit" disabled={isSaving}>
+                  {isSaving ? 'Salvando...' : 'Salvar Professor'}
+                </Button>
               </div>
             </form>
           </Form>
