@@ -110,34 +110,38 @@ export default function DashboardClientLayout({
 
     let userToSet: User;
 
-    if (role === 'admin' || cleanEmail === 'admin@kingsbjj.com' || cleanEmail === 'admin@kings.com') {
+    if (cleanEmail === 'admin@kingsbjj.com' || cleanEmail === 'admin@kings.com' || role === 'admin') {
       userToSet = mockUsers.admin;
-    } else if (role === 'professor' || cleanEmail === 'professor@kingsbjj.com' || cleanEmail === 'professor@kings.com') {
+    } else if (cleanEmail === 'professor@kingsbjj.com' || cleanEmail === 'professor@kings.com' || role === 'professor') {
       userToSet = mockUsers.professor;
     } else {
-      const name = searchParams.get('name');
-      const affiliation = searchParams.get('affiliation');
-      const belt = searchParams.get('belt');
+        const name = searchParams.get('name');
+        const affiliation = searchParams.get('affiliation');
+        const belt = searchParams.get('belt');
 
-      if (name && affiliation && belt) {
-        userToSet = {
-          id: `user_${(email || Date.now().toString()).replace(/[@.]/g, '_')}`,
-          name,
-          email: email || '',
-          role: role || 'student',
-          affiliation,
-          branchId: searchParams.get('branchId') || '',
-          mainInstructor: searchParams.get('mainInstructor') || '',
-          category: (searchParams.get('category') as User['category']) || 'Adult',
-          belt,
-          stripes: Number(searchParams.get('stripes') || 0),
-          avatar: "https://placehold.co/128x128.png",
-          attendance: { total: 0, lastMonth: 0 },
-          nextGraduationProgress: 5,
-        };
-      } else {
-        userToSet = { ...mockUsers.student, email: email || mockUsers.student.email };
-      }
+        if (name && affiliation && belt) {
+            userToSet = {
+                id: `user_${(email || Date.now().toString()).replace(/[@.]/g, '_')}`,
+                name,
+                email: email || '',
+                role: role || 'student',
+                affiliation,
+                branchId: searchParams.get('branchId') || '',
+                mainInstructor: searchParams.get('mainInstructor') || '',
+                category: (searchParams.get('category') as User['category']) || 'Adult',
+                belt,
+                stripes: Number(searchParams.get('stripes') || 0),
+                avatar: "https://placehold.co/128x128.png",
+                attendance: { total: 0, lastMonth: 0 },
+                nextGraduationProgress: 5,
+            };
+        } else {
+            // Default to student but ensure the provided email is used.
+            userToSet = { ...mockUsers.student };
+            if (cleanEmail) {
+                userToSet.email = cleanEmail;
+            }
+        }
     }
     setUser(userToSet);
   }, [searchParams]);
