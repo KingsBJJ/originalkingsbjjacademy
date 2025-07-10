@@ -46,6 +46,7 @@ import {
 } from "@/components/ui/popover";
 import { updateUser as updateDbUser } from "@/lib/firestoreService";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 
 type NavItem = {
@@ -53,6 +54,7 @@ type NavItem = {
   icon: React.ElementType;
   label: string;
   external?: boolean;
+  className?: string;
 };
 
 const studentNavItems: NavItem[] = [
@@ -60,7 +62,7 @@ const studentNavItems: NavItem[] = [
   { href: "/dashboard/notifications", icon: Bell, label: "Notificações" },
   { href: "/dashboard/profile", icon: UserIcon, label: "Perfil" },
   { href: "/dashboard/schedule", icon: Calendar, label: "Horários" },
-  { href: "/dashboard/check-in", icon: QrCode, label: "Check-in" },
+  { href: "/dashboard/check-in", icon: QrCode, label: "Check-in", className: "text-yellow-400 hover:text-yellow-300" },
   { href: "/dashboard/branches", icon: MapPin, label: "Filiais" },
   { href: "/dashboard/rankings", icon: Award, label: "Graduações" },
   { href: "/terms-of-service", icon: FileText, label: "Termo de Resp." },
@@ -231,6 +233,7 @@ export default function DashboardClientLayout({
                         href={item.external ? item.href : getHref(item.href)}
                         target={item.external ? "_blank" : undefined}
                         rel={item.external ? "noopener noreferrer" : undefined}
+                        className={cn(item.className)}
                       >
                         <item.icon />
                         <span>{item.label}</span>
