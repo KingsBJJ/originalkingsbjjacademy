@@ -175,24 +175,6 @@ const AdminDashboard = () => {
 
   return (
     <div className="grid grid-cols-1 gap-6">
-      <Card className="col-span-1 md:col-span-3">
-        <CardHeader>
-          <CardTitle>Ferramentas Administrativas</CardTitle>
-          <CardDescription>Ações para gerenciamento do sistema.</CardDescription>
-        </CardHeader>
-        <CardContent>
-           <div className="flex flex-col items-start gap-2">
-            <Button onClick={handleForceSeed} disabled={isSeeding}>
-              <DatabaseZap className="mr-2" />
-              {isSeeding ? "Carregando..." : "Forçar Carregamento de Dados"}
-            </Button>
-            <p className="text-xs text-muted-foreground">
-              Se as listas de filiais ou professores estiverem vazias, clique aqui para popular o banco de dados com dados de exemplo.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-      
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
         <DataCard title="Total de Alunos" value={students.length} description="Alunos ativos em todas as filiais" icon={Users} />
         <DataCard title="Total de Filiais" value={branches.length} description="Filiais em operação" icon={Map} />
