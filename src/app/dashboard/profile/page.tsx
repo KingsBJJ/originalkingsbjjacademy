@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useContext } from "react";
@@ -32,6 +33,12 @@ export default function ProfilePage() {
   if (!user) {
     return <div>Carregando...</div>;
   }
+
+  const roleNames = {
+    student: 'Aluno',
+    professor: 'Professor',
+    admin: 'Admin'
+  };
 
   const beltStyle = beltColors[user.belt] || beltColors.Branca;
 
@@ -118,7 +125,7 @@ export default function ProfilePage() {
           <CardContent className="space-y-2 text-sm">
             <div className="flex justify-between">
                 <span className="font-medium text-muted-foreground">Função:</span>
-                <span className="capitalize">{user.role}</span>
+                <span className="capitalize">{roleNames[user.role]}</span>
             </div>
              <div className="flex justify-between">
                 <span className="font-medium text-muted-foreground">Membro Desde:</span>

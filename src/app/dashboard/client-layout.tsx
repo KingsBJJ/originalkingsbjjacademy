@@ -197,6 +197,12 @@ export default function DashboardClientLayout({
     );
   }
 
+  const roleNames = {
+    student: 'Aluno',
+    professor: 'Professor',
+    admin: 'Admin'
+  };
+
   return (
     <UserContext.Provider value={user}>
       <UserUpdateContext.Provider value={updateUser}>
@@ -291,7 +297,7 @@ export default function DashboardClientLayout({
                     </Popover>
                   <div className="text-sm font-medium">
                       <span className="text-muted-foreground">Perfil: </span>
-                      <span className="capitalize font-semibold text-primary">{user.role}</span>
+                      <span className="capitalize font-semibold text-primary">{roleNames[user.role]}</span>
                   </div>
                 </div>
             </header>
