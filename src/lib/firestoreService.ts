@@ -15,6 +15,7 @@ import {
   setDoc,
   serverTimestamp,
   Timestamp,
+  orderBy,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase'; // Use apenas a instância db de firebase.ts
 import { mockBranches, mockInstructors } from './mock-data';
@@ -85,6 +86,19 @@ export type Instructor = {
 };
 
 export type Student = User;
+
+export type Notification = {
+    id: string;
+    title: string;
+    content: string;
+    authorId: string;
+    authorName: string;
+    authorAvatar: string;
+    authorRole: 'admin' | 'professor';
+    target: 'all' | string; // 'all' or branchName
+    createdAt: Timestamp;
+};
+
 
 // --- Seeding Function ---
 
@@ -206,7 +220,7 @@ export const deleteBranch = async (id: string) => {
     if (error instanceof Error) {
         throw new Error(`Failed to delete branch: ${error.message}`);
     }
-    throw new Error('Failed to delete branch');
+     throw new Error('Failed to delete branch');
   }
 };
 
@@ -383,6 +397,53 @@ export const updateUser = async (id: string, userData: Partial<User>) => {
     throw new Error('Failed to update user');
   }
 };
+
+// --- Notification Functions ---
+
+export const addNotification = async (notificationData: Omit<Notification, 'id' | 'createdAt'>) => {
+  if (!db) {
+    throw new Error('Failed to add notification: Firestore is not initialized.');
+  }
+  try {
+    const docRef = await addDoc(collection(db, 'notifications'), {
+      ...notificationData,
+      createdAt: serverTimestamp(),
+    });
+    return { success: true, id: docRef.id };
+  } catch (error) {
+    console.error('Error adding notification:', error);
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return { success: false, message };
+  }
+};
+
+export const getNotifications = async (user: User): Promise<Notification[]> => {
+    if (!db) {
+        console.error('Error getting notifications: Firestore is not initialized.');
+        return [];
+    }
+    try {
+        let q;
+        const notifsCollection = collection(db, 'notifications');
+        if (user.role === 'admin') {
+            q = query(notifsCollection, orderBy('createdAt', 'desc'));
+        } else {
+            // Fetch notifications for 'all' and for the user's specific affiliation
+             q = query(notifsCollection, 
+                where('target', 'in', ['all', user.affiliation]),
+                orderBy('createdAt', 'desc')
+            );
+        }
+
+        const querySnapshot = await getDocs(q);
+        return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Notification));
+
+    } catch (error) {
+        console.error('Error getting notifications:', error);
+        return [];
+    }
+};
+
 
 // --- Test Server Action ---
 
