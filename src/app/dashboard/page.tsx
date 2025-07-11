@@ -157,8 +157,8 @@ const AdminDashboard = () => {
 
       <Card className="md:col-span-3">
           <CardHeader>
-              <CardTitle className="flex items-center gap-2"><BarChart/>Distribuição de Alunos por Filial</CardTitle>
-              <CardDescription>Visualize a quantidade de alunos em cada filial para entender a demanda.</CardDescription>
+              <CardTitle className="flex items-center gap-2"><BarChart/>Estatísticas das Filiais</CardTitle>
+              <CardDescription>Visualize a quantidade de alunos para entender a demanda e o crescimento de cada unidade.</CardDescription>
           </CardHeader>
           <CardContent>
               {branchStudentData.length > 0 ? (
@@ -353,7 +353,7 @@ const StudentDashboard = () => {
                     <div>
                         <p className="text-lg font-semibold">{nextClass.name}</p>
                         <p className="text-muted-foreground">
-                            {nextClass.time} com {nextClass.instructor}
+                            {nextClass.time} com <span className="text-primary font-medium">{nextClass.instructor}</span>
                         </p>
                     </div>
                     <Button size="lg" className="w-full sm:w-auto" asChild>
