@@ -17,6 +17,7 @@ import {
   serverTimestamp,
   Timestamp,
   orderBy,
+  increment,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase'; // Use apenas a instância db de firebase.ts
 import { mockBranches, mockInstructors } from './mock-data';
@@ -364,7 +365,7 @@ export const getStudents = async (): Promise<Student[]> => {
   try {
     const q = query(collection(db, 'users'), where('role', '==', 'student'));
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Student));
+    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), createdAt: doc.data().createdAt } as Student));
   } catch (error) {
     console.error('Error getting students:', error);
     return [];
@@ -402,7 +403,23 @@ export const updateUser = async (id: string, userData: Partial<User>) => {
   }
   try {
     const docRef = doc(db, 'users', id);
-    await updateDoc(docRef, userData);
+    
+    // If updating attendance, use atomic increments
+    if (userData.attendance) {
+      const updateData: { [key: string]: any } = {};
+      if (userData.attendance.total) {
+        updateData['attendance.total'] = increment(1);
+      }
+       if (userData.attendance.lastMonth) {
+        updateData['attendance.lastMonth'] = increment(1);
+      }
+      // Remove attendance from main object to avoid overwriting
+      const { attendance, ...restOfUserData } = userData;
+      await updateDoc(docRef, { ...updateData, ...restOfUserData });
+    } else {
+      // Standard update for other fields
+      await updateDoc(docRef, userData);
+    }
   } catch (error) {
     console.error('Error updating user:', error);
     if (error instanceof Error) {
@@ -526,3 +543,5 @@ export const testServerAction = async () => {
   console.log('Test server action called');
   return { success: true, message: 'Test server action called successfully' };
 };
+
+    
