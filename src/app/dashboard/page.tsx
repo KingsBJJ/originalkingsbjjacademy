@@ -34,6 +34,7 @@ import {
 } from "@/lib/firestoreService";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+import type { Timestamp } from "firebase/firestore";
 
 const DataCard = ({ title, value, description, icon: Icon }: { title: string; value: number | string; description: string; icon: React.ElementType }) => (
     <Card>
@@ -327,9 +328,27 @@ const ProfessorDashboard = () => {
     fetchData();
   }, [user]);
 
-  const monthlyCheckins = useMemo(() => {
-    if (!students) return 0;
-    return students.reduce((total, student) => total + (student.attendance?.lastMonth || 0), 0);
+  const monthlyStats = useMemo(() => {
+    if (!students) return { checkins: 0, newStudents: 0 };
+    
+    const oneMonthAgo = new Date();
+    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+    const oneMonthAgoMillis = oneMonthAgo.getTime();
+
+    const newStudentsCount = students.filter(student => {
+        if (student.createdAt) {
+            const createdAtDate = (student.createdAt as Timestamp).toDate();
+            return createdAtDate.getTime() > oneMonthAgoMillis;
+        }
+        return false;
+    }).length;
+
+    const checkinsCount = students.reduce((total, student) => total + (student.attendance?.lastMonth || 0), 0);
+
+    return {
+        checkins: checkinsCount,
+        newStudents: newStudentsCount,
+    };
   }, [students]);
 
   const annualPerformanceData = [
@@ -405,13 +424,23 @@ const ProfessorDashboard = () => {
             <CardDescription>Desempenho da sua filial ({user.affiliation}).</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="rounded-lg border bg-card-foreground/5 p-6">
-              <h3 className="text-sm font-semibold text-muted-foreground">Total de Check-ins no Mês</h3>
-                <div className="flex items-baseline gap-4 mt-2">
-                  <p className="text-3xl font-bold text-primary">{monthlyCheckins}</p>
-                   <span className="text-sm text-muted-foreground"> check-ins</span>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="rounded-lg border bg-card-foreground/5 p-6">
+                    <h3 className="text-sm font-semibold text-muted-foreground">Total de Check-ins no Mês</h3>
+                    <div className="flex items-baseline gap-4 mt-2">
+                        <p className="text-3xl font-bold text-primary">{monthlyStats.checkins}</p>
+                        <span className="text-sm text-muted-foreground"> check-ins</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">Baseado no número de check-ins de alunos no último mês.</p>
                 </div>
-              <p className="text-xs text-muted-foreground mt-1">Baseado no número de check-ins de alunos no último mês.</p>
+                 <div className="rounded-lg border bg-card-foreground/5 p-6">
+                    <h3 className="text-sm font-semibold text-muted-foreground">Novos Alunos no Mês</h3>
+                    <div className="flex items-baseline gap-4 mt-2">
+                        <p className="text-3xl font-bold text-primary">{monthlyStats.newStudents}</p>
+                        <span className="text-sm text-muted-foreground"> alunos</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">Número de alunos cadastrados nos últimos 30 dias.</p>
+                </div>
             </div>
           </CardContent>
         </Card>

@@ -42,6 +42,7 @@ export type User = {
   mainInstructor?: string;
   isFirstLogin?: boolean;
   password?: string;
+  createdAt?: Timestamp;
 };
 
 export type ClassScheduleItem = {
@@ -370,7 +371,7 @@ export const getStudents = async (): Promise<Student[]> => {
   }
 };
 
-export const addStudent = async (studentData: Omit<Student, 'id'>) => {
+export const addStudent = async (studentData: Omit<Student, 'id' | 'createdAt'>) => {
     if (!db) {
         return { success: false, message: 'Firestore not initialized' };
     }
@@ -380,7 +381,12 @@ export const addStudent = async (studentData: Omit<Student, 'id'>) => {
             return { success: false, message: 'Este e-mail já pertence a outra conta.' };
         }
 
-        const userWithRole = { ...studentData, role: 'student' as const, email: studentData.email.toLowerCase() };
+        const userWithRole = { 
+            ...studentData, 
+            role: 'student' as const, 
+            email: studentData.email.toLowerCase(),
+            createdAt: serverTimestamp(),
+        };
         const docRef = await addDoc(collection(db, 'users'), userWithRole);
         return { success: true, id: docRef.id };
     } catch (error) {
@@ -450,13 +456,16 @@ export const addNotification = async (notificationData: Omit<Notification, 'id' 
 
 const processNotificationDoc = (doc: any): Notification => {
     const data = doc.data();
+    // Firestore Timestamps need to be converted to plain JavaScript Date objects
+    // for Client Components.
     const createdAtTimestamp = data.createdAt as Timestamp;
     return {
         id: doc.id,
         ...data,
-        createdAt: createdAtTimestamp ? createdAtTimestamp.toDate() : new Date(), // Converte para Date
+        createdAt: createdAtTimestamp ? createdAtTimestamp.toDate() : new Date(),
     } as Notification;
 };
+
 
 export const getNotifications = async (user: User): Promise<Notification[]> => {
     if (!db) {
@@ -472,6 +481,8 @@ export const getNotifications = async (user: User): Promise<Notification[]> => {
             return querySnapshot.docs.map(processNotificationDoc);
         }
 
+        // Firestore does not support 'in' queries with 'orderBy' on different fields
+        // without a composite index. It's more robust to fetch two separate queries and merge.
         const globalQuery = query(notifsCollection, where('target', '==', 'all'));
         const affiliationQuery = query(notifsCollection, where('target', '==', user.affiliation));
 
@@ -492,7 +503,7 @@ export const getNotifications = async (user: User): Promise<Notification[]> => {
         
         const allNotifications = Array.from(notificationsMap.values());
 
-        // Sort by creation date, descending
+        // Sort by creation date, descending, after merging
         allNotifications.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
         return allNotifications;
