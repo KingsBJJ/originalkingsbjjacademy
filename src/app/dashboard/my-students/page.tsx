@@ -32,10 +32,10 @@ const StudentsGrid = ({ students }: { students: Student[] }) => {
         )
     }
 
-    const formatJoinDate = (date: Timestamp | undefined) => {
+    const formatJoinDate = (date: Date | undefined) => {
         if (!date) return 'Data não registrada';
         
-        const jsDate = date.toDate();
+        const jsDate = date; // It's already a Date object
         const now = new Date();
         const oneMonth = 30 * 24 * 60 * 60 * 1000;
         
