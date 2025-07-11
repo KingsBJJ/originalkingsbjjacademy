@@ -412,146 +412,150 @@ const ProfessorDashboard = () => {
   const showAffiliationSelector = user.affiliations.length > 1;
 
   return (
-    <div className="grid grid-cols-1 gap-6">
-        <div className="grid gap-2">
+    <>
+        <div className="mb-6 grid gap-2">
             <h1 className="text-3xl font-bold tracking-tight">
                 Welcome to the Game! {user.name}
             </h1>
             <p className="text-muted-foreground">{subMessage}</p>
         </div>
 
-        {showAffiliationSelector && (
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><Building /> Selecionar Filial</CardTitle>
-                    <CardDescription>Você leciona em mais de uma filial. Escolha qual painel deseja visualizar.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <Select value={selectedAffiliation} onValueChange={setSelectedAffiliation}>
-                        <SelectTrigger className="w-full md:w-1/2">
-                            <SelectValue placeholder="Selecione uma filial" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {user.affiliations.map(aff => (
-                                <SelectItem key={aff} value={aff}>{aff}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                </CardContent>
-            </Card>
-        )}
+        <div className="grid grid-cols-1 gap-6">
+            {showAffiliationSelector && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><Building /> Selecionar Filial</CardTitle>
+                        <CardDescription>Você leciona em mais de uma filial. Escolha qual painel deseja visualizar.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Select value={selectedAffiliation} onValueChange={setSelectedAffiliation}>
+                            <SelectTrigger className="w-full md:w-1/2">
+                                <SelectValue placeholder="Selecione uma filial" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {user.affiliations.map(aff => (
+                                    <SelectItem key={aff} value={aff}>{aff}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </CardContent>
+                </Card>
+            )}
 
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-            <DataCard title="Seus Alunos" value={filteredStudents.length} description={`Alunos na filial: ${selectedAffiliation}`} icon={Users} />
-            
-            <Card className="col-span-1 md:col-span-2">
-                <CardHeader>
-                    <CardTitle>Sua Próxima Aula</CardTitle>
-                    <CardDescription>
-                        Prepare-se para a sua próxima aula agendada em {selectedAffiliation}.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    {nextClass ? (
-                        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                            <div className="flex-grow">
-                                <p className="text-lg font-semibold">{nextClass.name}</p>
-                                <p className="text-muted-foreground">
-                                {nextClass.day} às {nextClass.time.split(' - ')[0]}
-                                </p>
-                            </div>
-                            <Button size="lg" className="w-full shrink-0 sm:w-auto" asChild>
-                                <Link href={`/dashboard/schedule?role=${user.role}`}>Ver Grade Completa</Link>
-                            </Button>
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+                <DataCard title="Seus Alunos" value={filteredStudents.length} description={`Alunos na filial: ${selectedAffiliation}`} icon={Users} />
+                
+                <Card className="col-span-1 md:col-span-2">
+                    <CardHeader>
+                        <CardTitle>Sua Próxima Aula</CardTitle>
+                        <CardDescription>
+                            Prepare-se para a sua próxima aula agendada em {selectedAffiliation}.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
+                            {nextClass ? (
+                                <>
+                                    <div className="flex-grow">
+                                        <p className="text-lg font-semibold">{nextClass.name}</p>
+                                        <p className="text-muted-foreground">
+                                        {nextClass.day} às {nextClass.time.split(' - ')[0]}
+                                        </p>
+                                    </div>
+                                    <Button size="lg" className="w-full shrink-0 sm:w-auto" asChild>
+                                        <Link href={`/dashboard/schedule?role=${user.role}`}>Ver Grade Completa</Link>
+                                    </Button>
+                                </>
+                            ) : (
+                                <p className="text-muted-foreground">Nenhuma próxima aula encontrada para você nesta filial.</p>
+                            )}
                         </div>
-                    ) : (
-                        <p className="text-muted-foreground">Nenhuma próxima aula encontrada para você nesta filial.</p>
-                    )}
-                </CardContent>
+                    </CardContent>
+                </Card>
+            </div>
+            
+            <Card className="md:col-span-3">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Trophy className="text-yellow-400" />
+                  Estatísticas do Mês
+                </CardTitle>
+                <CardDescription>Desempenho da sua filial ({selectedAffiliation}).</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="rounded-lg border bg-card-foreground/5 p-6">
+                        <h3 className="text-sm font-semibold text-muted-foreground">Total de Check-ins no Mês</h3>
+                        <div className="flex items-baseline gap-4 mt-2">
+                            <p className="text-3xl font-bold text-primary">{monthlyStats.checkins}</p>
+                            <span className="text-sm text-muted-foreground"> check-ins</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">Baseado no número de check-ins de alunos no último mês.</p>
+                    </div>
+                     <div className="rounded-lg border bg-card-foreground/5 p-6">
+                        <h3 className="text-sm font-semibold text-muted-foreground">Novos Alunos no Mês</h3>
+                        <div className="flex items-baseline gap-4 mt-2">
+                            <p className="text-3xl font-bold text-primary">{monthlyStats.newStudents}</p>
+                            <span className="text-sm text-muted-foreground"> alunos</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">Número de alunos cadastrados nos últimos 30 dias.</p>
+                    </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="md:col-span-3">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BarChart />
+                  Desempenho Anual da Filial
+                </CardTitle>
+                <CardDescription>
+                  Acompanhe o número total de check-ins ao longo do ano para a filial {selectedAffiliation}.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ChartContainer config={barChartConfig} className="h-64 w-full">
+                  <RechartsBarChart
+                    accessibilityLayer
+                    data={annualPerformanceData}
+                    margin={{ left: -10, right: 20 }}
+                  >
+                    <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} fontSize={12} />
+                    <YAxis tickLine={false} axisLine={false} tickMargin={8} fontSize={12} allowDecimals={false} />
+                    <Tooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
+                    <Bar dataKey="checkins" fill="var(--color-checkins)" radius={4} />
+                  </RechartsBarChart>
+                </ChartContainer>
+              </CardContent>
+            </Card>
+
+            <Card className="md:col-span-3">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Medal />
+                  <span>Seu Progresso de Graduação</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="font-medium">
+                      Faixa {user.belt}, {user.stripes} Graus
+                    </span>
+                    <span className="text-muted-foreground">
+                      {user.nextGraduationProgress}%
+                    </span>
+                  </div>
+                  <Progress value={user.nextGraduationProgress} />
+                  <p className="text-xs text-muted-foreground">
+                    Seu progresso pessoal para o próximo grau/faixa.
+                  </p>
+                </div>
+              </CardContent>
             </Card>
         </div>
-        
-        <Card className="md:col-span-3">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Trophy className="text-yellow-400" />
-              Estatísticas do Mês
-            </CardTitle>
-            <CardDescription>Desempenho da sua filial ({selectedAffiliation}).</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="rounded-lg border bg-card-foreground/5 p-6">
-                    <h3 className="text-sm font-semibold text-muted-foreground">Total de Check-ins no Mês</h3>
-                    <div className="flex items-baseline gap-4 mt-2">
-                        <p className="text-3xl font-bold text-primary">{monthlyStats.checkins}</p>
-                        <span className="text-sm text-muted-foreground"> check-ins</span>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">Baseado no número de check-ins de alunos no último mês.</p>
-                </div>
-                 <div className="rounded-lg border bg-card-foreground/5 p-6">
-                    <h3 className="text-sm font-semibold text-muted-foreground">Novos Alunos no Mês</h3>
-                    <div className="flex items-baseline gap-4 mt-2">
-                        <p className="text-3xl font-bold text-primary">{monthlyStats.newStudents}</p>
-                        <span className="text-sm text-muted-foreground"> alunos</span>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">Número de alunos cadastrados nos últimos 30 dias.</p>
-                </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="md:col-span-3">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BarChart />
-              Desempenho Anual da Filial
-            </CardTitle>
-            <CardDescription>
-              Acompanhe o número total de check-ins ao longo do ano para a filial {selectedAffiliation}.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer config={barChartConfig} className="h-64 w-full">
-              <RechartsBarChart
-                accessibilityLayer
-                data={annualPerformanceData}
-                margin={{ left: -10, right: 20 }}
-              >
-                <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} fontSize={12} />
-                <YAxis tickLine={false} axisLine={false} tickMargin={8} fontSize={12} allowDecimals={false} />
-                <Tooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
-                <Bar dataKey="checkins" fill="var(--color-checkins)" radius={4} />
-              </RechartsBarChart>
-            </ChartContainer>
-          </CardContent>
-        </Card>
-
-        <Card className="md:col-span-3">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Medal />
-              <span>Seu Progresso de Graduação</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="font-medium">
-                  Faixa {user.belt}, {user.stripes} Graus
-                </span>
-                <span className="text-muted-foreground">
-                  {user.nextGraduationProgress}%
-                </span>
-              </div>
-              <Progress value={user.nextGraduationProgress} />
-              <p className="text-xs text-muted-foreground">
-                Seu progresso pessoal para o próximo grau/faixa.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-    </div>
+    </>
   );
 };
 
