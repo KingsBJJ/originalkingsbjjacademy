@@ -1,5 +1,6 @@
 
 import Link from 'next/link';
+import { Suspense } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -30,13 +31,14 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Skeleton } from '@/components/ui/skeleton';
 
 const allBeltColors = { ...beltColors, ...beltColorsKids };
 
-const StudentTable = ({ students, userRole }: { students: Student[], userRole: 'admin' | 'professor' | 'student' }) => {
+const StudentTable = ({ students, userRole }: { students: Student[], userRole: User['role'] }) => {
     if (students.length === 0) {
         return (
-            <div className="h-48 flex items-center justify-center text-muted-foreground">
+            <div className="flex h-48 items-center justify-center text-muted-foreground">
                 Nenhum aluno nesta categoria.
             </div>
         )
@@ -101,17 +103,114 @@ const StudentTable = ({ students, userRole }: { students: Student[], userRole: '
     );
 }
 
+const StudentsListSkeleton = () => (
+    <Card>
+        <CardHeader>
+            <Skeleton className="h-6 w-1/2" />
+            <Skeleton className="h-4 w-3/4" />
+        </CardHeader>
+        <CardContent>
+            <Skeleton className="h-10 w-full mb-4" />
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead><Skeleton className="h-5 w-24" /></TableHead>
+                        <TableHead><Skeleton className="h-5 w-24" /></TableHead>
+                        <TableHead><Skeleton className="h-5 w-24" /></TableHead>
+                        <TableHead className="text-right"><Skeleton className="h-5 w-16" /></TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {Array.from({ length: 5 }).map((_, i) => (
+                        <TableRow key={i}>
+                            <TableCell><div className="flex items-center gap-2"><Skeleton className="h-9 w-9 rounded-full" /><Skeleton className="h-4 w-32" /></div></TableCell>
+                            <TableCell><Skeleton className="h-4 w-28" /></TableCell>
+                            <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
+                            <TableCell className="text-right"><Skeleton className="h-8 w-8" /></TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+        </CardContent>
+    </Card>
+);
+
+
+async function StudentList({ user }: { user: User }) {
+  const allStudents = await getStudents();
+
+  // Filter students based on user role
+  const filteredStudents = user.role === 'admin'
+    ? allStudents // Admin sees all students
+    : allStudents.filter(s => user.affiliations.some(aff => s.affiliations.includes(aff))); // Professor sees students from any of their affiliations
+
+  const adultStudents = filteredStudents.filter(s => s.category === 'Adult');
+  const kidsStudents = filteredStudents.filter(s => s.category === 'Kids');
+
+  const professorAffiliationText = user.affiliations.length > 1 
+    ? "Visualize os alunos de suas filiais." 
+    : `Visualize os alunos da sua filial (${user.affiliations[0] || 'N/A'}).`;
+
+  return (
+    <div className="grid gap-6">
+       <div>
+        <h1 className="text-3xl font-bold tracking-tight">Alunos</h1>
+        <p className="text-muted-foreground">
+          {user.role === 'admin' 
+            ? "Visualize e gerencie todos os alunos do sistema."
+            : professorAffiliationText
+          }
+        </p>
+      </div>
+       <Card>
+        <CardHeader>
+            <CardTitle>Lista de Alunos</CardTitle>
+            <CardDescription>
+                {`Total de ${filteredStudents.length} alunos encontrados.`}
+            </CardDescription>
+        </CardHeader>
+        <CardContent>
+            <Tabs defaultValue="adults" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="adults">Adultos ({adultStudents.length})</TabsTrigger>
+                    <TabsTrigger value="kids">Kids ({kidsStudents.length})</TabsTrigger>
+                </TabsList>
+                <TabsContent value="adults" className="mt-4">
+                    <StudentTable students={adultStudents} userRole={user.role} />
+                </TabsContent>
+                <TabsContent value="kids" className="mt-4">
+                    <StudentTable students={kidsStudents} userRole={user.role} />
+                </TabsContent>
+            </Tabs>
+        </CardContent>
+       </Card>
+    </div>
+  );
+}
+
 export default async function ManageStudentsPage({
   searchParams,
 }: {
   searchParams: { [key: string]: string | string[] | undefined };
 }) {
   const role = (searchParams?.role || 'student') as User['role'];
-  const user = mockUsers[role] || mockUsers.student;
-
+  
+  // Create a representative user object for data fetching and permission checks.
+  // This uses mock data as a base and overrides with URL params for flexibility.
+  const baseUser = mockUsers[role] || mockUsers.student;
+  const user: User = {
+      ...baseUser,
+      role,
+      email: (searchParams?.email as string) || baseUser.email,
+      name: (searchParams?.name as string) || baseUser.name,
+      // In a real scenario, affiliations would come from the authenticated user session.
+      // Here, we simulate it based on professor's mock data.
+      affiliations: role === 'professor' ? baseUser.affiliations : [], 
+  };
+  
   if (role === 'student') {
     return (
-      <div className="flex items-center justify-center h-full">
+      <div className="flex h-full items-center justify-center">
         <Card className="w-full max-w-md">
           <CardHeader>
             <CardTitle>Acesso Negado</CardTitle>
@@ -130,48 +229,9 @@ export default async function ManageStudentsPage({
     );
   }
 
-  const allStudents = await getStudents();
-  
-  const filteredStudents = user.role === 'admin'
-    ? allStudents
-    : allStudents.filter(s => s.affiliations.includes(user.affiliations[0]) && s.mainInstructor === user.name);
-  
-  const adultStudents = filteredStudents.filter(s => s.category === 'Adult');
-  const kidsStudents = filteredStudents.filter(s => s.category === 'Kids');
-
   return (
-    <div className="grid gap-6">
-       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Alunos</h1>
-        <p className="text-muted-foreground">
-          {user.role === 'admin' 
-            ? "Visualize e gerencie todos os alunos do sistema."
-            : `Visualize os alunos da sua filial (${user.affiliations[0]}).`
-          }
-        </p>
-      </div>
-       <Card>
-        <CardHeader>
-            <CardTitle>Lista de Alunos</CardTitle>
-            <CardDescription>
-                {`Total de ${filteredStudents.length} alunos encontrados.`}
-            </CardDescription>
-        </CardHeader>
-        <CardContent>
-            <Tabs defaultValue="adults" className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="adults">Adultos ({adultStudents.length})</TabsTrigger>
-                <TabsTrigger value="kids">Kids ({kidsStudents.length})</TabsTrigger>
-                </TabsList>
-                <TabsContent value="adults" className="mt-4">
-                    <StudentTable students={adultStudents} userRole={user.role} />
-                </TabsContent>
-                <TabsContent value="kids" className="mt-4">
-                    <StudentTable students={kidsStudents} userRole={user.role} />
-                </TabsContent>
-            </Tabs>
-        </CardContent>
-       </Card>
-    </div>
+    <Suspense fallback={<StudentsListSkeleton />}>
+        <StudentList user={user} />
+    </Suspense>
   );
 }
