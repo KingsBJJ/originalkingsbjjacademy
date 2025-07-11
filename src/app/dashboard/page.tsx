@@ -20,9 +20,8 @@ import {
   User as UserIcon,
   BarChart,
   Trophy,
-  LineChart as LineChartIcon,
 } from "lucide-react";
-import { Bar, BarChart as RechartsBarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, LineChart, Line, CartesianGrid } from "recharts";
+import { Bar, BarChart as RechartsBarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
 import { ChartConfig, ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
 import { UserContext } from "./client-layout";
 import { 
@@ -56,9 +55,6 @@ const barChartConfig = {
     label: "Alunos",
     color: "hsl(var(--primary))",
   },
-} satisfies ChartConfig;
-
-const lineChartConfig = {
   checkins: {
     label: "Check-ins",
     color: "hsl(var(--primary))",
@@ -260,7 +256,7 @@ const AdminDashboard = () => {
       <Card className="md:col-span-3">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <LineChartIcon />
+            <BarChart />
             Desempenho Anual da Equipe
           </CardTitle>
           <CardDescription>
@@ -268,8 +264,8 @@ const AdminDashboard = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <ChartContainer config={lineChartConfig} className="h-64 w-full">
-            <LineChart
+          <ChartContainer config={barChartConfig} className="h-64 w-full">
+            <RechartsBarChart
               accessibilityLayer
               data={annualPerformanceData}
               margin={{
@@ -277,7 +273,6 @@ const AdminDashboard = () => {
                 right: 20,
               }}
             >
-              <CartesianGrid vertical={false} strokeDasharray="3 3" />
               <XAxis
                 dataKey="month"
                 tickLine={false}
@@ -292,18 +287,12 @@ const AdminDashboard = () => {
                 fontSize={12}
                 allowDecimals={false}
               />
-              <ChartTooltipContent
+              <Tooltip
                 cursor={false}
-                contentStyle={{ background: "hsl(var(--background))" }}
+                content={<ChartTooltipContent hideLabel />}
               />
-              <Line
-                dataKey="checkins"
-                type="monotone"
-                stroke="var(--color-checkins)"
-                strokeWidth={2}
-                dot={false}
-              />
-            </LineChart>
+              <Bar dataKey="checkins" fill="var(--color-checkins)" radius={4} />
+            </RechartsBarChart>
           </ChartContainer>
         </CardContent>
       </Card>
