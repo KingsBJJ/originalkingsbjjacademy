@@ -119,11 +119,19 @@ export default function CheckInPage() {
                 setCheckinMessage(`Check-in confirmado em ${user.affiliations?.[0] || 'sua filial'}!`);
                 setCheckinTime(new Date());
 
-                // Instead of calculating the new total, we tell the backend to increment.
+                // For the DB, we send instructions to increment.
                 const attendanceIncrement = {
-                  total: 1, // Increment total by 1
-                  lastMonth: 1, // Increment lastMonth by 1
+                  total: 1,
+                  lastMonth: 1,
                 };
+                
+                // For the local state, we update the values directly.
+                const updatedAttendanceForState = {
+                    total: (user.attendance?.total || 0) + 1,
+                    lastMonth: (user.attendance?.lastMonth || 0) + 1,
+                };
+                
+                // The updateUser function in client-layout now separates these concerns.
                 updateUser({ attendance: attendanceIncrement });
 
                 toast({
