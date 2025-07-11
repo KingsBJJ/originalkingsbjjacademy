@@ -40,14 +40,19 @@ export const beltInfo = {
 };
 
 export const beltColorsKids = {
-  Branca: { bg: "bg-white", text: "text-black" },
   Cinza: { bg: "bg-gray-500", text: "text-white" },
   Amarela: { bg: "bg-yellow-500", text: "text-black" },
   Laranja: { bg: "bg-orange-500", text: "text-white" },
   Verde: { bg: "bg-green-600", text: "text-white" },
 };
 
-export const allBeltsKids: (keyof typeof beltColorsKids)[] = ["Branca", "Cinza", "Amarela", "Laranja", "Verde"];
+// Unified belt colors for easier lookup
+export const allBeltColors = {
+  ...beltColors,
+  ...beltColorsKids
+};
+
+export const allBeltsKids: (keyof typeof beltColorsKids | 'Branca')[] = ["Branca", "Cinza", "Amarela", "Laranja", "Verde"];
 
 export const beltInfoKids = {
   Branca: {

@@ -11,16 +11,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { getStudents, getUserByEmail, type Student } from '@/lib/firestoreService';
-import { User, mockUsers, beltColors, beltColorsKids } from '@/lib/mock-data';
+import { User, mockUsers, allBeltColors } from '@/lib/mock-data';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-
-const allBeltColors = { ...beltColors, ...beltColorsKids };
 
 const StudentsGrid = ({ students }: { students: Student[] }) => {
     if (students.length === 0) {

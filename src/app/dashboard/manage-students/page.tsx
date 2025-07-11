@@ -18,7 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { beltColors, beltColorsKids, mockUsers, User } from '@/lib/mock-data';
+import { allBeltColors, mockUsers, User } from '@/lib/mock-data';
 import { getStudents, type Student } from '@/lib/firestoreService';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -32,8 +32,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from '@/components/ui/skeleton';
-
-const allBeltColors = { ...beltColors, ...beltColorsKids };
 
 const StudentTable = ({ students, userRole }: { students: Student[], userRole: User['role'] }) => {
     if (students.length === 0) {
