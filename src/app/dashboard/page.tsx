@@ -28,6 +28,7 @@ import {
   BarChart,
   Trophy,
   Building,
+  Sparkles,
 } from "lucide-react";
 import { Bar, BarChart as RechartsBarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
 import { ChartConfig, ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
@@ -41,6 +42,7 @@ import {
     type Student 
 } from "@/lib/firestoreService";
 import { Skeleton } from "@/components/ui/skeleton";
+import { generateTrainingFocus, TrainingFocusOutput } from "@/ai/flows/trainingFocusFlow";
 
 const DataCard = ({ title, value, description, icon: Icon }: { title: string; value: number | string; description: string; icon: React.ElementType }) => (
     <Card>
@@ -564,6 +566,9 @@ const StudentDashboard = () => {
   const user = useContext(UserContext);
   const [branches, setBranches] = useState<Branch[]>([]);
   const [loading, setLoading] = useState(true);
+  const [trainingFocus, setTrainingFocus] = useState<TrainingFocusOutput | null>(null);
+  const [loadingFocus, setLoadingFocus] = useState(true);
+
 
   useEffect(() => {
     const fetchBranches = async () => {
@@ -579,6 +584,19 @@ const StudentDashboard = () => {
     };
     fetchBranches();
   }, []);
+
+  useEffect(() => {
+    if (user) {
+        setLoadingFocus(true);
+        generateTrainingFocus({ studentName: user.name, studentBelt: user.belt })
+            .then(setTrainingFocus)
+            .catch(error => {
+                console.error("Failed to generate training focus:", error);
+                setTrainingFocus(null); // Clear on error
+            })
+            .finally(() => setLoadingFocus(false));
+    }
+  }, [user]);
 
   if (!user) return null;
 
@@ -669,22 +687,29 @@ const StudentDashboard = () => {
 
         <Card className="md:col-span-2 lg:col-span-1">
           <CardHeader>
-            <CardTitle>Foco do Treino</CardTitle>
-            <CardDescription>Baseado em suas aulas recentes</CardDescription>
+            <CardTitle className="flex items-center gap-2">
+              <Sparkles className="text-primary" />
+              Foco do Treino
+            </CardTitle>
+            <CardDescription>Sugestões da IA para você</CardDescription>
           </CardHeader>
           <CardContent>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li className="flex items-center gap-2">
-                <span className="text-primary">●</span> Raspagens da Guarda
-                Aranha
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="text-primary">●</span> Ajustes de Triângulo
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="text-primary">●</span> Saídas da Montada
-              </li>
-            </ul>
+            {loadingFocus ? (
+                <div className="space-y-2">
+                    <Skeleton className="h-4 w-4/5" />
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-4 w-4/6" />
+                </div>
+            ) : (
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                {trainingFocus?.focusPoints.map((point, index) => (
+                    <li key={index} className="flex items-start gap-2">
+                    <span className="text-primary mt-1">●</span>
+                    <span>{point}</span>
+                    </li>
+                ))}
+                </ul>
+            )}
           </CardContent>
         </Card>
       </div>
