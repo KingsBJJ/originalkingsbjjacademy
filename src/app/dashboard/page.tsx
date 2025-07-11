@@ -388,6 +388,8 @@ const ProfessorDashboard = () => {
 
   if (!user) return null;
 
+  const subMessage = `Aqui está o resumo da ${selectedAffiliation || 'sua academia'}. Vamos ao trabalho.`;
+
   if (loading) {
       return (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -411,6 +413,13 @@ const ProfessorDashboard = () => {
 
   return (
     <div className="grid grid-cols-1 gap-6">
+        <div className="grid gap-2">
+            <h1 className="text-3xl font-bold tracking-tight">
+                Welcome to the Game! {user.name}
+            </h1>
+            <p className="text-muted-foreground">{subMessage}</p>
+        </div>
+
         {showAffiliationSelector && (
             <Card>
                 <CardHeader>
@@ -695,28 +704,28 @@ export default function DashboardPage() {
 
   const welcomeMessage = {
     admin: "Visão geral da Kings Bjj",
-    professor: `Welcome to the Game! ${user.name}`,
     student: `Welcome to the Game! ${user.name.split(" ")[0]}`,
   };
 
   const subMessage = {
     admin: "Gerencie alunos, filiais e professores.",
-    professor: "Aqui está o resumo da sua academia. Vamos ao trabalho.",
     student: `Aqui está seu resumo de treinos, ${user.name.split(" ")[0]}. Vamos ao trabalho.`,
   };
 
   return (
-    <div className="grid gap-6">
-      <div className="grid gap-2">
-        <h1 className="text-3xl font-bold tracking-tight">
-          {welcomeMessage[user.role]}
-        </h1>
-        <p className="text-muted-foreground">{subMessage[user.role]}</p>
-      </div>
+    <>
+      {user.role !== 'professor' && (
+        <div className="grid gap-2 mb-6">
+          <h1 className="text-3xl font-bold tracking-tight">
+            {welcomeMessage[user.role as keyof typeof welcomeMessage]}
+          </h1>
+          <p className="text-muted-foreground">{subMessage[user.role as keyof typeof subMessage]}</p>
+        </div>
+      )}
 
       {user.role === "admin" && <AdminDashboard />}
       {user.role === "professor" && <ProfessorDashboard />}
       {user.role === "student" && <StudentDashboard />}
-    </div>
+    </>
   );
 }
