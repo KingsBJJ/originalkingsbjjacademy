@@ -116,14 +116,15 @@ export default function CheckInPage() {
             stopCamera();
             if (code.data === 'KINGS_BJJ_UNIVERSAL_CHECKIN') {
               if (user && updateUser) {
-                setCheckinMessage(`Check-in confirmado em ${user.affiliation}!`);
+                setCheckinMessage(`Check-in confirmado em ${user.affiliations[0] || 'sua filial'}!`);
                 setCheckinTime(new Date());
 
-                const newAttendance = {
-                  total: user.attendance.total + 1,
-                  lastMonth: user.attendance.lastMonth + 1,
+                // Instead of calculating the new total, we tell the backend to increment.
+                const attendanceIncrement = {
+                  total: 1, // Increment total by 1
+                  lastMonth: 1, // Increment lastMonth by 1
                 };
-                updateUser({ attendance: newAttendance });
+                updateUser({ attendance: attendanceIncrement });
 
                 toast({
                   title: 'Check-in Realizado!',

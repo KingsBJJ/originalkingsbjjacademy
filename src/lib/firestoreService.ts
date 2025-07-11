@@ -338,7 +338,7 @@ const processUserDoc = (doc: any): User => {
     return {
         id: doc.id,
         ...data,
-        createdAt: createdAtTimestamp ? createdAtTimestamp.toDate() : undefined,
+        createdAt: createdAtTimestamp ? createdAtTimestamp.toDate() : new Date(),
     } as User;
 }
 
@@ -413,23 +413,27 @@ export const updateUser = async (id: string, userData: Partial<User>) => {
   }
   try {
     const docRef = doc(db, 'users', id);
-    
-    // If updating attendance, use atomic increments
+    const updateData: { [key: string]: any } = {};
+
+    // Handle atomic increments for attendance
     if (userData.attendance) {
-      const updateData: { [key: string]: any } = {};
-      if (userData.attendance.total) {
-        updateData['attendance.total'] = increment(1);
+      if (typeof userData.attendance.total === 'number') {
+        updateData['attendance.total'] = increment(userData.attendance.total);
       }
-       if (userData.attendance.lastMonth) {
-        updateData['attendance.lastMonth'] = increment(1);
+      if (typeof userData.attendance.lastMonth === 'number') {
+        updateData['attendance.lastMonth'] = increment(userData.attendance.lastMonth);
       }
       // Remove attendance from main object to avoid overwriting
-      const { attendance, ...restOfUserData } = userData;
-      await updateDoc(docRef, { ...updateData, ...restOfUserData });
-    } else {
-      // Standard update for other fields
-      await updateDoc(docRef, userData);
+      delete userData.attendance;
     }
+
+    // Merge the atomic updates with the rest of the user data
+    Object.assign(updateData, userData);
+    
+    if (Object.keys(updateData).length > 0) {
+        await updateDoc(docRef, updateData);
+    }
+    
   } catch (error) {
     console.error('Error updating user:', error);
     if (error instanceof Error) {
