@@ -23,7 +23,7 @@ import {
   SidebarInset,
 } from "@/components/ui/sidebar";
 import { KingsBjjLogo } from "@/components/kings-bjj-logo";
-import type { User, Instructor } from "@/lib/mock-data";
+import type { User } from "@/lib/mock-data";
 import { mockUsers } from "@/lib/mock-data";
 import {
   Award,
@@ -44,9 +44,11 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { updateUser as updateDbUser, getInstructors, getStudents } from "@/lib/firestoreService";
+import { updateUser as updateDbUser, getInstructors, getNotifications, type Notification } from "@/lib/firestoreService";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { formatDistanceToNow } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 
 type NavItem = {
@@ -94,6 +96,8 @@ const adminNavItems: NavItem[] = [
 export const UserContext = createContext<User | null>(null);
 export const UserUpdateContext = createContext<((newUserData: Partial<User>) => void) | null>(null);
 
+const NOTIFICATION_STORAGE_KEY = 'kingsbjj_last_notification_seen_timestamp';
+
 export default function DashboardClientLayout({
   children,
 }: {
@@ -106,6 +110,9 @@ export default function DashboardClientLayout({
   const [user, setUser] = useState<User | null>(null);
   const [newStudentNotification, setNewStudentNotification] = useState(false);
   const [newStudentName, setNewStudentName] = useState('');
+
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [hasNewNotification, setHasNewNotification] = useState(false);
 
   useEffect(() => {
     const determineUser = async () => {
@@ -183,6 +190,51 @@ export default function DashboardClientLayout({
     determineUser();
   }, [searchParams]);
 
+   useEffect(() => {
+    if (!user) return;
+
+    let unsubscribe = () => {};
+
+    const fetchInitialAndListen = async () => {
+      // Get initial data
+      const initialNotifs = await getNotifications(user);
+      setNotifications(initialNotifs);
+
+      // Check for new notifications on initial load
+      const lastSeenTimestamp = localStorage.getItem(NOTIFICATION_STORAGE_KEY) || '0';
+      const mostRecentNotifTimestamp = initialNotifs[0]?.createdAt?.toMillis() || 0;
+      
+      if (mostRecentNotifTimestamp > parseInt(lastSeenTimestamp)) {
+        setHasNewNotification(true);
+      }
+
+      // Set up listener for real-time updates - (this is a simplified poll)
+      const intervalId = setInterval(async () => {
+        const newNotifs = await getNotifications(user);
+        if (newNotifs.length > 0 && newNotifs[0].id !== (notifications[0]?.id || '')) {
+             setNotifications(newNotifs);
+             setHasNewNotification(true);
+        }
+      }, 30000); // Poll every 30 seconds
+
+      unsubscribe = () => clearInterval(intervalId);
+    };
+
+    fetchInitialAndListen();
+    return () => unsubscribe();
+  }, [user, notifications]);
+
+  const markNotificationsAsSeen = () => {
+    if (hasNewNotification || newStudentNotification) {
+      setHasNewNotification(false);
+      setNewStudentNotification(false);
+      
+      const mostRecentTimestamp = notifications[0]?.createdAt?.toMillis() || Date.now();
+      localStorage.setItem(NOTIFICATION_STORAGE_KEY, mostRecentTimestamp.toString());
+    }
+  };
+
+
   const updateUser = useCallback((newUserData: Partial<User>) => {
     setUser(prevUser => {
       if (!prevUser) return null;
@@ -252,7 +304,10 @@ export default function DashboardClientLayout({
     admin: 'Admin'
   };
 
-  const hasNotification = user.role === 'admin' && newStudentNotification;
+  const notificationIndicator = hasNewNotification || newStudentNotification;
+  
+  const lastSeenTimestamp = parseInt(localStorage.getItem(NOTIFICATION_STORAGE_KEY) || '0');
+
 
   return (
     <UserContext.Provider value={user}>
@@ -319,11 +374,11 @@ export default function DashboardClientLayout({
                     </h1>
                 </div>
                  <div className="flex items-center gap-4">
-                   <Popover onOpenChange={(isOpen) => !isOpen && setNewStudentNotification(false)}>
+                   <Popover onOpenChange={(isOpen) => { if (isOpen) markNotificationsAsSeen(); }}>
                       <PopoverTrigger asChild>
                         <Button variant="ghost" size="icon" className="relative rounded-full">
                           <Bell className="h-5 w-5" />
-                           {hasNotification && (
+                           {notificationIndicator && (
                             <span className="absolute top-1.5 right-1.5 flex h-2.5 w-2.5">
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
                                 <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
@@ -335,11 +390,11 @@ export default function DashboardClientLayout({
                       <PopoverContent align="end" className="w-96 p-0">
                         <div className="flex items-center justify-between border-b p-4">
                           <h3 className="font-semibold">Recados Recentes</h3>
-                          <Badge variant="secondary">{hasNotification ? "1" : "0"}</Badge>
+                          <Badge variant="secondary">{notifications.length + (newStudentNotification ? 1 : 0)}</Badge>
                         </div>
-                        <div className="max-h-80 overflow-y-auto">
-                            {hasNotification ? (
-                                <div className="p-4">
+                        <div className="max-h-80 overflow-y-auto p-2">
+                            {newStudentNotification && (
+                                <div className="p-2">
                                     <div className="flex items-start gap-3">
                                         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500/20">
                                            <UserIcon className="h-4 w-4 text-green-400"/>
@@ -355,11 +410,35 @@ export default function DashboardClientLayout({
                                         </div>
                                     </div>
                                 </div>
-                            ) : (
+                            )}
+
+                            {notifications.length > 0 ? (
+                                notifications.map(notif => {
+                                    const isNew = notif.createdAt.toMillis() > lastSeenTimestamp;
+                                    return (
+                                        <div key={notif.id} className="p-2 hover:bg-muted/50 rounded-md">
+                                            <div className="flex items-start gap-3">
+                                                <div className="relative flex-shrink-0">
+                                                    <Avatar className="h-8 w-8">
+                                                        <AvatarImage src={notif.authorAvatar} alt={notif.authorName} />
+                                                        <AvatarFallback>{notif.authorName.charAt(0)}</AvatarFallback>
+                                                    </Avatar>
+                                                    {isNew && <span className="absolute -top-0.5 -right-0.5 block h-2 w-2 rounded-full bg-primary ring-2 ring-background" />}
+                                                </div>
+                                                <div className="flex-1">
+                                                    <p className="font-semibold text-sm">{notif.title}</p>
+                                                    <p className="text-xs text-muted-foreground truncate">{notif.content}</p>
+                                                    <p className="text-xs text-muted-foreground mt-1">{formatDistanceToNow(notif.createdAt.toDate(), { addSuffix: true, locale: ptBR })}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })
+                            ) : (!newStudentNotification && (
                                 <div className="p-4 text-center text-sm text-muted-foreground">
                                     Nenhum recado recente.
                                 </div>
-                            )}
+                            ))}
                         </div>
                         <div className="border-t p-2">
                             <Button size="sm" variant="link" className="w-full" asChild>
