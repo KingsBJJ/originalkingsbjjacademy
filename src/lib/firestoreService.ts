@@ -429,6 +429,52 @@ export const updateUser = async (id: string, userData: Partial<User>) => {
   }
 };
 
+export const getUserByEmail = async (email: string): Promise<User | null> => {
+    if (!db) {
+        console.error('Error getting user by email: Firestore is not initialized.');
+        return null;
+    }
+    try {
+        const lowercasedEmail = email.toLowerCase().trim();
+
+        // Query the 'users' collection
+        const usersQuery = query(collection(db, 'users'), where('email', '==', lowercasedEmail), limit(1));
+        const usersSnapshot = await getDocs(usersQuery);
+        if (!usersSnapshot.empty) {
+            const userDoc = usersSnapshot.docs[0];
+            return { id: userDoc.id, ...userDoc.data() } as User;
+        }
+
+        // Query the 'instructors' collection
+        const instructorsQuery = query(collection(db, 'instructors'), where('email', '==', lowercasedEmail), limit(1));
+        const instructorsSnapshot = await getDocs(instructorsQuery);
+        if (!instructorsSnapshot.empty) {
+            const instructorDoc = instructorsSnapshot.docs[0];
+            const instructorData = instructorDoc.data();
+            // Adapt instructor data to User type
+            return {
+                id: instructorDoc.id,
+                name: instructorData.name,
+                email: instructorData.email,
+                role: 'professor',
+                avatar: instructorData.avatar || `https://placehold.co/128x128.png?text=${instructorData.name.charAt(0)}`,
+                belt: instructorData.belt,
+                stripes: instructorData.stripes || 0,
+                attendance: { total: 0, lastMonth: 0 }, // Professors might not have attendance tracked this way
+                nextGraduationProgress: 0,
+                affiliations: instructorData.affiliations || [],
+                branchId: '', // Or determine from affiliations
+                category: 'Adult', // Default for professors
+            } as User;
+        }
+
+        return null; // No user found in either collection
+    } catch (error) {
+        console.error('Error getting user by email:', error);
+        return null;
+    }
+};
+
 
 // --- Terms Acceptance Functions ---
 
@@ -543,5 +589,3 @@ export const testServerAction = async () => {
   console.log('Test server action called');
   return { success: true, message: 'Test server action called successfully' };
 };
-
-    

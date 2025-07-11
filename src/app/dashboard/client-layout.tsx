@@ -45,7 +45,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { updateUser as updateDbUser, getInstructors, getNotifications, type Notification } from "@/lib/firestoreService";
+import { updateUser as updateDbUser, getNotifications, type Notification, getUserByEmail } from "@/lib/firestoreService";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from 'date-fns';
@@ -130,34 +130,24 @@ export default function DashboardClientLayout({
       const cleanEmail = email?.trim().toLowerCase();
       let userToSet: User | null = null;
       
-      // Admin check
+      // Admin check - uses mock data
       if (cleanEmail === 'admin@kingsbjj.com' || cleanEmail === 'admin@kings.com' || roleParam === 'admin') {
           userToSet = mockUsers.admin;
+          setUser(userToSet);
+          return;
       }
       
-      // Professor check
-      if (!userToSet && cleanEmail) {
-          const instructors = await getInstructors();
-          const foundInstructor = instructors.find(inst => inst.email.toLowerCase() === cleanEmail);
-          if (foundInstructor) {
-              userToSet = {
-                  id: foundInstructor.id,
-                  name: foundInstructor.name,
-                  email: foundInstructor.email,
-                  role: 'professor',
-                  avatar: foundInstructor.avatar || `https://placehold.co/128x128.png?text=${foundInstructor.name.charAt(0)}`,
-                  belt: foundInstructor.belt,
-                  stripes: foundInstructor.stripes || 0,
-                  attendance: { total: 0, lastMonth: 0 },
-                  nextGraduationProgress: 0,
-                  affiliations: foundInstructor.affiliations || [],
-                  branchId: '',
-                  category: 'Adult',
-              };
-          }
+      // If email is present, prioritize finding a real user in the database
+      if (cleanEmail) {
+        const foundUser = await getUserByEmail(cleanEmail);
+        if (foundUser) {
+          userToSet = foundUser;
+          setUser(userToSet);
+          return;
+        }
       }
 
-      // New student just created via signup form
+      // If it's a new student signup, construct the user object from params
       if (!userToSet && isNewStudent) {
           const affiliation = searchParams.get('affiliation') || '';
           const belt = searchParams.get('belt') || '';
@@ -176,11 +166,17 @@ export default function DashboardClientLayout({
               attendance: { total: 0, lastMonth: 0 },
               nextGraduationProgress: 5,
           };
+          setUser(userToSet);
+          return;
       }
       
-      // Fallback for existing student or default
+      // Fallback for demonstration purposes (e.g., professor login) or if no user is found
       if (!userToSet) {
-          userToSet = { ...mockUsers.student };
+          if (roleParam === 'professor') {
+            userToSet = { ...mockUsers.professor };
+          } else {
+            userToSet = { ...mockUsers.student };
+          }
           if (cleanEmail) userToSet.email = cleanEmail;
           if (name) userToSet.name = name;
       }
