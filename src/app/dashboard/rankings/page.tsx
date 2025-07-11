@@ -151,7 +151,7 @@ const GraduationPlan = () => {
 
     const displayedStudents = user.role === 'admin'
         ? students
-        : students.filter(s => s.affiliation === user.affiliation);
+        : students.filter(s => user.affiliations.some(aff => s.affiliations.includes(aff)));
 
     return (
         <Card className="mt-8">
@@ -205,7 +205,7 @@ const GraduationPlan = () => {
                         <p className="font-medium">{student.name}</p>
                         </div>
                     </TableCell>
-                    <TableCell>{student.affiliation}</TableCell>
+                    <TableCell>{student.affiliations.join(', ')}</TableCell>
                     <TableCell>
                         <Badge
                         className={cn(
