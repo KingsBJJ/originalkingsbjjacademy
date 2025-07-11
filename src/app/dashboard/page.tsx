@@ -42,7 +42,7 @@ import {
     type Student 
 } from "@/lib/firestoreService";
 import { Skeleton } from "@/components/ui/skeleton";
-import { generateTrainingFocus, TrainingFocusOutput } from "@/ai/flows/trainingFocusFlow";
+import { generateTrainingFocus, type TrainingFocusOutput } from "@/ai/flows/trainingFocusFlow";
 
 const DataCard = ({ title, value, description, icon: Icon }: { title: string; value: number | string; description: string; icon: React.ElementType }) => (
     <Card>
@@ -418,7 +418,7 @@ const ProfessorDashboard = () => {
     <>
         <div className="mb-6 grid gap-2">
             <h1 className="text-3xl font-bold tracking-tight">
-                Welcome to the Game! {user.name}
+                Welcome to the Game! {user.name.split(" ")[0]}
             </h1>
             <p className="text-muted-foreground">{subMessage}</p>
         </div>
@@ -734,7 +734,7 @@ export default function DashboardPage() {
 
   const welcomeMessage = {
     admin: "Visão geral da Kings Bjj",
-    student: `Welcome to the Game! ${user.name.split(" ")[0]}`,
+    student: `Olá, ${user.name.split(" ")[0]}`,
   };
 
   const subMessage = {
