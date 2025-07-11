@@ -453,14 +453,14 @@ const ProfessorDashboard = () => {
                 </CardHeader>
                 <CardContent>
                     {nextClass ? (
-                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                            <div>
+                        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                            <div className="flex-grow">
                                 <p className="text-lg font-semibold">{nextClass.name}</p>
                                 <p className="text-muted-foreground">
                                 {nextClass.day} às {nextClass.time.split(' - ')[0]}
                                 </p>
                             </div>
-                            <Button size="lg" className="w-full sm:w-auto" asChild>
+                            <Button size="lg" className="w-full shrink-0 sm:w-auto" asChild>
                                 <Link href={`/dashboard/schedule?role=${user.role}`}>Ver Grade Completa</Link>
                             </Button>
                         </div>
