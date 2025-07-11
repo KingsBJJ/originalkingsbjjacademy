@@ -18,7 +18,7 @@ import { KingsBjjLogo } from "@/components/kings-bjj-logo";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft } from 'lucide-react';
 import { sendPasswordResetEmail } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { auth } from "@/lib/firebase"; // Correctly import the shared auth instance
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
