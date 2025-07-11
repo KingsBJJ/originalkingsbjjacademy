@@ -68,7 +68,6 @@ const studentNavItems: NavItem[] = [
   { href: "/dashboard/check-in", icon: QrCode, label: "Check-in", className: "text-yellow-400 hover:text-yellow-300" },
   { href: "/dashboard/branches", icon: MapPin, label: "Filiais" },
   { href: "/dashboard/rankings", icon: Award, label: "Graduações" },
-  { href: "/terms-of-service", icon: FileText, label: "Termo de Resp." },
 ];
 
 const professorNavItems: NavItem[] = [
@@ -235,12 +234,14 @@ export default function DashboardClientLayout({
   const updateUser = useCallback((newUserData: Partial<User>) => {
     setUser(prevUser => {
       if (!prevUser) return null;
+      
       const updatedUser = { ...prevUser, ...newUserData };
       
-      if (newUserData.attendance) {
+      if (newUserData.attendance && prevUser.attendance) {
+        // Handle increment logic within this callback to ensure atomicity on the client state
         updatedUser.attendance = {
-          ...prevUser.attendance,
-          ...newUserData.attendance
+          total: prevUser.attendance.total + (newUserData.attendance.total || 0),
+          lastMonth: prevUser.attendance.lastMonth + (newUserData.attendance.lastMonth || 0),
         };
       }
       
