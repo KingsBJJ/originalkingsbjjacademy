@@ -233,28 +233,37 @@ export default function DashboardClientLayout({
 
   const updateUser = useCallback((newUserData: Partial<User>) => {
     setUser(prevUser => {
-      if (!prevUser) return null;
+        if (!prevUser) return null;
+
+        // --- Client-side State Update ---
+        const updatedUserForState = { ...prevUser };
+
+        // Handle attendance increment for local state
+        if (newUserData.attendance && prevUser.attendance) {
+            updatedUserForState.attendance = {
+                total: prevUser.attendance.total + (newUserData.attendance.total || 0),
+                lastMonth: prevUser.attendance.lastMonth + (newUserData.attendance.lastMonth || 0),
+            };
+            // Merge other properties non-destructively
+            Object.assign(updatedUserForState, { ...newUserData, attendance: updatedUserForState.attendance });
+        } else {
+            Object.assign(updatedUserForState, newUserData);
+        }
+        
+        // --- Server-side DB Update ---
+        // For the DB call, we pass the original newUserData which contains the increment instructions.
+        updateDbUser(prevUser.id, newUserData).catch(error => {
+            console.error("Failed to update user in DB:", error);
+            toast({
+                variant: "destructive",
+                title: "Erro de Sincronização",
+                description: "Não foi possível salvar as alterações no servidor.",
+            });
+            // Optional: Revert local state on failure
+            setUser(prevUser);
+        });
       
-      const updatedUser = { ...prevUser, ...newUserData };
-      
-      if (newUserData.attendance && prevUser.attendance) {
-        // Handle increment logic within this callback to ensure atomicity on the client state
-        updatedUser.attendance = {
-          total: prevUser.attendance.total + (newUserData.attendance.total || 0),
-          lastMonth: prevUser.attendance.lastMonth + (newUserData.attendance.lastMonth || 0),
-        };
-      }
-      
-      updateDbUser(updatedUser.id, newUserData).catch(error => {
-          console.error("Failed to update user in DB:", error);
-          toast({
-            variant: "destructive",
-            title: "Erro de Sincronização",
-            description: "Não foi possível salvar as alterações no servidor.",
-          });
-      });
-      
-      return updatedUser;
+      return updatedUserForState;
     });
   }, [toast]);
 
