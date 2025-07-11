@@ -37,16 +37,6 @@ const nextConfig = {
       }
     ],
   },
-  // Expose Firebase config to the client-side, with fallbacks to prevent errors.
-  // IMPORTANT: Only variables prefixed with NEXT_PUBLIC_ are exposed to the browser.
-  env: {
-    NEXT_PUBLIC_FIREBASE_API_KEY: webappConfig.apiKey || "",
-    NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: webappConfig.authDomain || "",
-    NEXT_PUBLIC_FIREBASE_PROJECT_ID: webappConfig.projectId || "",
-    NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: webappConfig.storageBucket || "",
-    NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: webappConfig.messagingSenderId || "",
-    NEXT_PUBLIC_FIREBASE_APP_ID: webappConfig.appId || "",
-  },
 };
 
 module.exports = nextConfig;
