@@ -285,6 +285,16 @@ export default function SignUpPage() {
   };
 
   const currentBeltList = category === 'adulto' ? allBelts : allBeltsKids;
+  
+  const isFormInvalid =
+    !name ||
+    !email ||
+    !password ||
+    !affiliation ||
+    !mainInstructor ||
+    !belt ||
+    (category === "kids" && !termsAccepted);
+
 
   return (
     <div className="relative flex min-h-screen w-full items-center justify-center p-4">
@@ -467,7 +477,7 @@ export default function SignUpPage() {
             )}
 
 
-            <Button type="submit" className="w-full" disabled={(category === 'kids' && !termsAccepted) || !mainInstructor}>
+            <Button type="submit" className="w-full" disabled={isFormInvalid}>
               Criar conta
             </Button>
           </form>
