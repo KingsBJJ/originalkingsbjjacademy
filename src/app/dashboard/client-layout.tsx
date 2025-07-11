@@ -23,7 +23,7 @@ import {
   SidebarInset,
 } from "@/components/ui/sidebar";
 import { KingsBjjLogo } from "@/components/kings-bjj-logo";
-import type { User } from "@/lib/mock-data";
+import type { User } from "@/lib/firestoreService";
 import { mockUsers } from "@/lib/mock-data";
 import {
   Award,
@@ -149,7 +149,7 @@ export default function DashboardClientLayout({
                   stripes: foundInstructor.stripes || 0,
                   attendance: { total: 0, lastMonth: 0 },
                   nextGraduationProgress: 0,
-                  affiliation: foundInstructor.affiliations?.[0] || 'N/A',
+                  affiliations: foundInstructor.affiliations || [],
                   branchId: '',
                   category: 'Adult',
               };
@@ -165,7 +165,7 @@ export default function DashboardClientLayout({
               name: name || 'Novo Aluno',
               email: email || '',
               role: 'student',
-              affiliation,
+              affiliations: affiliation ? [affiliation] : [],
               branchId: searchParams.get('branchId') || '',
               mainInstructor: searchParams.get('mainInstructor') || '',
               category: (searchParams.get('category') as User['category']) || 'Adult',

@@ -232,7 +232,7 @@ export default function SignUpPage() {
         email,
         password, // In a real app, this should be hashed server-side
         role: 'student',
-        affiliation,
+        affiliations: affiliation ? [affiliation] : [],
         branchId,
         mainInstructor,
         category: category === 'adulto' ? 'Adult' : 'Kids',

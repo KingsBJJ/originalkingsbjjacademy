@@ -13,6 +13,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   CheckCircle,
   Medal,
   Users,
@@ -20,6 +27,7 @@ import {
   User as UserIcon,
   BarChart,
   Trophy,
+  Building,
 } from "lucide-react";
 import { Bar, BarChart as RechartsBarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
 import { ChartConfig, ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
@@ -33,7 +41,6 @@ import {
     type Student 
 } from "@/lib/firestoreService";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useToast } from "@/hooks/use-toast";
 import type { Timestamp } from "firebase/firestore";
 
 const DataCard = ({ title, value, description, icon: Icon }: { title: string; value: number | string; description: string; icon: React.ElementType }) => (
@@ -95,7 +102,7 @@ const AdminDashboard = () => {
     if (!students || !branches) return [];
     
     const studentCounts = students.reduce((acc, student) => {
-        const affiliation = student.affiliation || "Sem Filial";
+        const affiliation = student.affiliations[0] || "Sem Filial";
         acc[affiliation] = (acc[affiliation] || 0) + 1;
         return acc;
     }, {} as Record<string, number>);
@@ -137,7 +144,7 @@ const AdminDashboard = () => {
 
     const attendanceByBranch: Record<string, number> = {}
     for (const student of students) {
-      const branchName = student.affiliation || 'Sem Filial'
+      const branchName = student.affiliations[0] || 'Sem Filial'
       if (branchName !== 'Sem Filial') {
         attendanceByBranch[branchName] =
           (attendanceByBranch[branchName] || 0) +
@@ -307,6 +314,13 @@ const ProfessorDashboard = () => {
   const [branches, setBranches] = useState<Branch[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedAffiliation, setSelectedAffiliation] = useState<string>("");
+
+  useEffect(() => {
+    if (user?.affiliations && user.affiliations.length > 0) {
+      setSelectedAffiliation(user.affiliations[0]);
+    }
+  }, [user]);
 
   useEffect(() => {
     if (!user) return;
@@ -318,7 +332,7 @@ const ProfessorDashboard = () => {
                 getStudents()
             ]);
             setBranches(branchesData);
-            setStudents(studentsData.filter(s => s.affiliation === user.affiliation));
+            setStudents(studentsData);
         } catch (error) {
             console.error("Failed to fetch professor dashboard data", error);
         } finally {
@@ -327,15 +341,21 @@ const ProfessorDashboard = () => {
     };
     fetchData();
   }, [user]);
+  
+  const filteredStudents = useMemo(() => {
+      if (!selectedAffiliation) return [];
+      return students.filter(s => s.affiliations.includes(selectedAffiliation));
+  }, [students, selectedAffiliation]);
+
 
   const monthlyStats = useMemo(() => {
-    if (!students) return { checkins: 0, newStudents: 0 };
+    if (!filteredStudents) return { checkins: 0, newStudents: 0 };
     
     const oneMonthAgo = new Date();
     oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
     const oneMonthAgoMillis = oneMonthAgo.getTime();
 
-    const newStudentsCount = students.filter(student => {
+    const newStudentsCount = filteredStudents.filter(student => {
         if (student.createdAt) {
             const createdAtDate = (student.createdAt as Timestamp).toDate();
             return createdAtDate.getTime() > oneMonthAgoMillis;
@@ -343,13 +363,13 @@ const ProfessorDashboard = () => {
         return false;
     }).length;
 
-    const checkinsCount = students.reduce((total, student) => total + (student.attendance?.lastMonth || 0), 0);
+    const checkinsCount = filteredStudents.reduce((total, student) => total + (student.attendance?.lastMonth || 0), 0);
 
     return {
         checkins: checkinsCount,
         newStudents: newStudentsCount,
     };
-  }, [students]);
+  }, [filteredStudents]);
 
   const annualPerformanceData = [
     { month: 'Jan', checkins: 45 },
@@ -381,18 +401,41 @@ const ProfessorDashboard = () => {
 
   const nextClass = branches
     .flatMap(b => b.schedule?.map(s => ({...s, branchName: b.name})))
-    .find(c => c.instructor.includes(user.name.split(" ")[1]));
+    .find(c => c.instructor.includes(user.name.split(" ")[1]) && c.branchName === selectedAffiliation);
+    
+  const showAffiliationSelector = user.affiliations.length > 1;
 
   return (
     <div className="grid grid-cols-1 gap-6">
+        {showAffiliationSelector && (
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2"><Building /> Selecionar Filial</CardTitle>
+                    <CardDescription>Você leciona em mais de uma filial. Escolha qual painel deseja visualizar.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Select value={selectedAffiliation} onValueChange={setSelectedAffiliation}>
+                        <SelectTrigger className="w-full md:w-1/2">
+                            <SelectValue placeholder="Selecione uma filial" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {user.affiliations.map(aff => (
+                                <SelectItem key={aff} value={aff}>{aff}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </CardContent>
+            </Card>
+        )}
+
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-            <DataCard title="Seus Alunos" value={students.length} description={`Alunos na sua filial: ${user.affiliation}`} icon={Users} />
+            <DataCard title="Seus Alunos" value={filteredStudents.length} description={`Alunos na filial: ${selectedAffiliation}`} icon={Users} />
             
             <Card className="col-span-1 md:col-span-2">
                 <CardHeader>
                     <CardTitle>Sua Próxima Aula</CardTitle>
                     <CardDescription>
-                        Prepare-se para a sua próxima aula agendada.
+                        Prepare-se para a sua próxima aula agendada em {selectedAffiliation}.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -409,7 +452,7 @@ const ProfessorDashboard = () => {
                             </Button>
                         </div>
                     ) : (
-                        <p className="text-muted-foreground">Nenhuma próxima aula encontrada.</p>
+                        <p className="text-muted-foreground">Nenhuma próxima aula encontrada para esta filial.</p>
                     )}
                 </CardContent>
             </Card>
@@ -421,7 +464,7 @@ const ProfessorDashboard = () => {
               <Trophy className="text-yellow-400" />
               Estatísticas do Mês
             </CardTitle>
-            <CardDescription>Desempenho da sua filial ({user.affiliation}).</CardDescription>
+            <CardDescription>Desempenho da sua filial ({selectedAffiliation}).</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -452,7 +495,7 @@ const ProfessorDashboard = () => {
               Desempenho Anual da Filial
             </CardTitle>
             <CardDescription>
-              Acompanhe o número total de check-ins ao longo do ano para a filial {user.affiliation}.
+              Acompanhe o número total de check-ins ao longo do ano para a filial {selectedAffiliation}.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -526,7 +569,7 @@ const StudentDashboard = () => {
   }
 
   const nextClass = branches
-      .find(b => b.name === user.affiliation)
+      .find(b => b.name === user.affiliations[0])
       ?.schedule?.[0];
 
   return (

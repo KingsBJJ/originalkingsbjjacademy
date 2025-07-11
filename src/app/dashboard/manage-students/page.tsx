@@ -69,7 +69,7 @@ const StudentTable = ({ students, userRole }: { students: Student[], userRole: '
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell>{student.affiliation}</TableCell>
+                  <TableCell>{student.affiliations[0]}</TableCell>
                   <TableCell>
                      <Badge
                       className={cn("text-xs font-semibold", beltStyle.bg, beltStyle.text)}
@@ -134,7 +134,7 @@ export default async function ManageStudentsPage({
   
   const filteredStudents = user.role === 'admin'
     ? allStudents
-    : allStudents.filter(s => s.affiliation === user.affiliation && s.mainInstructor === user.name);
+    : allStudents.filter(s => s.affiliations.includes(user.affiliations[0]) && s.mainInstructor === user.name);
   
   const adultStudents = filteredStudents.filter(s => s.category === 'Adult');
   const kidsStudents = filteredStudents.filter(s => s.category === 'Kids');
@@ -146,7 +146,7 @@ export default async function ManageStudentsPage({
         <p className="text-muted-foreground">
           {user.role === 'admin' 
             ? "Visualize e gerencie todos os alunos do sistema."
-            : `Visualize os alunos da sua filial (${user.affiliation}).`
+            : `Visualize os alunos da sua filial (${user.affiliations[0]}).`
           }
         </p>
       </div>

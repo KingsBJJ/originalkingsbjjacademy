@@ -36,7 +36,7 @@ export type User = {
     lastMonth: number;
   };
   nextGraduationProgress: number;
-  affiliation: string;
+  affiliations: string[];
   branchId: string;
   category: 'Adult' | 'Kids';
   mainInstructor?: string;
@@ -484,11 +484,14 @@ export const getNotifications = async (user: User): Promise<Notification[]> => {
         // Firestore does not support 'in' queries with 'orderBy' on different fields
         // without a composite index. It's more robust to fetch two separate queries and merge.
         const globalQuery = query(notifsCollection, where('target', '==', 'all'));
-        const affiliationQuery = query(notifsCollection, where('target', '==', user.affiliation));
+        
+        const affiliationQueries = user.affiliations.map(affiliation => 
+            query(notifsCollection, where('target', '==', affiliation))
+        );
 
-        const [globalSnapshot, affiliationSnapshot] = await Promise.all([
+        const [globalSnapshot, ...affiliationSnapshots] = await Promise.all([
             getDocs(globalQuery),
-            getDocs(affiliationQuery)
+            ...affiliationQueries.map(q => getDocs(q))
         ]);
 
         const notificationsMap = new Map<string, Notification>();
@@ -496,9 +499,11 @@ export const getNotifications = async (user: User): Promise<Notification[]> => {
         globalSnapshot.docs.forEach(doc => {
             notificationsMap.set(doc.id, processNotificationDoc(doc));
         });
-
-        affiliationSnapshot.docs.forEach(doc => {
-            notificationsMap.set(doc.id, processNotificationDoc(doc));
+        
+        affiliationSnapshots.forEach(snapshot => {
+             snapshot.docs.forEach(doc => {
+                notificationsMap.set(doc.id, processNotificationDoc(doc));
+            });
         });
         
         const allNotifications = Array.from(notificationsMap.values());

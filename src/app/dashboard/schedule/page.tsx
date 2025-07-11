@@ -56,13 +56,15 @@ export default async function SchedulePage({
   const role = (searchParams?.role || 'student') as User['role'];
   
   // Get user details from URL or mock data to determine affiliation
-  const email = searchParams?.email as string;
   const affiliationFromParams = searchParams?.affiliation as string;
-  const userFromMock = mockUsers[role] || mockUsers.student;
-
-  // Use the specific user's affiliation if available, otherwise fallback to mock
-  const userAffiliation = affiliationFromParams || userFromMock.affiliation;
   
+  // Use a mock user to get affiliations for server-side rendering logic.
+  // The actual, full user object is handled on the client.
+  const userFromMock = mockUsers[role] || mockUsers.student;
+  const userAffiliations = affiliationFromParams 
+      ? [affiliationFromParams] 
+      : userFromMock.affiliations;
+
   const branches = await getBranches();
 
   // Flatten all class schedules from all branches into a single array
@@ -76,7 +78,7 @@ export default async function SchedulePage({
   // Filter classes based on user role and affiliation
   const displayedClasses = role === "admin"
       ? allClasses // Admin sees all classes
-      : allClasses.filter((c) => c.branchName === userAffiliation); // Students/professors see only their branch's classes
+      : allClasses.filter((c) => userAffiliations.includes(c.branchName)); // Students/professors see their branch's classes
 
   const adultClasses = displayedClasses.filter(c => c.category === "Adults");
   const kidsClasses = displayedClasses.filter(c => c.category === "Kids");

@@ -85,7 +85,7 @@ const studentUser: User = {
     lastMonth: 12,
   },
   nextGraduationProgress: 75,
-  affiliation: "Kings BJJ - Centro",
+  affiliations: ["Kings BJJ - Centro"],
   branchId: "b1",
   category: "Adult",
   mainInstructor: "Prof. Rickson Gracie",
@@ -104,7 +104,7 @@ const professorUser: User = {
     lastMonth: 20,
   },
   nextGraduationProgress: 100,
-  affiliation: "Kings BJJ - Centro",
+  affiliations: ["Kings BJJ - Centro"],
   branchId: "b1",
   category: "Adult",
 };
@@ -122,7 +122,7 @@ const adminUser: User = {
     lastMonth: 99,
   },
   nextGraduationProgress: 100,
-  affiliation: "Todas as Filiais",
+  affiliations: ["Todas as Filiais"],
   branchId: "all",
   category: "Adult",
 };

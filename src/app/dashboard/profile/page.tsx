@@ -55,7 +55,7 @@ export default function ProfilePage() {
           <h1 className="text-3xl font-bold tracking-tight">{user.name}</h1>
           <p className="text-muted-foreground">{user.email}</p>
           <p className="text-sm text-muted-foreground">
-            {user.affiliation}
+            {user.affiliations.join(', ')}
           </p>
           <div className="mt-2 flex items-center gap-2">
             <Badge
