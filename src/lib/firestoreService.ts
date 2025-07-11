@@ -151,7 +151,7 @@ export const getBranch = async (id: string): Promise<Branch | null> => {
   try {
     const docRef = doc(db, 'branches', id);
     const docSnap = await getDoc(docRef);
-    return docSnap.exists() ? { id: docSnap.id, ...doc.data() } as Branch : null;
+    return docSnap.exists() ? { id: docSnap.id, ...docSnap.data() } as Branch : null;
   } catch (error) {
     console.error(`Error getting branch with id ${id}:`, error);
     return null;
@@ -244,7 +244,7 @@ export const getInstructor = async (id: string): Promise<Instructor | null> => {
   try {
     const docRef = doc(db, 'instructors', id);
     const docSnap = await getDoc(docRef);
-    return docSnap.exists() ? { id: docSnap.id, ...doc.data() } as Instructor : null;
+    return docSnap.exists() ? { id: docSnap.id, ...docSnap.data() } as Instructor : null;
   } catch (error) {
     console.error(`Error getting instructor with id ${id}:`, error);
     return null;
