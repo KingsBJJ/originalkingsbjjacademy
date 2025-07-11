@@ -104,11 +104,20 @@ export default function DashboardClientLayout({
   const { toast } = useToast();
 
   const [user, setUser] = useState<User | null>(null);
+  const [newStudentNotification, setNewStudentNotification] = useState(false);
+  const [newStudentName, setNewStudentName] = useState('');
 
   useEffect(() => {
     const role = searchParams.get('role') as User['role'];
     const email = searchParams.get('email');
     const name = searchParams.get('name');
+    const isNewStudent = searchParams.get('newStudent') === 'true';
+
+    if (isNewStudent && name) {
+      setNewStudentNotification(true);
+      setNewStudentName(name);
+    }
+    
     const cleanEmail = email?.trim().toLowerCase();
 
     let userToSet: User;
@@ -188,7 +197,9 @@ export default function DashboardClientLayout({
     
     // Persist all relevant user info from the initial URL to maintain state across navigation
     searchParams.forEach((value, key) => {
-      params.set(key, value);
+        if (key !== 'newStudent') { // Don't persist the new student flag
+            params.set(key, value);
+        }
     });
 
     if (!params.has('role') && user.role) {
@@ -218,6 +229,8 @@ export default function DashboardClientLayout({
     professor: 'Professor',
     admin: 'Admin'
   };
+
+  const hasNotification = user.role === 'admin' && newStudentNotification;
 
   return (
     <UserContext.Provider value={user}>
@@ -284,26 +297,47 @@ export default function DashboardClientLayout({
                     </h1>
                 </div>
                  <div className="flex items-center gap-4">
-                   <Popover>
+                   <Popover onOpenChange={(isOpen) => !isOpen && setNewStudentNotification(false)}>
                       <PopoverTrigger asChild>
                         <Button variant="ghost" size="icon" className="relative rounded-full">
                           <Bell className="h-5 w-5" />
-                           <span className="absolute top-1.5 right-1.5 flex h-2.5 w-2.5">
+                           {hasNotification && (
+                            <span className="absolute top-1.5 right-1.5 flex h-2.5 w-2.5">
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
                                 <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
                            </span>
+                           )}
                           <span className="sr-only">Ver notificações</span>
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent align="end" className="w-96 p-0">
                         <div className="flex items-center justify-between border-b p-4">
                           <h3 className="font-semibold">Recados Recentes</h3>
-                          <Badge variant="secondary">3</Badge>
+                          <Badge variant="secondary">{hasNotification ? "1" : "0"}</Badge>
                         </div>
                         <div className="max-h-80 overflow-y-auto">
-                            <div className="p-4 text-center text-sm text-muted-foreground">
-                                Nenhum recado recente.
-                            </div>
+                            {hasNotification ? (
+                                <div className="p-4">
+                                    <div className="flex items-start gap-3">
+                                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500/20">
+                                           <UserIcon className="h-4 w-4 text-green-400"/>
+                                        </div>
+                                        <div className="flex-1">
+                                            <p className="font-semibold">Novo Aluno Cadastrado</p>
+                                            <p className="text-sm text-muted-foreground">
+                                                O aluno <span className="font-bold text-foreground">{newStudentName}</span> acaba de se cadastrar.
+                                            </p>
+                                            <Button variant="link" size="sm" className="p-0 h-auto mt-1" asChild>
+                                                <Link href={getHref('/dashboard/manage-students')}>Ver lista de alunos</Link>
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="p-4 text-center text-sm text-muted-foreground">
+                                    Nenhum recado recente.
+                                </div>
+                            )}
                         </div>
                         <div className="border-t p-2">
                             <Button size="sm" variant="link" className="w-full" asChild>

@@ -121,6 +121,9 @@ export const seedInitialData = async () => {
     return { success: true, message: 'Data seeding check completed.' };
   } catch (error) {
     console.error('❌ Error seeding initial data:', error);
+    if (error instanceof Error) {
+        throw new Error(`Failed to seed initial data: ${error.message}`);
+    }
     throw new Error('Failed to seed initial data.');
   }
 };
@@ -151,7 +154,7 @@ export const getBranch = async (id: string): Promise<Branch | null> => {
   try {
     const docRef = doc(db, 'branches', id);
     const docSnap = await getDoc(docRef);
-    return docSnap.exists() ? { id: docSnap.id, ...docSnap.data() } as Branch : null;
+    return docSnap.exists() ? ({ id: docSnap.id, ...docSnap.data() } as Branch) : null;
   } catch (error) {
     console.error(`Error getting branch with id ${id}:`, error);
     return null;
@@ -168,7 +171,10 @@ export const addBranch = async (branchData: Omit<Branch, 'id'>) => {
     return { id: docRef.id };
   } catch (error) {
     console.error('Error adding branch:', error);
-    throw new Error(`Failed to add branch: ${error.message}`);
+    if (error instanceof Error) {
+        throw new Error(`Failed to add branch: ${error.message}`);
+    }
+    throw new Error('Failed to add branch');
   }
 };
 
@@ -181,7 +187,10 @@ export const updateBranch = async (id: string, branchData: Partial<Omit<Branch, 
     await updateDoc(docRef, branchData);
   } catch (error) {
     console.error('Error updating branch:', error);
-    throw new Error(`Failed to update branch: ${error.message}`);
+    if (error instanceof Error) {
+        throw new Error(`Failed to update branch: ${error.message}`);
+    }
+    throw new Error('Failed to update branch');
   }
 };
 
@@ -194,7 +203,10 @@ export const deleteBranch = async (id: string) => {
     await deleteDoc(docRef);
   } catch (error) {
     console.error('Error deleting branch:', error);
-    throw new Error(`Failed to delete branch: ${error.message}`);
+    if (error instanceof Error) {
+        throw new Error(`Failed to delete branch: ${error.message}`);
+    }
+    throw new Error('Failed to delete branch');
   }
 };
 
@@ -244,7 +256,7 @@ export const getInstructor = async (id: string): Promise<Instructor | null> => {
   try {
     const docRef = doc(db, 'instructors', id);
     const docSnap = await getDoc(docRef);
-    return docSnap.exists() ? { id: docSnap.id, ...docSnap.data() } as Instructor : null;
+    return docSnap.exists() ? ({ id: docSnap.id, ...docSnap.data() } as Instructor) : null;
   } catch (error) {
     console.error(`Error getting instructor with id ${id}:`, error);
     return null;
@@ -277,7 +289,10 @@ export const updateInstructor = async (id: string, instructorData: Partial<Omit<
     await updateDoc(docRef, instructorData);
   } catch (error) {
     console.error('Error updating instructor:', error);
-    throw new Error(`Failed to update instructor: ${error.message}`);
+    if (error instanceof Error) {
+        throw new Error(`Failed to update instructor: ${error.message}`);
+    }
+    throw new Error('Failed to update instructor');
   }
 };
 
@@ -290,7 +305,10 @@ export const deleteInstructor = async (id: string) => {
     await deleteDoc(docRef);
   } catch (error) {
     console.error('Error deleting instructor:', error);
-    throw new Error(`Failed to delete instructor: ${error.message}`);
+    if (error instanceof Error) {
+        throw new Error(`Failed to delete instructor: ${error.message}`);
+    }
+    throw new Error('Failed to delete instructor');
   }
 };
 
@@ -311,6 +329,22 @@ export const getStudents = async (): Promise<Student[]> => {
   }
 };
 
+export const addStudent = async (studentData: Omit<Student, 'id'>) => {
+    if (!db) {
+        throw new Error('Firestore not initialized');
+    }
+    try {
+        const userWithRole = { ...studentData, role: 'student' as const };
+        const docRef = await addDoc(collection(db, 'users'), userWithRole);
+        return { success: true, id: docRef.id };
+    } catch (error) {
+        console.error("Error adding student: ", error);
+        const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+        return { success: false, message: errorMessage };
+    }
+};
+
+
 // --- Terms Acceptance Functions ---
 
 export const saveTermsAcceptance = async (data: Omit<TermsAcceptance, 'id' | 'acceptedAt'>) => {
@@ -325,7 +359,10 @@ export const saveTermsAcceptance = async (data: Omit<TermsAcceptance, 'id' | 'ac
     return docRef.id;
   } catch (error) {
     console.error('Error saving terms acceptance:', error);
-    throw new Error(`Failed to save terms acceptance: ${error.message}`);
+    if (error instanceof Error) {
+        throw new Error(`Failed to save terms acceptance: ${error.message}`);
+    }
+    throw new Error('Failed to save terms acceptance');
   }
 };
 
@@ -340,7 +377,10 @@ export const updateUser = async (id: string, userData: Partial<User>) => {
     await updateDoc(docRef, userData);
   } catch (error) {
     console.error('Error updating user:', error);
-    throw new Error(`Failed to update user: ${error.message}`);
+    if (error instanceof Error) {
+        throw new Error(`Failed to update user: ${error.message}`);
+    }
+    throw new Error('Failed to update user');
   }
 };
 

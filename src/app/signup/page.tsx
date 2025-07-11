@@ -37,7 +37,7 @@ import {
   DialogTrigger
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { getBranches, saveTermsAcceptance, getInstructorsByAffiliation, type Branch, type Instructor } from "@/lib/firestoreService";
+import { getBranches, saveTermsAcceptance, getInstructorsByAffiliation, addStudent, type Branch, type Instructor, type User } from "@/lib/firestoreService";
 
 
 function TermsDialog({ onAccept, isAccepted }: { onAccept: (parentName: string, childName: string) => void, isAccepted: boolean }) {
@@ -213,7 +213,7 @@ export default function SignUpPage() {
   };
 
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (category === "kids" && !termsAccepted) {
@@ -230,24 +230,58 @@ export default function SignUpPage() {
         title: "Solicitação Enviada",
         description: "Seu cadastro como professor foi enviado para aprovação do administrador.",
       });
+      // Here you would typically save this to a 'pending_instructors' collection for admin approval
+      // For now, we'll just show the toast and prevent dashboard navigation.
+      return;
     }
 
     const selectedBranch = branches.find(b => b.name === affiliation);
     const branchId = selectedBranch ? selectedBranch.id : '';
 
-    const params = new URLSearchParams({
-        role,
+    const newStudentData: Omit<User, 'id'> = {
         name,
         email,
+        password, // In a real app, this should be hashed server-side
+        role: 'student',
         affiliation,
         branchId,
         mainInstructor,
         category: category === 'adulto' ? 'Adult' : 'Kids',
         belt,
-        stripes: String(stripes),
-    });
+        stripes,
+        avatar: `https://placehold.co/128x128.png?text=${name.charAt(0)}`,
+        attendance: { total: 0, lastMonth: 0 },
+        nextGraduationProgress: 0,
+        isFirstLogin: true,
+    };
 
-    router.push(`/dashboard?${params.toString()}`);
+    const result = await addStudent(newStudentData);
+
+    if (result.success) {
+        toast({
+            title: "Cadastro realizado com sucesso!",
+            description: "Você será redirecionado para o painel."
+        });
+        const params = new URLSearchParams({
+            role: 'student',
+            name,
+            email,
+            affiliation,
+            branchId,
+            mainInstructor,
+            category: category === 'adulto' ? 'Adult' : 'Kids',
+            belt,
+            stripes: String(stripes),
+            newStudent: "true", // Flag for admin notification
+        });
+        router.push(`/dashboard?${params.toString()}`);
+    } else {
+        toast({
+            variant: "destructive",
+            title: "Erro no cadastro",
+            description: result.message || "Não foi possível criar a conta. Tente novamente."
+        });
+    }
   };
 
   const currentBeltList = category === 'adulto' ? allBelts : allBeltsKids;
