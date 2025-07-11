@@ -20,7 +20,6 @@ import {
   User as UserIcon,
   BarChart,
   Trophy,
-  DatabaseZap,
 } from "lucide-react";
 import { Bar, BarChart as RechartsBarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
 import { ChartConfig, ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
@@ -29,7 +28,6 @@ import {
     getBranches, 
     getInstructors, 
     getStudents, 
-    seedInitialData,
     type Branch, 
     type Instructor, 
     type Student 
@@ -64,30 +62,6 @@ const AdminDashboard = () => {
   const [instructors, setInstructors] = useState<Instructor[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
-  const [isSeeding, setIsSeeding] = useState(false);
-
-  const handleForceSeed = async () => {
-    setIsSeeding(true);
-    try {
-      await seedInitialData();
-      toast({
-        title: "Dados Carregados!",
-        description: "Os dados de exemplo foram carregados. Recarregue a página para ver as listas.",
-      });
-      // Optionally re-fetch data right after seeding
-      fetchData();
-    } catch (error) {
-      console.error(error);
-      toast({
-        variant: "destructive",
-        title: "Erro ao carregar dados",
-        description: "Não foi possível carregar os dados. Verifique o console para mais detalhes.",
-      });
-    } finally {
-      setIsSeeding(false);
-    }
-  };
 
   const fetchData = async () => {
       setLoading(true);
@@ -479,7 +453,7 @@ export default function DashboardPage() {
   const welcomeMessage = {
     admin: "Visão geral da Kings Bjj",
     professor: `Bem-vindo de volta, ${user.name.split(" ")[0]}!`,
-    student: "Welcome to the Game!",
+    student: "Welcome to the Game ! ( Aluno)",
   };
 
   const subMessage = {
