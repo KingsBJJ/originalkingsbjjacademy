@@ -109,7 +109,6 @@ export default function SignUpPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("student");
   const [belt, setBelt] = useState("");
   const [stripes, setStripes] = useState(0);
   const [category, setCategory] = useState("adulto");
@@ -225,16 +224,6 @@ export default function SignUpPage() {
         return;
     }
 
-    if (role === 'professor') {
-      toast({
-        title: "Solicitação Enviada",
-        description: "Seu cadastro como professor foi enviado para aprovação do administrador.",
-      });
-      // Here you would typically save this to a 'pending_instructors' collection for admin approval
-      // For now, we'll just show the toast and prevent dashboard navigation.
-      return;
-    }
-
     const selectedBranch = branches.find(b => b.name === affiliation);
     const branchId = selectedBranch ? selectedBranch.id : '';
 
@@ -312,7 +301,7 @@ export default function SignUpPage() {
         <CardHeader className="text-center">
           <KingsBjjLogo className="mx-auto mb-4 h-16 w-16" />
           <CardTitle className="text-3xl font-bold tracking-tight text-white">
-            Criar Conta
+            Criar Conta de Aluno
           </CardTitle>
           <CardDescription className="text-white/80">Insira seus dados para começar.</CardDescription>
         </CardHeader>
@@ -341,24 +330,6 @@ export default function SignUpPage() {
             <div className="grid gap-2">
               <Label htmlFor="confirm-password" className="text-white/80">Confirmar Senha</Label>
               <Input id="confirm-password" type="password" required className="bg-white/5 border-white/20 text-white"/>
-            </div>
-
-            <div className="grid gap-2">
-              <Label className="text-white/80">Tipo de Conta</Label>
-              <RadioGroup
-                defaultValue="student"
-                onValueChange={setRole}
-                className="flex gap-4 pt-2"
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="student" id="r-aluno" />
-                  <Label htmlFor="r-aluno" className="text-white/80 font-normal">Aluno</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="professor" id="r-professor" />
-                  <Label htmlFor="r-professor" className="text-white/80 font-normal">Professor</Label>
-                </div>
-              </RadioGroup>
             </div>
 
             <div className="grid gap-2">
