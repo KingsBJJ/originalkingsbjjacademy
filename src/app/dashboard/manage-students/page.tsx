@@ -139,25 +139,18 @@ const StudentsListSkeleton = () => (
 async function StudentList({ user }: { user: User }) {
   const allStudents = await getStudents();
 
-  // Filter students based on user role
-  const filteredStudents = user.role === 'admin'
-    ? allStudents // Admin sees all students
-    : allStudents.filter(student => student.mainInstructor === user.name); // Professor sees only their own students
+  // Admin sees all students
+  const filteredStudents = allStudents;
 
   const adultStudents = filteredStudents.filter(s => s.category === 'Adult');
   const kidsStudents = filteredStudents.filter(s => s.category === 'Kids');
 
-  const professorAffiliationText = `Visualize os alunos que se cadastraram com você.`;
-
   return (
     <div className="grid gap-6">
        <div>
-        <h1 className="text-3xl font-bold tracking-tight">Alunos</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Gerenciar Alunos</h1>
         <p className="text-muted-foreground">
-          {user.role === 'admin' 
-            ? "Visualize e gerencie todos os alunos do sistema."
-            : professorAffiliationText
-          }
+          Visualize e gerencie todos os alunos do sistema.
         </p>
       </div>
        <Card>
@@ -194,19 +187,16 @@ export default async function ManageStudentsPage({
   const role = (searchParams?.role || 'student') as User['role'];
   
   // Create a representative user object for data fetching and permission checks.
-  // This uses mock data as a base and overrides with URL params for flexibility.
   const baseUser = mockUsers[role] || mockUsers.student;
   const user: User = {
       ...baseUser,
       role,
       email: (searchParams?.email as string) || baseUser.email,
       name: (searchParams?.name as string) || baseUser.name,
-      // In a real scenario, affiliations would come from the authenticated user session.
-      // Here, we simulate it based on professor's mock data.
       affiliations: role === 'professor' ? baseUser.affiliations : [], 
   };
   
-  if (role === 'student') {
+  if (role !== 'admin') {
     return (
       <div className="flex h-full items-center justify-center">
         <Card className="w-full max-w-md">
@@ -217,7 +207,7 @@ export default async function ManageStudentsPage({
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <p>Esta área é restrita a administradores e professores.</p>
+            <p>Esta área é restrita a administradores.</p>
              <Button asChild className="mt-4">
               <Link href={`/dashboard?role=${user?.role || 'student'}`}>Voltar ao Painel</Link>
             </Button>

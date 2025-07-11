@@ -37,6 +37,7 @@ import {
   QrCode,
   Calendar,
   FileText,
+  Contact,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -75,6 +76,7 @@ const professorNavItems: NavItem[] = [
   { href: "/dashboard/notifications", icon: Bell, label: "Notificações" },
   { href: "/dashboard/schedule", icon: Calendar, label: "Horários" },
   { href: "/dashboard/profile", icon: UserIcon, label: "Perfil" },
+  { href: "/dashboard/my-students", icon: Contact, label: "Meus Alunos" },
   { href: "/dashboard/instructors", icon: Users, label: "Professores" },
   { href: "/dashboard/rankings", icon: Award, label: "Graduações" },
   { href: "/dashboard/branches", icon: MapPin, label: "Filiais" },
@@ -87,7 +89,7 @@ const adminNavItems: NavItem[] = [
   { href: "/dashboard/class-qr", icon: QrCode, label: "QR Code Universal" },
   { href: "/dashboard/profile", icon: UserIcon, label: "Perfil" },
   { href: "/dashboard/instructors", icon: Users, label: "Professores" },
-  { href: "/dashboard/manage-students", icon: Shield, label: "Alunos" },
+  { href: "/dashboard/manage-students", icon: Shield, label: "Gerenciar Alunos" },
   { href: "/dashboard/rankings", icon: Award, label: "Graduações" },
   { href: "/dashboard/branches", icon: MapPin, label: "Filiais" },
   { href: "/terms-of-service", icon: FileText, label: "Termo de Resp." },
