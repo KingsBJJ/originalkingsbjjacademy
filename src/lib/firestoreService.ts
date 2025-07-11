@@ -326,7 +326,32 @@ export const deleteInstructor = async (id: string) => {
   }
 };
 
-// --- Student Functions ---
+// --- Student/User Functions ---
+
+export const checkIfEmailExists = async (email: string): Promise<boolean> => {
+    if (!db) {
+        console.error('Error checking email: Firestore is not initialized.');
+        // To be safe, prevent account creation if DB is not available
+        return true;
+    }
+    try {
+        const lowercasedEmail = email.toLowerCase();
+        // Check in 'users' collection
+        const usersQuery = query(collection(db, 'users'), where('email', '==', lowercasedEmail), limit(1));
+        const usersSnapshot = await getDocs(usersQuery);
+        if (!usersSnapshot.empty) return true;
+
+        // Check in 'instructors' collection
+        const instructorsQuery = query(collection(db, 'instructors'), where('email', '==', lowercasedEmail), limit(1));
+        const instructorsSnapshot = await getDocs(instructorsQuery);
+        return !instructorsSnapshot.empty;
+
+    } catch (error) {
+        console.error('Error checking if email exists:', error);
+        // Prevent account creation in case of error
+        return true;
+    }
+};
 
 export const getStudents = async (): Promise<Student[]> => {
   if (!db) {
@@ -345,10 +370,15 @@ export const getStudents = async (): Promise<Student[]> => {
 
 export const addStudent = async (studentData: Omit<Student, 'id'>) => {
     if (!db) {
-        throw new Error('Firestore not initialized');
+        return { success: false, message: 'Firestore not initialized' };
     }
     try {
-        const userWithRole = { ...studentData, role: 'student' as const };
+        const emailExists = await checkIfEmailExists(studentData.email);
+        if (emailExists) {
+            return { success: false, message: 'Este e-mail já pertence a outra conta.' };
+        }
+
+        const userWithRole = { ...studentData, role: 'student' as const, email: studentData.email.toLowerCase() };
         const docRef = await addDoc(collection(db, 'users'), userWithRole);
         return { success: true, id: docRef.id };
     } catch (error) {
@@ -356,6 +386,22 @@ export const addStudent = async (studentData: Omit<Student, 'id'>) => {
         const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
         return { success: false, message: errorMessage };
     }
+};
+
+export const updateUser = async (id: string, userData: Partial<User>) => {
+  if (!db) {
+    throw new Error('Failed to update user: Firestore is not initialized.');
+  }
+  try {
+    const docRef = doc(db, 'users', id);
+    await updateDoc(docRef, userData);
+  } catch (error) {
+    console.error('Error updating user:', error);
+    if (error instanceof Error) {
+        throw new Error(`Failed to update user: ${error.message}`);
+    }
+    throw new Error('Failed to update user');
+  }
 };
 
 
@@ -380,23 +426,6 @@ export const saveTermsAcceptance = async (data: Omit<TermsAcceptance, 'id' | 'ac
   }
 };
 
-// --- User Functions ---
-
-export const updateUser = async (id: string, userData: Partial<User>) => {
-  if (!db) {
-    throw new Error('Failed to update user: Firestore is not initialized.');
-  }
-  try {
-    const docRef = doc(db, 'users', id);
-    await updateDoc(docRef, userData);
-  } catch (error) {
-    console.error('Error updating user:', error);
-    if (error instanceof Error) {
-        throw new Error(`Failed to update user: ${error.message}`);
-    }
-    throw new Error('Failed to update user');
-  }
-};
 
 // --- Notification Functions ---
 
