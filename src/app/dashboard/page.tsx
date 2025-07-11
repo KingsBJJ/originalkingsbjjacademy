@@ -327,10 +327,37 @@ const ProfessorDashboard = () => {
     fetchData();
   }, [user]);
 
+  const monthlyCheckins = useMemo(() => {
+    if (!students) return 0;
+    return students.reduce((total, student) => total + (student.attendance?.lastMonth || 0), 0);
+  }, [students]);
+
+  const annualPerformanceData = [
+    { month: 'Jan', checkins: 45 },
+    { month: 'Fev', checkins: 48 },
+    { month: 'Mar', checkins: 55 },
+    { month: 'Abr', checkins: 52 },
+    { month: 'Mai', checkins: 60 },
+    { month: 'Jun', checkins: 58 },
+    { month: 'Jul', checkins: 62 },
+    { month: 'Ago', checkins: 65 },
+    { month: 'Set', checkins: 61 },
+    { month: 'Out', checkins: 68 },
+    { month: 'Nov', checkins: 72 },
+    { month: 'Dez', checkins: 70 },
+  ];
+
   if (!user) return null;
 
   if (loading) {
-      return <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"><Skeleton className="h-36 md:col-span-1 lg:col-span-3" /><Skeleton className="h-36 md:col-span-1 lg:col-span-3" /></div>;
+      return (
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <Skeleton className="h-36" />
+            <Skeleton className="h-36 lg:col-span-2" />
+            <Skeleton className="h-52 md:col-span-3" />
+            <Skeleton className="h-80 md:col-span-3" />
+        </div>
+      );
   }
 
   const nextClass = branches
@@ -338,36 +365,84 @@ const ProfessorDashboard = () => {
     .find(c => c.instructor.includes(user.name.split(" ")[1]));
 
   return (
-    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <DataCard title="Seus Alunos" value={students.length} description={`Alunos na sua filial: ${user.affiliation}`} icon={Users} />
-        
-        <Card className="col-span-1 lg:col-span-2">
-            <CardHeader>
-                <CardTitle>Sua Próxima Aula</CardTitle>
-                <CardDescription>
-                    Prepare-se para a sua próxima aula agendada.
-                </CardDescription>
-            </CardHeader>
-            <CardContent>
-                {nextClass ? (
-                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                        <div>
-                            <p className="text-lg font-semibold">{nextClass.name}</p>
-                            <p className="text-muted-foreground">
-                            {nextClass.day} às {nextClass.time.split(' - ')[0]}
-                            </p>
+    <div className="grid grid-cols-1 gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+            <DataCard title="Seus Alunos" value={students.length} description={`Alunos na sua filial: ${user.affiliation}`} icon={Users} />
+            
+            <Card className="col-span-1 md:col-span-2">
+                <CardHeader>
+                    <CardTitle>Sua Próxima Aula</CardTitle>
+                    <CardDescription>
+                        Prepare-se para a sua próxima aula agendada.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    {nextClass ? (
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                                <p className="text-lg font-semibold">{nextClass.name}</p>
+                                <p className="text-muted-foreground">
+                                {nextClass.day} às {nextClass.time.split(' - ')[0]}
+                                </p>
+                            </div>
+                            <Button size="lg" className="w-full sm:w-auto" asChild>
+                                <Link href={`/dashboard/schedule?role=${user.role}`}>Ver Grade Completa</Link>
+                            </Button>
                         </div>
-                        <Button size="lg" className="w-full sm:w-auto" asChild>
-                            <Link href={`/dashboard/schedule?role=${user.role}`}>Ver Grade Completa</Link>
-                        </Button>
-                    </div>
-                ) : (
-                    <p className="text-muted-foreground">Nenhuma próxima aula encontrada.</p>
-                )}
-            </CardContent>
+                    ) : (
+                        <p className="text-muted-foreground">Nenhuma próxima aula encontrada.</p>
+                    )}
+                </CardContent>
+            </Card>
+        </div>
+        
+        <Card className="md:col-span-3">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Trophy className="text-yellow-400" />
+              Estatísticas do Mês
+            </CardTitle>
+            <CardDescription>Desempenho da sua filial ({user.affiliation}).</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="rounded-lg border bg-card-foreground/5 p-6">
+              <h3 className="text-sm font-semibold text-muted-foreground">Total de Check-ins no Mês</h3>
+                <div className="flex items-baseline gap-4 mt-2">
+                  <p className="text-3xl font-bold text-primary">{monthlyCheckins}</p>
+                   <span className="text-sm text-muted-foreground"> check-ins</span>
+                </div>
+              <p className="text-xs text-muted-foreground mt-1">Baseado no número de check-ins de alunos no último mês.</p>
+            </div>
+          </CardContent>
         </Card>
 
-        <Card className="md:col-span-2 lg:col-span-3">
+        <Card className="md:col-span-3">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart />
+              Desempenho Anual da Filial
+            </CardTitle>
+            <CardDescription>
+              Acompanhe o número total de check-ins ao longo do ano para a filial {user.affiliation}.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer config={barChartConfig} className="h-64 w-full">
+              <RechartsBarChart
+                accessibilityLayer
+                data={annualPerformanceData}
+                margin={{ left: -10, right: 20 }}
+              >
+                <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} fontSize={12} />
+                <YAxis tickLine={false} axisLine={false} tickMargin={8} fontSize={12} allowDecimals={false} />
+                <Tooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
+                <Bar dataKey="checkins" fill="var(--color-checkins)" radius={4} />
+              </RechartsBarChart>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+
+        <Card className="md:col-span-3">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Medal />
