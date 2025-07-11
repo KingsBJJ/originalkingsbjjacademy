@@ -153,12 +153,7 @@ export const mockAnnouncements = [
     }
 ];
 
-export const mockAttendanceHistory = [
-    { date: '03/07/2024', class: 'Fundamentos', status: 'Presente' },
-    { date: '01/07/2024', class: 'Avançado', status: 'Presente' },
-    { date: '28/06/2024', class: 'No-Gi', status: 'Presente' },
-    { date: '26/06/2024', class: 'Fundamentos', status: 'Faltou' },
-];
+export const mockAttendanceHistory: { date: string, class: string, status: string }[] = [];
 
 export const mockBranches: Branch[] = [
   {
