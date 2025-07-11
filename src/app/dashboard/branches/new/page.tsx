@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useContext, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm, useFieldArray } from 'react-hook-form';
@@ -33,9 +33,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { UserContext } from '../../client-layout';
 import { ArrowLeft, PlusCircle, Trash2 } from 'lucide-react';
 import { addBranch, getInstructors, type Instructor } from '@/lib/firestoreService';
+import { mockUsers } from '@/lib/mock-data';
 
 const classScheduleSchema = z.object({
   name: z.string().min(1, { message: 'O nome da aula é obrigatório.' }),
@@ -59,7 +59,6 @@ const branchFormSchema = z.object({
 type BranchFormValues = z.infer<typeof branchFormSchema>;
 
 export default function NewBranchPage() {
-  const user = useContext(UserContext);
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
@@ -99,6 +98,7 @@ export default function NewBranchPage() {
   }, [toast]);
 
   const role = searchParams.get('role');
+  const user = role ? mockUsers[role as keyof typeof mockUsers] : null;
 
   const onSubmit = async (data: BranchFormValues) => {
     setIsSaving(true);

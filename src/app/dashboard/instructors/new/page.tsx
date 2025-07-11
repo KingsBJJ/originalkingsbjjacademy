@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useContext, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
@@ -34,8 +35,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
-import { UserContext } from '../../client-layout';
-import { allBelts } from '@/lib/mock-data';
+import { allBelts, mockUsers } from '@/lib/mock-data';
 import { ArrowLeft } from 'lucide-react';
 import { getBranches, addInstructor, type Branch, type Instructor } from '@/lib/firestoreService';
 
@@ -55,7 +55,6 @@ const instructorFormSchema = z.object({
 type InstructorFormValues = z.infer<typeof instructorFormSchema>;
 
 export default function NewInstructorPage() {
-  const user = useContext(UserContext);
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
@@ -96,6 +95,7 @@ export default function NewInstructorPage() {
 
   const watchedBelt = form.watch('belt');
   const role = searchParams.get('role');
+  const user = role ? mockUsers[role as keyof typeof mockUsers] : null;
 
   const onSubmit = async (data: InstructorFormValues) => {
     setIsSaving(true);
