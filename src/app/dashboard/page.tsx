@@ -41,7 +41,6 @@ import {
     type Student 
 } from "@/lib/firestoreService";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { Timestamp } from "firebase/firestore";
 
 const DataCard = ({ title, value, description, icon: Icon }: { title: string; value: number | string; description: string; icon: React.ElementType }) => (
     <Card>
@@ -357,7 +356,9 @@ const ProfessorDashboard = () => {
 
     const newStudentsCount = filteredStudents.filter(student => {
         if (student.createdAt) {
-            const createdAtDate = (student.createdAt as Timestamp).toDate();
+            // The `createdAt` field from Firestore is already a Date object
+            // because of the processing in `getStudents` function.
+            const createdAtDate = student.createdAt;
             return createdAtDate.getTime() > oneMonthAgoMillis;
         }
         return false;

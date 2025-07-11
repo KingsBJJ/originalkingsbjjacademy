@@ -18,7 +18,6 @@ import { format, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { Timestamp } from 'firebase/firestore';
 
 
 const allBeltColors = { ...beltColors, ...beltColorsKids };
@@ -163,6 +162,27 @@ export default async function MyStudentsPage({
       affiliations: role === 'professor' ? baseUser.affiliations : [], 
   };
   
+  if (role !== 'professor') {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle>Acesso Negado</CardTitle>
+            <CardDescription>
+              Você não tem permissão para visualizar esta página.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p>Esta área é restrita a professores.</p>
+             <Button asChild className="mt-4">
+              <Link href={`/dashboard?role=${user?.role || 'student'}`}>Voltar ao Painel</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <Suspense fallback={<StudentsListSkeleton />}>
         <MyStudentsList user={user} />

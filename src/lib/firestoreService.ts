@@ -43,7 +43,7 @@ export type User = {
   mainInstructor?: string;
   isFirstLogin?: boolean;
   password?: string;
-  createdAt?: Timestamp;
+  createdAt?: Date; // Changed to Date
 };
 
 export type ClassScheduleItem = {
@@ -332,6 +332,16 @@ export const deleteInstructor = async (id: string) => {
 
 // --- Student/User Functions ---
 
+const processUserDoc = (doc: any): User => {
+    const data = doc.data();
+    const createdAtTimestamp = data.createdAt as Timestamp;
+    return {
+        id: doc.id,
+        ...data,
+        createdAt: createdAtTimestamp ? createdAtTimestamp.toDate() : undefined,
+    } as User;
+}
+
 export const checkIfEmailExists = async (email: string): Promise<boolean> => {
     if (!db) {
         console.error('Error checking email: Firestore is not initialized.');
@@ -365,7 +375,7 @@ export const getStudents = async (): Promise<Student[]> => {
   try {
     const q = query(collection(db, 'users'), where('role', '==', 'student'));
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), createdAt: doc.data().createdAt } as Student));
+    return querySnapshot.docs.map(processUserDoc);
   } catch (error) {
     console.error('Error getting students:', error);
     return [];
@@ -442,7 +452,7 @@ export const getUserByEmail = async (email: string): Promise<User | null> => {
         const usersSnapshot = await getDocs(usersQuery);
         if (!usersSnapshot.empty) {
             const userDoc = usersSnapshot.docs[0];
-            return { id: userDoc.id, ...userDoc.data() } as User;
+            return processUserDoc(userDoc);
         }
 
         // Query the 'instructors' collection
@@ -465,6 +475,7 @@ export const getUserByEmail = async (email: string): Promise<User | null> => {
                 affiliations: instructorData.affiliations || [],
                 branchId: '', // Or determine from affiliations
                 category: 'Adult', // Default for professors
+                createdAt: undefined, // Instructors might not have this field
             } as User;
         }
 
