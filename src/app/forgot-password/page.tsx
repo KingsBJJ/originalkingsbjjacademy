@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -40,7 +41,7 @@ export default function ForgotPasswordPage() {
       await sendPasswordResetEmail(auth, email);
       toast({
         title: "Link de Recuperação Enviado",
-        description: `Se um usuário com o email ${email} existir, um link para redefinir a senha foi enviado.`,
+        description: `Se um usuário com o email ${email} existir, um link para redefinir a senha foi enviado. Verifique sua caixa de entrada e spam.`,
       });
     } catch (error) {
        console.error("Password reset error:", error);

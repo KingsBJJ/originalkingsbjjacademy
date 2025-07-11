@@ -132,7 +132,7 @@ export default function CheckInPage() {
                 };
                 
                 // The updateUser function in client-layout now separates these concerns.
-                updateUser({ attendance: attendanceIncrement });
+                updateUser({ attendance: updatedAttendanceForState });
 
                 toast({
                   title: 'Check-in Realizado!',
