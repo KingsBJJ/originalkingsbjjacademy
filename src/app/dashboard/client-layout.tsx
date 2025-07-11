@@ -235,24 +235,26 @@ export default function DashboardClientLayout({
     setUser(prevUser => {
         if (!prevUser) return null;
 
-        // --- Client-side State Update ---
+        const dataForDb = { ...newUserData };
+        
+        // --- Client-side State Update (Optimistic Update) ---
         const updatedUserForState = { ...prevUser };
 
-        // Handle attendance increment for local state
+        // Handle attendance increment for local state correctly
         if (newUserData.attendance && prevUser.attendance) {
             updatedUserForState.attendance = {
                 total: prevUser.attendance.total + (newUserData.attendance.total || 0),
                 lastMonth: prevUser.attendance.lastMonth + (newUserData.attendance.lastMonth || 0),
             };
-            // Merge other properties non-destructively
+            // Merge other properties non-destructively, ensuring attendance is the updated object
             Object.assign(updatedUserForState, { ...newUserData, attendance: updatedUserForState.attendance });
         } else {
             Object.assign(updatedUserForState, newUserData);
         }
         
         // --- Server-side DB Update ---
-        // For the DB call, we pass the original newUserData which contains the increment instructions.
-        updateDbUser(prevUser.id, newUserData).catch(error => {
+        // Pass the original newUserData which contains the increment instructions for Firestore.
+        updateDbUser(prevUser.id, dataForDb).catch(error => {
             console.error("Failed to update user in DB:", error);
             toast({
                 variant: "destructive",

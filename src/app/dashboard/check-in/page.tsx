@@ -116,7 +116,7 @@ export default function CheckInPage() {
             stopCamera();
             if (code.data === 'KINGS_BJJ_UNIVERSAL_CHECKIN') {
               if (user && updateUser) {
-                setCheckinMessage(`Check-in confirmado em ${user.affiliations[0] || 'sua filial'}!`);
+                setCheckinMessage(`Check-in confirmado em ${user.affiliations?.[0] || 'sua filial'}!`);
                 setCheckinTime(new Date());
 
                 // Instead of calculating the new total, we tell the backend to increment.

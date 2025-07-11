@@ -18,7 +18,7 @@ import {
   orderBy,
   increment,
 } from 'firebase/firestore';
-import { db } from '@/lib/firebase'; // Use apenas a instância db de firebase.ts
+import { db } from '@/lib/firebase'; // Use a instância unificada de firebase.ts
 import { mockBranches, mockInstructors } from './mock-data';
 
 // --- Types ---
