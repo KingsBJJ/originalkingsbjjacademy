@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -14,9 +15,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { KingsBjjLogo } from "@/components/kings-bjj-logo";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   return (
     <div className="relative flex min-h-screen w-full items-center justify-center p-4">
@@ -62,7 +65,22 @@ export default function LoginPage() {
                   Esqueceu sua senha?
                 </Link>
               </div>
-              <Input id="password" type="password" required className="bg-white/5 border-white/20 text-white" />
+              <div className="relative">
+                <Input 
+                  id="password" 
+                  type={showPassword ? "text" : "password"} 
+                  required 
+                  className="bg-white/5 border-white/20 text-white pr-10" 
+                />
+                 <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-white/80 hover:text-white"
+                  aria-label={showPassword ? "Esconder senha" : "Mostrar senha"}
+                >
+                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                </button>
+              </div>
             </div>
             <Button asChild type="submit" className="w-full">
               <Link href={`/dashboard?email=${encodeURIComponent(email)}`}>Entrar</Link>
