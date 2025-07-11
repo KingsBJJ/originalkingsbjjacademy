@@ -77,7 +77,6 @@ const professorNavItems: NavItem[] = [
   { href: "/dashboard/schedule", icon: Calendar, label: "Horários" },
   { href: "/dashboard/profile", icon: UserIcon, label: "Perfil" },
   { href: "/dashboard/my-students", icon: Contact, label: "Meus Alunos" },
-  { href: "/dashboard/instructors", icon: Users, label: "Professores" },
   { href: "/dashboard/rankings", icon: Award, label: "Graduações" },
   { href: "/dashboard/branches", icon: MapPin, label: "Filiais" },
   { href: "/terms-of-service", icon: FileText, label: "Termo de Resp." },
