@@ -34,7 +34,7 @@ const profileFormSchema = z.object({
   name: z.string().min(3, { message: 'O nome deve ter pelo menos 3 caracteres.' }),
   email: z.string().email({ message: 'Por favor, insira um e-mail válido.' }),
   phone: z.string().min(10, { message: 'O telefone deve ter pelo menos 10 dígitos.' }).optional(),
-  avatar: z.string().url({ message: 'Por favor, insira uma URL válida.' }).optional(),
+  avatar: z.string().url({ message: 'Por favor, insira uma URL válida.' }).or(z.literal('')).optional(),
   affiliation: z.string().min(1, { message: 'Selecione uma filial.' }),
   mainInstructor: z.string().min(1, { message: 'Selecione um professor.' }),
 });
@@ -110,6 +110,7 @@ export function EditProfileForm({ initialUser, branches, allInstructors }: EditP
       const params = new URLSearchParams({
         role: initialUser.role,
         email: data.email,
+        name: data.name,
       });
       
       router.push(`/dashboard/profile?${params.toString()}`);
