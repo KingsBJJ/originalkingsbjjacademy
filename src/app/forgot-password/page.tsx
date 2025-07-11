@@ -16,24 +16,41 @@ import { Label } from "@/components/ui/label";
 import { KingsBjjLogo } from "@/components/kings-bjj-logo";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft } from 'lucide-react';
+import { sendPasswordResetEmail } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email) {
-      toast({
-        title: "Link de Recuperação Enviado",
-        description: `Se um usuário com o email ${email} existir, um link para redefinir a senha foi enviado.`,
-      });
-    } else {
+    if (!email) {
       toast({
         variant: "destructive",
         title: "Erro",
         description: "Por favor, insira um endereço de email.",
       });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await sendPasswordResetEmail(auth, email);
+      toast({
+        title: "Link de Recuperação Enviado",
+        description: `Se um usuário com o email ${email} existir, um link para redefinir a senha foi enviado.`,
+      });
+    } catch (error) {
+       console.error("Password reset error:", error);
+       toast({
+        variant: "destructive",
+        title: "Erro ao Enviar Email",
+        description: "Não foi possível enviar o link. Verifique o email digitado ou tente novamente.",
+      });
+    } finally {
+        setIsLoading(false);
     }
   };
 
@@ -70,11 +87,12 @@ export default function ForgotPasswordPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                disabled={isLoading}
                 className="bg-white/5 border-white/20 text-white placeholder:text-white/50"
               />
             </div>
-            <Button type="submit" className="w-full">
-              Enviar Link de Recuperação
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? 'Enviando...' : 'Enviar Link de Recuperação'}
             </Button>
           </form>
            <div className="mt-4 text-center text-sm text-white/80">

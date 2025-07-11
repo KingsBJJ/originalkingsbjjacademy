@@ -1,6 +1,7 @@
 
 import { initializeApp, getApps, getApp, type FirebaseOptions } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 
 const firebaseConfig: FirebaseOptions = {
   apiKey: "AIzaSyA5gI17mgL43m90iUzyWllxIznvCE_D33U",
@@ -14,5 +15,6 @@ const firebaseConfig: FirebaseOptions = {
 console.log('Firebase config:', firebaseConfig); // Log para depuração
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
+export const auth = getAuth(app);
 console.log('Firestore db initialized:', db); // Log para depuração
-
+console.log('Firebase Auth initialized:', auth); // Log para depuração
