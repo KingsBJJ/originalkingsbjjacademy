@@ -1,7 +1,7 @@
 
 "use client";
 
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -16,10 +16,55 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { KingsBjjLogo } from "@/components/kings-bjj-logo";
 import { Eye, EyeOff } from "lucide-react";
+import Link from "next/link";
+import { useToast } from "@/hooks/use-toast";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+  const { toast } = useToast();
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    // Basic validation
+    if (!email || !password) {
+        toast({
+            variant: "destructive",
+            title: "Erro de Login",
+            description: "Por favor, preencha o email e a senha.",
+        });
+        setIsLoading(false);
+        return;
+    }
+    
+    // In a real app, you would have an API call here to authenticate the user.
+    // For now, we'll just navigate with the email as a parameter.
+    // The client-layout will determine the user type based on the email.
+    
+    // Simulate network delay
+    setTimeout(() => {
+        const params = new URLSearchParams();
+        params.set("email", email);
+
+        // Simple email-based role check for navigation
+        const lowerCaseEmail = email.toLowerCase();
+        if (lowerCaseEmail.includes('admin')) {
+            params.set('role', 'admin');
+        } else if (lowerCaseEmail.includes('professor')) {
+            params.set('role', 'professor');
+        } else {
+            params.set('role', 'student');
+        }
+
+        router.push(`/dashboard?${params.toString()}`);
+        setIsLoading(false);
+    }, 500);
+  };
 
   return (
     <div className="relative flex min-h-screen w-full items-center justify-center p-4">
@@ -42,7 +87,7 @@ export default function LoginPage() {
           <CardDescription className="text-white/80">Welcome to the Game!</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4">
+          <form onSubmit={handleLogin} className="grid gap-4">
             <div className="grid gap-2">
               <Label htmlFor="email" className="text-white/80">Email</Label>
               <Input
@@ -50,6 +95,7 @@ export default function LoginPage() {
                 type="email"
                 placeholder="m@exemplo.com"
                 required
+                disabled={isLoading}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="bg-white/5 border-white/20 text-white placeholder:text-white/50"
@@ -70,6 +116,9 @@ export default function LoginPage() {
                   id="password" 
                   type={showPassword ? "text" : "password"} 
                   required 
+                  disabled={isLoading}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   className="bg-white/5 border-white/20 text-white pr-10" 
                 />
                  <button
@@ -82,10 +131,10 @@ export default function LoginPage() {
                 </button>
               </div>
             </div>
-            <Button asChild type="submit" className="w-full">
-              <Link href={`/dashboard?email=${encodeURIComponent(email)}`}>Entrar</Link>
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? 'Entrando...' : 'Entrar'}
             </Button>
-          </div>
+          </form>
           <div className="mt-4 text-center text-sm text-white/80">
             Não tem uma conta?{" "}
             <Link href="/signup" className="underline hover:text-white">

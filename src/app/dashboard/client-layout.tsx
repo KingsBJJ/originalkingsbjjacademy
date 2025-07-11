@@ -122,6 +122,8 @@ export default function DashboardClientLayout({
 
     let userToSet: User;
 
+    // This logic determines the user based on email.
+    // A real app would fetch this from a DB.
     if (cleanEmail === 'admin@kingsbjj.com' || cleanEmail === 'admin@kings.com' || role === 'admin') {
       userToSet = mockUsers.admin;
     } else if (cleanEmail === 'professor@kingsbjj.com' || cleanEmail === 'professor@kings.com' || role === 'professor') {
@@ -131,11 +133,12 @@ export default function DashboardClientLayout({
         const belt = searchParams.get('belt');
 
         if (name && affiliation && belt) {
+            // This is a new student being created
             userToSet = {
                 id: `user_${(email || Date.now().toString()).replace(/[@.]/g, '_')}`,
                 name,
                 email: email || '',
-                role: role || 'student',
+                role: 'student', // Always student
                 affiliation,
                 branchId: searchParams.get('branchId') || '',
                 mainInstructor: searchParams.get('mainInstructor') || '',
