@@ -48,6 +48,8 @@ const instructorFormSchema = z.object({
   stripes: z.coerce.number().int().min(0).max(6).optional(),
   bio: z.string().optional(),
   avatar: z.string().optional(),
+  password: z.string().optional(),
+  isFirstLogin: z.boolean().optional(),
 });
 
 type InstructorFormValues = z.infer<typeof instructorFormSchema>;
@@ -71,6 +73,8 @@ export default function NewInstructorPage() {
       bio: '',
       avatar: '',
       stripes: 0,
+      password: 'KINGS2025',
+      isFirstLogin: true,
     },
   });
 
@@ -97,7 +101,7 @@ export default function NewInstructorPage() {
     setIsSaving(true);
     try {
       console.log('onSubmit called with data:', JSON.stringify(data, null, 2));
-      const { name, email, phone, belt, affiliations, bio, avatar, stripes } = data;
+      const { name, email, phone, belt, affiliations, bio, avatar, stripes, password, isFirstLogin } = data;
       const instructorData: Omit<Instructor, 'id'> = {
         name,
         email,
@@ -107,6 +111,8 @@ export default function NewInstructorPage() {
         bio: bio ?? '',
         avatar: avatar ?? `https://placehold.co/128x128.png?text=${name.charAt(0)}`,
         stripes: stripes ?? 0,
+        password,
+        isFirstLogin,
       };
 
       const response = await addInstructor(instructorData);
