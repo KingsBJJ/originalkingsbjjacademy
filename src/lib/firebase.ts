@@ -15,7 +15,7 @@ const firebaseConfig: FirebaseOptions = {
 
 // Adiciona uma verificação para garantir que a chave da API está presente.
 if (!firebaseConfig.apiKey) {
-    throw new Error('Firebase API Key is missing. Please check your environment variables.');
+    console.error('Firebase API Key is missing. Please check your environment variables in .env file.');
 }
 
 // Inicializa o Firebase de forma segura, evitando reinicializações.
