@@ -94,10 +94,19 @@ const AdminDashboard = () => {
         return acc;
     }, {} as Record<string, number>);
 
-    return Object.entries(studentCounts).map(([branchName, studentCount]) => ({
-      name: branchName,
-      students: studentCount,
-    }));
+    // Ensure all branches are present, even if they have 0 students
+    branches.forEach(branch => {
+        if (!studentCounts[branch.name]) {
+            studentCounts[branch.name] = 0;
+        }
+    });
+
+    return Object.entries(studentCounts)
+      .filter(([branchName]) => branchName !== "Sem Filial")
+      .map(([branchName, studentCount]) => ({
+        name: branchName.replace("Kings BJJ - ", ""), // Shorten name for chart
+        students: studentCount,
+      }));
   }, [students, branches]);
 
   const bestBranch = useMemo(() => {
@@ -163,10 +172,29 @@ const AdminDashboard = () => {
           <CardContent>
               {branchStudentData.length > 0 ? (
                 <ChartContainer config={chartConfig} className="h-64 w-full">
-                    <RechartsBarChart accessibilityLayer data={branchStudentData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
-                        <XAxis dataKey="name" tickLine={false} axisLine={false} tickMargin={10} fontSize={12} angle={-15} textAnchor="end" />
-                        <YAxis tickLine={false} axisLine={false} tickMargin={10} fontSize={12} allowDecimals={false} />
-                        <Tooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
+                    <RechartsBarChart
+                        accessibilityLayer
+                        data={branchStudentData}
+                        margin={{ top: 5, right: 20, left: -10, bottom: 5 }}
+                    >
+                        <XAxis
+                            dataKey="name"
+                            tickLine={false}
+                            axisLine={false}
+                            tickMargin={10}
+                            fontSize={12}
+                        />
+                        <YAxis
+                            tickLine={false}
+                            axisLine={false}
+                            tickMargin={10}
+                            fontSize={12}
+                            allowDecimals={false}
+                        />
+                        <Tooltip
+                            cursor={false}
+                            content={<ChartTooltipContent hideLabel />}
+                        />
                         <Bar dataKey="students" fill="var(--color-students)" radius={4} />
                     </RechartsBarChart>
                 </ChartContainer>
