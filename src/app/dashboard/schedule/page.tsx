@@ -30,7 +30,7 @@ const ClassListRenderer = ({ classes, userRole }: { classes: ClassWithBranch[], 
             <div>
                 <p className="font-semibold">{item.name}</p>
                 <p className="text-sm text-muted-foreground">
-                {item.instructor} {userRole === 'admin' && `(${item.branchName})`}
+                 <span className="text-primary font-medium">{item.instructor}</span> {userRole === 'admin' && `(${item.branchName})`}
                 </p>
             </div>
             <div className="flex items-center gap-4 text-right">
