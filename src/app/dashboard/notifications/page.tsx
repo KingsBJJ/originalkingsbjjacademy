@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useContext, useState, useEffect } from "react";
@@ -51,7 +52,7 @@ function NotificationForm({ onPost }: { onPost: () => void }) {
                 target: user.role === 'admin' ? 'all' : user.affiliation,
             };
 
-            const result = await addNotification(notificationData);
+            const result = await addNotification(notificationData as any);
             
             if (result.success) {
                 toast({
@@ -144,13 +145,15 @@ export default function NotificationsPage() {
     };
 
     useEffect(() => {
-        fetchNotifications();
+        if(user) {
+          fetchNotifications();
+        }
     }, [user]);
 
-    const renderTimestamp = (timestamp: any) => {
-        if (!timestamp?.toDate) return 'data inválida';
+    const renderTimestamp = (timestamp: Date) => {
+        if (!timestamp) return 'data inválida';
         try {
-            return formatDistanceToNow(timestamp.toDate(), { addSuffix: true, locale: ptBR });
+            return formatDistanceToNow(timestamp, { addSuffix: true, locale: ptBR });
         } catch (error) {
             return 'data inválida';
         }

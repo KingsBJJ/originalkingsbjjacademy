@@ -1,3 +1,4 @@
+
 // src/lib/firestoreService.ts
 'use server';
 
@@ -87,6 +88,7 @@ export type Instructor = {
 
 export type Student = User;
 
+// Modificação: createdAt agora é um Date serializável
 export type Notification = {
     id: string;
     title: string;
@@ -96,7 +98,7 @@ export type Notification = {
     authorAvatar: string;
     authorRole: 'admin' | 'professor';
     target: 'all' | string; // 'all' or branchName
-    createdAt: Timestamp;
+    createdAt: Date;
 };
 
 
@@ -446,6 +448,16 @@ export const addNotification = async (notificationData: Omit<Notification, 'id' 
   }
 };
 
+const processNotificationDoc = (doc: any): Notification => {
+    const data = doc.data();
+    const createdAtTimestamp = data.createdAt as Timestamp;
+    return {
+        id: doc.id,
+        ...data,
+        createdAt: createdAtTimestamp ? createdAtTimestamp.toDate() : new Date(), // Converte para Date
+    } as Notification;
+};
+
 export const getNotifications = async (user: User): Promise<Notification[]> => {
     if (!db) {
         console.error('Error getting notifications: Firestore is not initialized.');
@@ -457,13 +469,9 @@ export const getNotifications = async (user: User): Promise<Notification[]> => {
         if (user.role === 'admin') {
             const q = query(notifsCollection, orderBy('createdAt', 'desc'));
             const querySnapshot = await getDocs(q);
-            return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Notification));
+            return querySnapshot.docs.map(processNotificationDoc);
         }
 
-        // For students and professors, we fetch global and affiliation-specific notifications
-        // Firestore doesn't support logical OR in a single query like this,
-        // so we perform two separate queries and merge the results.
-        
         const globalQuery = query(notifsCollection, where('target', '==', 'all'));
         const affiliationQuery = query(notifsCollection, where('target', '==', user.affiliation));
 
@@ -475,21 +483,17 @@ export const getNotifications = async (user: User): Promise<Notification[]> => {
         const notificationsMap = new Map<string, Notification>();
         
         globalSnapshot.docs.forEach(doc => {
-            notificationsMap.set(doc.id, { id: doc.id, ...doc.data() } as Notification);
+            notificationsMap.set(doc.id, processNotificationDoc(doc));
         });
 
         affiliationSnapshot.docs.forEach(doc => {
-            notificationsMap.set(doc.id, { id: doc.id, ...doc.data() } as Notification);
+            notificationsMap.set(doc.id, processNotificationDoc(doc));
         });
         
         const allNotifications = Array.from(notificationsMap.values());
 
         // Sort by creation date, descending
-        allNotifications.sort((a, b) => {
-            const dateA = a.createdAt?.toDate() ?? new Date(0);
-            const dateB = b.createdAt?.toDate() ?? new Date(0);
-            return dateB.getTime() - dateA.getTime();
-        });
+        allNotifications.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
         return allNotifications;
 

@@ -202,7 +202,7 @@ export default function DashboardClientLayout({
 
       // Check for new notifications on initial load
       const lastSeenTimestamp = localStorage.getItem(NOTIFICATION_STORAGE_KEY) || '0';
-      const mostRecentNotifTimestamp = initialNotifs[0]?.createdAt?.toMillis() || 0;
+      const mostRecentNotifTimestamp = initialNotifs[0]?.createdAt?.getTime() || 0;
       
       if (mostRecentNotifTimestamp > parseInt(lastSeenTimestamp)) {
         setHasNewNotification(true);
@@ -229,7 +229,7 @@ export default function DashboardClientLayout({
       setHasNewNotification(false);
       setNewStudentNotification(false);
       
-      const mostRecentTimestamp = notifications[0]?.createdAt?.toMillis() || Date.now();
+      const mostRecentTimestamp = notifications[0]?.createdAt?.getTime() || Date.now();
       localStorage.setItem(NOTIFICATION_STORAGE_KEY, mostRecentTimestamp.toString());
     }
   };
@@ -414,7 +414,7 @@ export default function DashboardClientLayout({
 
                             {notifications.length > 0 ? (
                                 notifications.map(notif => {
-                                    const isNew = notif.createdAt.toMillis() > lastSeenTimestamp;
+                                    const isNew = notif.createdAt.getTime() > lastSeenTimestamp;
                                     return (
                                         <div key={notif.id} className="p-2 hover:bg-muted/50 rounded-md">
                                             <div className="flex items-start gap-3">
@@ -428,7 +428,7 @@ export default function DashboardClientLayout({
                                                 <div className="flex-1">
                                                     <p className="font-semibold text-sm">{notif.title}</p>
                                                     <p className="text-xs text-muted-foreground truncate">{notif.content}</p>
-                                                    <p className="text-xs text-muted-foreground mt-1">{formatDistanceToNow(notif.createdAt.toDate(), { addSuffix: true, locale: ptBR })}</p>
+                                                    <p className="text-xs text-muted-foreground mt-1">{formatDistanceToNow(notif.createdAt, { addSuffix: true, locale: ptBR })}</p>
                                                 </div>
                                             </div>
                                         </div>
