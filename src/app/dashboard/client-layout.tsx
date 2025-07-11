@@ -23,7 +23,7 @@ import {
   SidebarInset,
 } from "@/components/ui/sidebar";
 import { KingsBjjLogo } from "@/components/kings-bjj-logo";
-import type { User } from "@/lib/mock-data";
+import type { User, Instructor } from "@/lib/mock-data";
 import { mockUsers } from "@/lib/mock-data";
 import {
   Award,
@@ -44,7 +44,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { updateUser as updateDbUser } from "@/lib/firestoreService";
+import { updateUser as updateDbUser, getInstructors, getStudents } from "@/lib/firestoreService";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
@@ -108,59 +108,79 @@ export default function DashboardClientLayout({
   const [newStudentName, setNewStudentName] = useState('');
 
   useEffect(() => {
-    const role = searchParams.get('role') as User['role'];
-    const email = searchParams.get('email');
-    const name = searchParams.get('name');
-    const isNewStudent = searchParams.get('newStudent') === 'true';
+    const determineUser = async () => {
+      const roleParam = searchParams.get('role') as User['role'];
+      const email = searchParams.get('email');
+      const name = searchParams.get('name');
+      const isNewStudent = searchParams.get('newStudent') === 'true';
 
-    if (isNewStudent && name) {
-      setNewStudentNotification(true);
-      setNewStudentName(name);
-    }
-    
-    const cleanEmail = email?.trim().toLowerCase();
+      if (isNewStudent && name) {
+        setNewStudentNotification(true);
+        setNewStudentName(name);
+      }
+      
+      const cleanEmail = email?.trim().toLowerCase();
+      let userToSet: User | null = null;
+      
+      // Admin check
+      if (cleanEmail === 'admin@kingsbjj.com' || cleanEmail === 'admin@kings.com' || roleParam === 'admin') {
+          userToSet = mockUsers.admin;
+      }
+      
+      // Professor check
+      if (!userToSet && cleanEmail) {
+          const instructors = await getInstructors();
+          const foundInstructor = instructors.find(inst => inst.email.toLowerCase() === cleanEmail);
+          if (foundInstructor) {
+              userToSet = {
+                  id: foundInstructor.id,
+                  name: foundInstructor.name,
+                  email: foundInstructor.email,
+                  role: 'professor',
+                  avatar: foundInstructor.avatar || `https://placehold.co/128x128.png?text=${foundInstructor.name.charAt(0)}`,
+                  belt: foundInstructor.belt,
+                  stripes: foundInstructor.stripes || 0,
+                  attendance: { total: 0, lastMonth: 0 },
+                  nextGraduationProgress: 0,
+                  affiliation: foundInstructor.affiliations?.[0] || 'N/A',
+                  branchId: '',
+                  category: 'Adult',
+              };
+          }
+      }
 
-    let userToSet: User;
+      // New student just created via signup form
+      if (!userToSet && isNewStudent) {
+          const affiliation = searchParams.get('affiliation') || '';
+          const belt = searchParams.get('belt') || '';
+          userToSet = {
+              id: `user_${(email || Date.now().toString()).replace(/[@.]/g, '_')}`,
+              name: name || 'Novo Aluno',
+              email: email || '',
+              role: 'student',
+              affiliation,
+              branchId: searchParams.get('branchId') || '',
+              mainInstructor: searchParams.get('mainInstructor') || '',
+              category: (searchParams.get('category') as User['category']) || 'Adult',
+              belt,
+              stripes: Number(searchParams.get('stripes') || 0),
+              avatar: `https://placehold.co/128x128.png?text=${(name || 'A').charAt(0)}`,
+              attendance: { total: 0, lastMonth: 0 },
+              nextGraduationProgress: 5,
+          };
+      }
+      
+      // Fallback for existing student or default
+      if (!userToSet) {
+          userToSet = { ...mockUsers.student };
+          if (cleanEmail) userToSet.email = cleanEmail;
+          if (name) userToSet.name = name;
+      }
 
-    // This logic determines the user based on email.
-    // A real app would fetch this from a DB.
-    if (cleanEmail === 'admin@kingsbjj.com' || cleanEmail === 'admin@kings.com' || role === 'admin') {
-      userToSet = mockUsers.admin;
-    } else if (cleanEmail === 'professor@kingsbjj.com' || cleanEmail === 'professor@kings.com' || role === 'professor') {
-      userToSet = mockUsers.professor;
-    } else {
-        const affiliation = searchParams.get('affiliation');
-        const belt = searchParams.get('belt');
+      setUser(userToSet);
+    };
 
-        if (name && affiliation && belt) {
-            // This is a new student being created
-            userToSet = {
-                id: `user_${(email || Date.now().toString()).replace(/[@.]/g, '_')}`,
-                name,
-                email: email || '',
-                role: 'student', // Always student
-                affiliation,
-                branchId: searchParams.get('branchId') || '',
-                mainInstructor: searchParams.get('mainInstructor') || '',
-                category: (searchParams.get('category') as User['category']) || 'Adult',
-                belt,
-                stripes: Number(searchParams.get('stripes') || 0),
-                avatar: "https://placehold.co/128x128.png",
-                attendance: { total: 0, lastMonth: 0 },
-                nextGraduationProgress: 5,
-            };
-        } else {
-            // Default to student but ensure the provided email is used.
-            userToSet = { ...mockUsers.student };
-            if (cleanEmail) {
-                userToSet.email = cleanEmail;
-            }
-             if (name) {
-                userToSet.name = name;
-            }
-        }
-    }
-    setUser(userToSet);
+    determineUser();
   }, [searchParams]);
 
   const updateUser = useCallback((newUserData: Partial<User>) => {
@@ -198,9 +218,8 @@ export default function DashboardClientLayout({
     if (!user) return href;
     const params = new URLSearchParams();
     
-    // Persist all relevant user info from the initial URL to maintain state across navigation
     searchParams.forEach((value, key) => {
-        if (key !== 'newStudent') { // Don't persist the new student flag
+        if (key !== 'newStudent') {
             params.set(key, value);
         }
     });
