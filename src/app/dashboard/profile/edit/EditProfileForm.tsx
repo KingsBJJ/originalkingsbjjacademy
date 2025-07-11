@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -18,25 +18,36 @@ import {
   Card,
   CardContent,
 } from '@/components/ui/card';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { updateUser, type User } from '@/lib/firestoreService';
+import { updateUser, type User, type Branch, type Instructor } from '@/lib/firestoreService';
 
 const profileFormSchema = z.object({
   name: z.string().min(3, { message: 'O nome deve ter pelo menos 3 caracteres.' }),
   email: z.string().email({ message: 'Por favor, insira um e-mail válido.' }),
   phone: z.string().min(10, { message: 'O telefone deve ter pelo menos 10 dígitos.' }).optional(),
   avatar: z.string().url({ message: 'Por favor, insira uma URL válida.' }).optional(),
+  affiliation: z.string().min(1, { message: 'Selecione uma filial.' }),
+  mainInstructor: z.string().min(1, { message: 'Selecione um professor.' }),
 });
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
 type EditProfileFormProps = {
   initialUser: User;
+  branches: Branch[];
+  allInstructors: Instructor[];
 };
 
-export function EditProfileForm({ initialUser }: EditProfileFormProps) {
+export function EditProfileForm({ initialUser, branches, allInstructors }: EditProfileFormProps) {
   const router = useRouter();
   const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
@@ -48,17 +59,45 @@ export function EditProfileForm({ initialUser }: EditProfileFormProps) {
       email: initialUser.email,
       phone: initialUser.phone || '',
       avatar: initialUser.avatar.startsWith('https://placehold.co') ? '' : initialUser.avatar,
+      affiliation: initialUser.affiliations?.[0] || '',
+      mainInstructor: initialUser.mainInstructor || '',
     },
   });
+
+  const selectedAffiliation = form.watch('affiliation');
+
+  const filteredInstructors = useMemo(() => {
+    if (!selectedAffiliation) return [];
+    return allInstructors.filter(
+      (instructor) => instructor.affiliations?.includes(selectedAffiliation)
+    );
+  }, [selectedAffiliation, allInstructors]);
+
+  // Reset mainInstructor if it's not in the filtered list
+  useEffect(() => {
+    const isCurrentInstructorValid = filteredInstructors.some(
+      (instructor) => instructor.name === form.getValues('mainInstructor')
+    );
+    if (!isCurrentInstructorValid) {
+      form.setValue('mainInstructor', '');
+    }
+  }, [filteredInstructors, form]);
+
 
   const onSubmit = async (data: ProfileFormValues) => {
     setIsSaving(true);
     try {
+      const selectedBranch = branches.find(b => b.name === data.affiliation);
+      const branchId = selectedBranch ? selectedBranch.id : '';
+
       const updateData: Partial<User> = {
         name: data.name,
         email: data.email,
         phone: data.phone,
         avatar: data.avatar || `https://placehold.co/128x128.png?text=${data.name.charAt(0)}`,
+        affiliations: [data.affiliation],
+        branchId: branchId,
+        mainInstructor: data.mainInstructor,
       };
       
       await updateUser(initialUser.id, updateData);
@@ -70,7 +109,7 @@ export function EditProfileForm({ initialUser }: EditProfileFormProps) {
 
       const params = new URLSearchParams({
         role: initialUser.role,
-        email: data.email, // Use new email for navigation
+        email: data.email,
       });
       
       router.push(`/dashboard/profile?${params.toString()}`);
@@ -150,6 +189,54 @@ export function EditProfileForm({ initialUser }: EditProfileFormProps) {
                   )}
                 />
             </div>
+            
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <FormField
+                  control={form.control}
+                  name="affiliation"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Filial</FormLabel>
+                       <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione sua filial" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {branches.map((branch) => (
+                            <SelectItem key={branch.id} value={branch.name}>{branch.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                 <FormField
+                  control={form.control}
+                  name="mainInstructor"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Professor Principal</FormLabel>
+                       <Select onValueChange={field.onChange} value={field.value} disabled={!selectedAffiliation || filteredInstructors.length === 0}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder={!selectedAffiliation ? "Selecione a filial primeiro" : "Selecione seu professor"} />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {filteredInstructors.map((instructor) => (
+                            <SelectItem key={instructor.id} value={instructor.name}>{instructor.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+            </div>
+
 
             <div className="flex justify-end gap-2 pt-4">
               <Button variant="outline" type="button" onClick={() => router.back()} disabled={isSaving}>

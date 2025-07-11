@@ -6,7 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { getUserByEmail, type User } from '@/lib/firestoreService';
+import { getUserByEmail, getBranches, getInstructors, type User, type Branch, type Instructor } from '@/lib/firestoreService';
 import { EditProfileForm } from './EditProfileForm';
 import { KingsBjjLogo } from '@/components/kings-bjj-logo';
 
@@ -16,7 +16,12 @@ export default async function EditProfilePage({
   searchParams: { [key:string]: string | string[] | undefined };
 }) {
   const email = searchParams?.email as string;
-  const user = await getUserByEmail(email);
+  
+  const [user, branches, instructors] = await Promise.all([
+    getUserByEmail(email),
+    getBranches(),
+    getInstructors()
+  ]);
 
   if (!user) {
     return (
@@ -38,7 +43,11 @@ export default async function EditProfilePage({
         <h1 className="text-3xl font-bold tracking-tight">Editar Perfil</h1>
         <p className="text-muted-foreground">Atualize suas informações pessoais.</p>
       </div>
-      <EditProfileForm initialUser={user} />
+      <EditProfileForm 
+        initialUser={user}
+        branches={branches}
+        allInstructors={instructors}
+      />
     </div>
   );
 }
