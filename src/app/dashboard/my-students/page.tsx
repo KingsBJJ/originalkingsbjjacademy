@@ -163,31 +163,9 @@ export default async function MyStudentsPage({
       affiliations: role === 'professor' ? baseUser.affiliations : [], 
   };
   
-  if (role !== 'professor') {
-    return (
-      <div className="flex h-full items-center justify-center">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle>Acesso Negado</CardTitle>
-            <CardDescription>
-              Esta página é exclusiva para professores.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p>Se você é um professor, por favor, faça login com a sua conta.</p>
-             <Button asChild className="mt-4">
-              <Link href={`/dashboard?role=${user?.role || 'student'}`}>Voltar ao Painel</Link>
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   return (
     <Suspense fallback={<StudentsListSkeleton />}>
         <MyStudentsList user={user} />
     </Suspense>
   );
 }
-
