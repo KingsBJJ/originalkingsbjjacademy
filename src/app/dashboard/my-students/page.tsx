@@ -10,7 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getStudents, type Student } from '@/lib/firestoreService';
+import { getStudents, getUserByEmail, type Student } from '@/lib/firestoreService';
 import { User, mockUsers, beltColors, beltColorsKids } from '@/lib/mock-data';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -112,7 +112,10 @@ const StudentsListSkeleton = () => (
 async function MyStudentsList({ user }: { user: User }) {
   const allStudents = await getStudents();
 
-  const myStudents = allStudents.filter(student => student.mainInstructor === user.name);
+  // For admins, show all students. For professors, filter by mainInstructor.
+  const myStudents = user.role === 'admin' 
+    ? allStudents 
+    : allStudents.filter(student => student.mainInstructor === user.name);
 
   const adultStudents = myStudents.filter(s => s.category === 'Adult');
   const kidsStudents = myStudents.filter(s => s.category === 'Kids');
@@ -122,7 +125,10 @@ async function MyStudentsList({ user }: { user: User }) {
        <div>
         <h1 className="text-3xl font-bold tracking-tight">Meus Alunos</h1>
         <p className="text-muted-foreground">
-          Visualize os alunos que se cadastraram com você como professor principal.
+          {user.role === 'admin' 
+            ? 'Visualize todos os alunos do sistema.'
+            : 'Visualize os alunos que se cadastraram com você como professor principal.'
+          }
         </p>
       </div>
        <Card>
@@ -151,18 +157,17 @@ export default async function MyStudentsPage({
 }: {
   searchParams: { [key: string]: string | string[] | undefined };
 }) {
-  const role = (searchParams?.role || 'student') as User['role'];
+  const email = searchParams?.email as string;
+  let user = email ? await getUserByEmail(email) : null;
+
+  // Fallback to role-based mock user if no real user is found
+  if (!user) {
+    const role = (searchParams?.role || 'student') as User['role'];
+    user = mockUsers[role] || mockUsers.student;
+  }
   
-  const baseUser = mockUsers[role] || mockUsers.student;
-  const user: User = {
-      ...baseUser,
-      role,
-      email: (searchParams?.email as string) || baseUser.email,
-      name: (searchParams?.name as string) || baseUser.name,
-      affiliations: role === 'professor' ? baseUser.affiliations : [], 
-  };
-  
-  if (role !== 'professor') {
+  // Security check: Only professors and admins can access this page.
+  if (user.role !== 'professor' && user.role !== 'admin') {
     return (
       <div className="flex h-full items-center justify-center">
         <Card className="w-full max-w-md">
@@ -173,7 +178,7 @@ export default async function MyStudentsPage({
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <p>Esta área é restrita a professores.</p>
+            <p>Esta área é restrita a professores e administradores.</p>
              <Button asChild className="mt-4">
               <Link href={`/dashboard?role=${user?.role || 'student'}`}>Voltar ao Painel</Link>
             </Button>
