@@ -349,7 +349,7 @@ export default function SignUpPage() {
             </div>
             
             <div className="grid gap-2">
-                <Label htmlFor="mainInstructor" className="text-white/80">Professor Responsável</Label>
+                <Label htmlFor="mainInstructor" className="text-white/80">Professor</Label>
                 <Select onValueChange={setMainInstructor} value={mainInstructor} disabled={!affiliation || loadingInstructors || filteredInstructors.length === 0}>
                     <SelectTrigger id="mainInstructor" className="bg-white/5 border-white/20 text-white">
                         <SelectValue placeholder={
