@@ -28,6 +28,7 @@ import {
   beltColorsKids,
   beltInfo,
   beltInfoKids,
+  beltProgressionRequirements,
 } from "@/lib/mock-data";
 import { getStudents, type Student } from "@/lib/firestoreService";
 import { cn } from "@/lib/utils";
@@ -153,6 +154,15 @@ const GraduationPlan = () => {
         ? students
         : students.filter(s => user.affiliations.some(aff => s.affiliations.includes(aff)));
 
+    const calculateProgress = (student: Student) => {
+        const requiredClasses = beltProgressionRequirements[student.belt as keyof typeof beltProgressionRequirements] || 9999;
+        const currentClasses = student.attendance.total;
+        if (requiredClasses === 9999) return 0; // No requirement for this belt
+        
+        const progress = Math.min((currentClasses / requiredClasses) * 100, 100);
+        return Math.round(progress);
+    };
+
     return (
         <Card className="mt-8">
         <CardHeader>
@@ -191,6 +201,8 @@ const GraduationPlan = () => {
                     ))
                 ) : displayedStudents.map((student) => {
                 const beltStyle = allBeltColors[student.belt as keyof typeof allBeltColors] || beltColors.Branca;
+                const progressPercentage = calculateProgress(student);
+
                 return (
                     <TableRow key={student.id}>
                     <TableCell>
@@ -221,11 +233,11 @@ const GraduationPlan = () => {
                     <TableCell>
                         <div className="flex items-center gap-3">
                         <Progress
-                            value={student.nextGraduationProgress}
+                            value={progressPercentage}
                             className="h-2"
                         />
                         <span className="text-xs font-medium text-muted-foreground">
-                            {student.nextGraduationProgress}%
+                            {progressPercentage}%
                         </span>
                         </div>
                     </TableCell>

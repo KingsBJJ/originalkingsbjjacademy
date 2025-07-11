@@ -12,6 +12,20 @@ export const beltColors = {
 
 export const allBelts: (keyof typeof beltColors)[] = ["Branca", "Azul", "Roxa", "Marrom", "Preta", "Coral"];
 
+export const beltProgressionRequirements = {
+    Branca: 120,  // Aulas para a Faixa Azul
+    Azul: 240,    // Aulas para a Faixa Roxa
+    Roxa: 360,    // Aulas para a Faixa Marrom
+    Marrom: 480,  // Aulas para a Faixa Preta
+    Preta: 0,     // A progressão na preta é por tempo e mérito
+    Coral: 0,
+    // Kids
+    Cinza: 50,
+    Amarela: 60,
+    Laranja: 70,
+    Verde: 80,
+};
+
 export const beltInfo = {
   Branca: {
     description: "Foco nos fundamentos, sobrevivência e defesa. O início da jornada.",
