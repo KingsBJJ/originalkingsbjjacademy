@@ -102,7 +102,7 @@ const AdminDashboard = () => {
     if (!students || !branches) return [];
     
     const studentCounts = students.reduce((acc, student) => {
-        const affiliation = student.affiliations[0] || "Sem Filial";
+        const affiliation = student.affiliations?.[0] || "Sem Filial";
         acc[affiliation] = (acc[affiliation] || 0) + 1;
         return acc;
     }, {} as Record<string, number>);
@@ -144,7 +144,7 @@ const AdminDashboard = () => {
 
     const attendanceByBranch: Record<string, number> = {}
     for (const student of students) {
-      const branchName = student.affiliations[0] || 'Sem Filial'
+      const branchName = student.affiliations?.[0] || 'Sem Filial'
       if (branchName !== 'Sem Filial') {
         attendanceByBranch[branchName] =
           (attendanceByBranch[branchName] || 0) +
@@ -344,7 +344,7 @@ const ProfessorDashboard = () => {
   
   const filteredStudents = useMemo(() => {
       if (!selectedAffiliation) return [];
-      return students.filter(s => s.affiliations.includes(selectedAffiliation));
+      return students.filter(s => s.affiliations && s.affiliations.includes(selectedAffiliation));
   }, [students, selectedAffiliation]);
 
 
@@ -401,7 +401,11 @@ const ProfessorDashboard = () => {
 
   const nextClass = branches
     .flatMap(b => b.schedule?.map(s => ({...s, branchName: b.name})))
-    .find(c => c.instructor.includes(user.name.split(" ")[1]) && c.branchName === selectedAffiliation);
+    .find(c => {
+      if (!c || !user?.name || !c.instructor) return false;
+      const instructorLastName = user.name.split(' ').slice(1).join(' ');
+      return c.instructor.includes(instructorLastName) && c.branchName === selectedAffiliation;
+    });
     
   const showAffiliationSelector = user.affiliations.length > 1;
 
@@ -452,7 +456,7 @@ const ProfessorDashboard = () => {
                             </Button>
                         </div>
                     ) : (
-                        <p className="text-muted-foreground">Nenhuma próxima aula encontrada para esta filial.</p>
+                        <p className="text-muted-foreground">Nenhuma próxima aula encontrada para você nesta filial.</p>
                     )}
                 </CardContent>
             </Card>
@@ -569,7 +573,7 @@ const StudentDashboard = () => {
   }
 
   const nextClass = branches
-      .find(b => b.name === user.affiliations[0])
+      .find(b => user.affiliations && user.affiliations.includes(b.name))
       ?.schedule?.[0];
 
   return (
