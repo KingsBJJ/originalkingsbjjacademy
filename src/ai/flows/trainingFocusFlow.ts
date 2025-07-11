@@ -10,13 +10,13 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 
-export const TrainingFocusInputSchema = z.object({
+const TrainingFocusInputSchema = z.object({
   studentName: z.string().describe("The student's name."),
   studentBelt: z.string().describe("The student's belt level (e.g., Branca, Azul, Roxa)."),
 });
 export type TrainingFocusInput = z.infer<typeof TrainingFocusInputSchema>;
 
-export const TrainingFocusOutputSchema = z.object({
+const TrainingFocusOutputSchema = z.object({
   focusPoints: z.array(z.string()).length(3).describe('A list of three specific training focus points for the student.'),
 });
 export type TrainingFocusOutput = z.infer<typeof TrainingFocusOutputSchema>;
