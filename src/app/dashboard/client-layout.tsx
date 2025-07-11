@@ -183,7 +183,11 @@ export default function DashboardClientLayout({
       setUser(userToSet);
     };
 
-    determineUser();
+    // This check ensures the logic only runs on the client-side after mounting,
+    // which prevents hydration errors.
+    if (typeof window !== 'undefined') {
+      determineUser();
+    }
   }, [searchParams]);
 
    useEffect(() => {
