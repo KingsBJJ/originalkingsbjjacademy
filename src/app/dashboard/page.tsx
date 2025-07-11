@@ -20,8 +20,9 @@ import {
   User as UserIcon,
   BarChart,
   Trophy,
+  LineChart as LineChartIcon,
 } from "lucide-react";
-import { Bar, BarChart as RechartsBarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
+import { Bar, BarChart as RechartsBarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, LineChart, Line, CartesianGrid } from "recharts";
 import { ChartConfig, ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
 import { UserContext } from "./client-layout";
 import { 
@@ -50,12 +51,20 @@ const DataCard = ({ title, value, description, icon: Icon }: { title: string; va
     </Card>
 );
 
-const chartConfig = {
+const barChartConfig = {
   students: {
     label: "Alunos",
     color: "hsl(var(--primary))",
   },
 } satisfies ChartConfig;
+
+const lineChartConfig = {
+  checkins: {
+    label: "Check-ins",
+    color: "hsl(var(--primary))",
+  },
+} satisfies ChartConfig;
+
 
 const AdminDashboard = () => {
   const [branches, setBranches] = useState<Branch[]>([]);
@@ -108,6 +117,21 @@ const AdminDashboard = () => {
         students: studentCount,
       }));
   }, [students, branches]);
+  
+   const annualPerformanceData = [
+    { month: 'Jan', checkins: 450 },
+    { month: 'Fev', checkins: 480 },
+    { month: 'Mar', checkins: 550 },
+    { month: 'Abr', checkins: 520 },
+    { month: 'Mai', checkins: 600 },
+    { month: 'Jun', checkins: 580 },
+    { month: 'Jul', checkins: 620 },
+    { month: 'Ago', checkins: 650 },
+    { month: 'Set', checkins: 610 },
+    { month: 'Out', checkins: 680 },
+    { month: 'Nov', checkins: 720 },
+    { month: 'Dez', checkins: 700 },
+  ];
 
   const bestBranch = useMemo(() => {
     if (!students || students.length === 0) {
@@ -171,7 +195,7 @@ const AdminDashboard = () => {
           </CardHeader>
           <CardContent>
               {branchStudentData.length > 0 ? (
-                <ChartContainer config={chartConfig} className="h-64 w-full">
+                <ChartContainer config={barChartConfig} className="h-64 w-full">
                     <RechartsBarChart
                         accessibilityLayer
                         data={branchStudentData}
@@ -230,6 +254,57 @@ const AdminDashboard = () => {
             )}
             <p className="text-xs text-muted-foreground mt-1">Baseado no número de check-ins de alunos no último mês.</p>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card className="md:col-span-3">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <LineChartIcon />
+            Desempenho Anual da Equipe
+          </CardTitle>
+          <CardDescription>
+            Acompanhe o número total de check-ins ao longo do ano.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ChartContainer config={lineChartConfig} className="h-64 w-full">
+            <LineChart
+              accessibilityLayer
+              data={annualPerformanceData}
+              margin={{
+                left: -10,
+                right: 20,
+              }}
+            >
+              <CartesianGrid vertical={false} strokeDasharray="3 3" />
+              <XAxis
+                dataKey="month"
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+                fontSize={12}
+              />
+              <YAxis
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+                fontSize={12}
+                allowDecimals={false}
+              />
+              <ChartTooltipContent
+                cursor={false}
+                contentStyle={{ background: "hsl(var(--background))" }}
+              />
+              <Line
+                dataKey="checkins"
+                type="monotone"
+                stroke="var(--color-checkins)"
+                strokeWidth={2}
+                dot={false}
+              />
+            </LineChart>
+          </ChartContainer>
         </CardContent>
       </Card>
 
