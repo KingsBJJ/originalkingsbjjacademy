@@ -142,14 +142,12 @@ async function StudentList({ user }: { user: User }) {
   // Filter students based on user role
   const filteredStudents = user.role === 'admin'
     ? allStudents // Admin sees all students
-    : allStudents.filter(s => user.affiliations.some(aff => s.affiliations.includes(aff))); // Professor sees students from any of their affiliations
+    : allStudents.filter(student => student.mainInstructor === user.name); // Professor sees only their own students
 
   const adultStudents = filteredStudents.filter(s => s.category === 'Adult');
   const kidsStudents = filteredStudents.filter(s => s.category === 'Kids');
 
-  const professorAffiliationText = user.affiliations.length > 1 
-    ? "Visualize os alunos de suas filiais." 
-    : `Visualize os alunos da sua filial (${user.affiliations[0] || 'N/A'}).`;
+  const professorAffiliationText = `Visualize os alunos que se cadastraram com você.`;
 
   return (
     <div className="grid gap-6">
