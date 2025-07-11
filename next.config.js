@@ -4,7 +4,7 @@
 // Safely parse the Firebase config to prevent server crashes during startup.
 let webappConfig = {};
 try {
-  const config = process.env.FIREBASE_WEBAPP_CONFIG;
+  const config = process.env.FIREBASE_CONFIG;
   if (config) {
     webappConfig = JSON.parse(config);
   }
@@ -38,6 +38,7 @@ const nextConfig = {
     ],
   },
   // Expose Firebase config to the client-side, with fallbacks to prevent errors.
+  // IMPORTANT: Only variables prefixed with NEXT_PUBLIC_ are exposed to the browser.
   env: {
     NEXT_PUBLIC_FIREBASE_API_KEY: webappConfig.apiKey || "",
     NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: webappConfig.authDomain || "",

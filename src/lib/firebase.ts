@@ -3,10 +3,10 @@ import { initializeApp, getApps, getApp, type FirebaseOptions } from "firebase/a
 import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 
-// This configuration is now a fallback for scenarios where environment variables might not be available.
+// This configuration is a fallback for local development or scenarios where environment variables might not be available.
 // The primary source of truth will be the environment variables set by Next.js.
 const fallbackConfig: FirebaseOptions = {
-  apiKey: "AIzaSyA5gI17mgL43m90iUzyWllxIznvCE_D33U",
+  apiKey: "YOUR_FALLBACK_API_KEY", // Replace with your actual fallback if needed
   authDomain: "kings-bjj-training-hub.firebaseapp.com",
   projectId: "kings-bjj-training-hub",
   storageBucket: "kings-bjj-training-hub.appspot.com",
