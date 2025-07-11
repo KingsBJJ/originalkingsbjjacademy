@@ -27,6 +27,7 @@ export type User = {
   id: string;
   name: string;
   email: string;
+  phone?: string;
   role: 'student' | 'professor' | 'admin';
   avatar: string;
   belt: string;
@@ -470,6 +471,7 @@ export const getUserByEmail = async (email: string): Promise<User | null> => {
                 name: instructorData.name,
                 email: instructorData.email,
                 role: 'professor',
+                phone: instructorData.phone,
                 avatar: instructorData.avatar || `https://placehold.co/128x128.png?text=${instructorData.name.charAt(0)}`,
                 belt: instructorData.belt,
                 stripes: instructorData.stripes || 0,

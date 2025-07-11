@@ -2,6 +2,7 @@
 "use client";
 
 import { useContext } from "react";
+import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -40,7 +41,15 @@ export default function ProfilePage() {
     admin: 'Admin'
   };
 
-  const beltStyle = beltColors[user.belt] || beltColors.Branca;
+  const beltStyle = beltColors[user.belt as keyof typeof beltColors] || beltColors.Branca;
+
+  const getHref = (href: string) => {
+    if (!user) return href;
+    const params = new URLSearchParams();
+    if (user.role) params.set('role', user.role);
+    if (user.email) params.set('email', user.email);
+    return `${href}?${params.toString()}`;
+  };
 
   return (
     <div className="grid gap-6">
@@ -77,7 +86,9 @@ export default function ProfilePage() {
             )}
           </div>
         </div>
-        <Button>Editar Perfil</Button>
+        <Button asChild>
+          <Link href={getHref('/dashboard/profile/edit')}>Editar Perfil</Link>
+        </Button>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
@@ -126,6 +137,10 @@ export default function ProfilePage() {
             <div className="flex justify-between">
                 <span className="font-medium text-muted-foreground">Função:</span>
                 <span className="capitalize">{roleNames[user.role]}</span>
+            </div>
+             <div className="flex justify-between">
+                <span className="font-medium text-muted-foreground">Telefone:</span>
+                <span>{user.phone || 'Não informado'}</span>
             </div>
              <div className="flex justify-between">
                 <span className="font-medium text-muted-foreground">Membro Desde:</span>
