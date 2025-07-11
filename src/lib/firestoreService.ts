@@ -452,20 +452,46 @@ export const getNotifications = async (user: User): Promise<Notification[]> => {
         return [];
     }
     try {
-        let q;
         const notifsCollection = collection(db, 'notifications');
+        
         if (user.role === 'admin') {
-            q = query(notifsCollection, orderBy('createdAt', 'desc'));
-        } else {
-            // Fetch notifications for 'all' and for the user's specific affiliation
-             q = query(notifsCollection, 
-                where('target', 'in', ['all', user.affiliation]),
-                orderBy('createdAt', 'desc')
-            );
+            const q = query(notifsCollection, orderBy('createdAt', 'desc'));
+            const querySnapshot = await getDocs(q);
+            return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Notification));
         }
 
-        const querySnapshot = await getDocs(q);
-        return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Notification));
+        // For students and professors, we fetch global and affiliation-specific notifications
+        // Firestore doesn't support logical OR in a single query like this,
+        // so we perform two separate queries and merge the results.
+        
+        const globalQuery = query(notifsCollection, where('target', '==', 'all'));
+        const affiliationQuery = query(notifsCollection, where('target', '==', user.affiliation));
+
+        const [globalSnapshot, affiliationSnapshot] = await Promise.all([
+            getDocs(globalQuery),
+            getDocs(affiliationQuery)
+        ]);
+
+        const notificationsMap = new Map<string, Notification>();
+        
+        globalSnapshot.docs.forEach(doc => {
+            notificationsMap.set(doc.id, { id: doc.id, ...doc.data() } as Notification);
+        });
+
+        affiliationSnapshot.docs.forEach(doc => {
+            notificationsMap.set(doc.id, { id: doc.id, ...doc.data() } as Notification);
+        });
+        
+        const allNotifications = Array.from(notificationsMap.values());
+
+        // Sort by creation date, descending
+        allNotifications.sort((a, b) => {
+            const dateA = a.createdAt?.toDate() ?? new Date(0);
+            const dateB = b.createdAt?.toDate() ?? new Date(0);
+            return dateB.getTime() - dateA.getTime();
+        });
+
+        return allNotifications;
 
     } catch (error) {
         console.error('Error getting notifications:', error);
