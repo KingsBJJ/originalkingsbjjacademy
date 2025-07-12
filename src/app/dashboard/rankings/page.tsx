@@ -157,7 +157,7 @@ const GraduationPlan = () => {
     const calculateProgress = (student: Student) => {
         const requiredClasses = beltProgressionRequirements[student.belt as keyof typeof beltProgressionRequirements] || 9999;
         const currentClasses = student.attendance.total;
-        if (requiredClasses === 9999) return 0; // No requirement for this belt
+        if (requiredClasses === 9999 || requiredClasses === 0) return 0; // No requirement for this belt
         
         const progress = Math.min((currentClasses / requiredClasses) * 100, 100);
         return Math.round(progress);
@@ -217,7 +217,7 @@ const GraduationPlan = () => {
                         <p className="font-medium">{student.name}</p>
                         </div>
                     </TableCell>
-                    <TableCell>{student.affiliations.join(', ')}</TableCell>
+                    <TableCell>{student.affiliations?.join(', ') || '-'}</TableCell>
                     <TableCell>
                         <Badge
                         className={cn(

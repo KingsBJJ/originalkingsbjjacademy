@@ -131,8 +131,8 @@ export default function CheckInPage() {
                     lastMonth: (user.attendance?.lastMonth || 0) + 1,
                 };
                 
-                // The updateUser function in client-layout now separates these concerns.
-                updateUser({ attendance: updatedAttendanceForState });
+                // The updateUser function in client-layout now handles both DB and local state
+                updateUser({ attendance: attendanceIncrement });
 
                 toast({
                   title: 'Check-in Realizado!',
