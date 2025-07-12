@@ -42,6 +42,16 @@ const formatJoinDate = (date: Date | undefined) => {
     return `Desde ${format(jsDate, 'MMM yyyy', { locale: ptBR })}`;
 };
 
+const formatBirthDate = (dateString: string | undefined) => {
+    if (!dateString) return '-';
+    try {
+        const [year, month, day] = dateString.split('-').map(Number);
+        return format(new Date(year, month - 1, day), 'dd/MM/yyyy');
+    } catch {
+        return dateString;
+    }
+};
+
 const StudentTable = ({ students }: { students: Student[] }) => {
     if (students.length === 0) {
         return (
@@ -56,6 +66,7 @@ const StudentTable = ({ students }: { students: Student[] }) => {
             <TableHeader>
                 <TableRow>
                     <TableHead>Aluno</TableHead>
+                    <TableHead>Nascimento</TableHead>
                     <TableHead>Graduação</TableHead>
                     <TableHead className="text-center">Aulas (Mês)</TableHead>
                     <TableHead className="text-center">Aulas (Total)</TableHead>
@@ -76,6 +87,7 @@ const StudentTable = ({ students }: { students: Student[] }) => {
                                     <p className="font-medium">{student.name}</p>
                                 </div>
                             </TableCell>
+                            <TableCell>{formatBirthDate(student.dateOfBirth)}</TableCell>
                             <TableCell>
                                 <Badge className={cn("text-xs font-semibold", beltStyle.bg, beltStyle.text)}>
                                     {student.belt}
@@ -102,6 +114,7 @@ const StudentsListSkeleton = () => (
                     <TableRow>
                         <TableHead><Skeleton className="h-5 w-24" /></TableHead>
                         <TableHead><Skeleton className="h-5 w-24" /></TableHead>
+                        <TableHead><Skeleton className="h-5 w-24" /></TableHead>
                         <TableHead className="text-center"><Skeleton className="h-5 w-20" /></TableHead>
                         <TableHead className="text-center"><Skeleton className="h-5 w-20" /></TableHead>
                         <TableHead><Skeleton className="h-5 w-24" /></TableHead>
@@ -111,6 +124,7 @@ const StudentsListSkeleton = () => (
                     {Array.from({ length: 5 }).map((_, i) => (
                         <TableRow key={i}>
                             <TableCell><div className="flex items-center gap-2"><Skeleton className="h-9 w-9 rounded-full" /><Skeleton className="h-4 w-32" /></div></TableCell>
+                             <TableCell><Skeleton className="h-4 w-20" /></TableCell>
                             <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
                             <TableCell className="text-center"><Skeleton className="h-4 w-8 mx-auto" /></TableCell>
                             <TableCell className="text-center"><Skeleton className="h-4 w-8 mx-auto" /></TableCell>

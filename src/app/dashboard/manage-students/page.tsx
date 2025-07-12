@@ -32,6 +32,18 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from '@/components/ui/skeleton';
+import { format } from 'date-fns';
+
+const formatBirthDate = (dateString: string | undefined) => {
+    if (!dateString) return '-';
+    try {
+        // A data vem como "YYYY-MM-DD" do input type="date"
+        const [year, month, day] = dateString.split('-').map(Number);
+        return format(new Date(year, month - 1, day), 'dd/MM/yyyy');
+    } catch {
+        return dateString; // Retorna a string original se houver erro
+    }
+};
 
 const StudentTable = ({ students, userRole }: { students: Student[], userRole: User['role'] }) => {
     if (students.length === 0) {
@@ -49,6 +61,7 @@ const StudentTable = ({ students, userRole }: { students: Student[], userRole: U
               <TableHead>Aluno</TableHead>
               <TableHead>Filial</TableHead>
               <TableHead>Graduação</TableHead>
+              <TableHead>Nascimento</TableHead>
               <TableHead className="text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
@@ -78,6 +91,7 @@ const StudentTable = ({ students, userRole }: { students: Student[], userRole: U
                       {(student.belt === 'Preta' || student.belt === 'Coral') && student.stripes > 0 && ` - ${student.stripes}º Grau`}
                       </Badge>
                   </TableCell>
+                  <TableCell>{formatBirthDate(student.dateOfBirth)}</TableCell>
                   <TableCell className="text-right">
                      <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -115,6 +129,7 @@ const StudentsListSkeleton = () => (
                         <TableHead><Skeleton className="h-5 w-24" /></TableHead>
                         <TableHead><Skeleton className="h-5 w-24" /></TableHead>
                         <TableHead><Skeleton className="h-5 w-24" /></TableHead>
+                        <TableHead><Skeleton className="h-5 w-24" /></TableHead>
                         <TableHead className="text-right"><Skeleton className="h-5 w-16" /></TableHead>
                     </TableRow>
                 </TableHeader>
@@ -124,6 +139,7 @@ const StudentsListSkeleton = () => (
                             <TableCell><div className="flex items-center gap-2"><Skeleton className="h-9 w-9 rounded-full" /><Skeleton className="h-4 w-32" /></div></TableCell>
                             <TableCell><Skeleton className="h-4 w-28" /></TableCell>
                             <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
+                            <TableCell><Skeleton className="h-4 w-20" /></TableCell>
                             <TableCell className="text-right"><Skeleton className="h-8 w-8" /></TableCell>
                         </TableRow>
                     ))}

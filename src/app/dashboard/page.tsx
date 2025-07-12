@@ -30,6 +30,7 @@ import {
   Building,
   Sparkles,
   Cake,
+  PartyPopper,
 } from "lucide-react";
 import { Bar, BarChart as RechartsBarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
 import { ChartConfig, ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
@@ -40,11 +41,13 @@ import {
     getStudents, 
     type Branch, 
     type Instructor, 
-    type Student 
+    type Student,
+    type User 
 } from "@/lib/firestoreService";
 import { Skeleton } from "@/components/ui/skeleton";
 import { generateTrainingFocus, type TrainingFocusOutput } from "@/ai/flows/trainingFocusFlow";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { KingsBjjLogo } from "@/components/kings-bjj-logo";
 
 const DataCard = ({ title, value, description, icon: Icon }: { title: string; value: number | string; description: string; icon: React.ElementType }) => (
     <Card>
@@ -118,6 +121,33 @@ const BirthdayCard = ({ people }: { people: (Student | Instructor)[] }) => {
         </CardContent>
     </Card>
   );
+};
+
+const BirthdayMessage = ({ user }: { user: User }) => {
+    const today = new Date();
+    const isBirthday = useMemo(() => {
+        if (!user.dateOfBirth) return false;
+        const [year, month, day] = user.dateOfBirth.split('-').map(Number);
+        return month === today.getMonth() + 1 && day === today.getDate();
+    }, [user.dateOfBirth, today]);
+
+    if (!isBirthday) {
+        return null;
+    }
+
+    return (
+        <Card className="bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border-primary/30">
+            <CardHeader>
+                <CardTitle className="flex items-center gap-3">
+                    <PartyPopper className="text-primary" />
+                    Feliz Aniversário, {user.name.split(' ')[0]}!
+                </CardTitle>
+                <CardDescription>
+                    A equipe Kings BJJ te deseja um dia incrível, muita saúde, paz e, claro, muito jiu-jitsu! Que seu novo ciclo seja repleto de conquistas dentro e fora do tatame. Oss!
+                </CardDescription>
+            </CardHeader>
+        </Card>
+    );
 };
 
 
@@ -483,6 +513,7 @@ const ProfessorDashboard = () => {
         </div>
 
         <div className="grid grid-cols-1 gap-6">
+            <BirthdayMessage user={user} />
             <BirthdayCard people={peopleInAffiliation} />
             {showAffiliationSelector && (
                 <Card>
@@ -670,6 +701,8 @@ const StudentDashboard = () => {
 
   return (
     <>
+      <BirthdayMessage user={user} />
+
       <Card className="bg-primary/10 border-primary/20">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -782,6 +815,10 @@ export default function DashboardPage() {
 
   if (!user) {
     return <div className="grid gap-6">
+        <div className="flex items-center justify-center h-screen w-full flex-col gap-4">
+            <KingsBjjLogo className="h-24 w-24 animate-pulse" />
+            <p className="text-muted-foreground">Carregando painel...</p>
+        </div>
         <Skeleton className="h-10 w-1/2" />
         <Skeleton className="h-5 w-3/4" />
         <div className="mt-4 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -803,9 +840,9 @@ export default function DashboardPage() {
   };
 
   return (
-    <>
+    <div className="grid gap-4">
       {user.role !== 'professor' && (
-        <div className="grid gap-2 mb-6">
+        <div className="grid gap-2 mb-2">
           <h1 className="text-3xl font-bold tracking-tight">
             {welcomeMessage[user.role as keyof typeof welcomeMessage]}
           </h1>
@@ -816,6 +853,6 @@ export default function DashboardPage() {
       {user.role === "admin" && <AdminDashboard />}
       {user.role === "professor" && <ProfessorDashboard />}
       {user.role === "student" && <StudentDashboard />}
-    </>
+    </div>
   );
 }
