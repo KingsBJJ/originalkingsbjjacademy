@@ -43,6 +43,7 @@ const instructorFormSchema = z.object({
   name: z.string().min(3, { message: 'O nome deve ter pelo menos 3 caracteres.' }),
   email: z.string().email({ message: 'Por favor, insira um email válido.' }),
   phone: z.string().min(10, { message: 'O telefone deve ter pelo menos 10 dígitos.' }),
+  dateOfBirth: z.string().optional(),
   affiliations: z.array(z.string()).optional(),
   belt: z.string({ required_error: 'Selecione uma graduação.' }).min(1, { message: 'Selecione uma graduação.' }),
   stripes: z.coerce.number().int().min(0).max(6).optional(),
@@ -69,6 +70,7 @@ export function EditInstructorForm({ user, initialInstructor, branches }: EditIn
       name: initialInstructor.name,
       email: initialInstructor.email,
       phone: initialInstructor.phone,
+      dateOfBirth: initialInstructor.dateOfBirth || '',
       affiliations: initialInstructor.affiliations || [],
       belt: initialInstructor.belt,
       stripes: initialInstructor.stripes || 0,
@@ -103,12 +105,13 @@ export function EditInstructorForm({ user, initialInstructor, branches }: EditIn
   const onSubmit = async (data: InstructorFormValues) => {
     setIsSaving(true);
     try {
-        const { name, email, phone, belt, affiliations, bio, avatar, stripes } = data;
+        const { name, email, phone, belt, affiliations, bio, avatar, stripes, dateOfBirth } = data;
 
         const instructorData: Omit<Instructor, 'id'> = {
             name,
             email,
             phone,
+            dateOfBirth,
             belt,
             affiliations: affiliations ?? [],
             bio: bio ?? '',
@@ -196,6 +199,19 @@ export function EditInstructorForm({ user, initialInstructor, branches }: EditIn
                     </FormItem>
                   )}
                 />
+                 <FormField
+                  control={form.control}
+                  name="dateOfBirth"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Data de Nascimento</FormLabel>
+                      <FormControl>
+                        <Input type="date" {...field} value={field.value ?? ''} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 <FormField
                   control={form.control}
                   name="belt"
@@ -244,7 +260,7 @@ export function EditInstructorForm({ user, initialInstructor, branches }: EditIn
                   control={form.control}
                   name="avatar"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="md:col-span-2">
                       <FormLabel>URL da Foto (Opcional)</FormLabel>
                       <FormControl>
                         <Input placeholder="https://..." {...field} value={field.value ?? ''} />

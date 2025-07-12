@@ -108,6 +108,7 @@ function TermsDialog({ onAccept, isAccepted }: { onAccept: (parentName: string, 
 export default function SignUpPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [dateOfBirth, setDateOfBirth] = useState("");
   const [password, setPassword] = useState("");
   const [belt, setBelt] = useState("");
   const [stripes, setStripes] = useState(0);
@@ -230,6 +231,7 @@ export default function SignUpPage() {
     const newStudentData: Omit<User, 'id'> = {
         name,
         email,
+        dateOfBirth,
         password, // In a real app, this should be hashed server-side
         role: 'student',
         affiliations: affiliation ? [affiliation] : [],
@@ -282,6 +284,7 @@ export default function SignUpPage() {
     !affiliation ||
     !mainInstructor ||
     !belt ||
+    !dateOfBirth ||
     (category === "kids" && !termsAccepted);
 
 
@@ -297,7 +300,7 @@ export default function SignUpPage() {
         priority
       />
       <div className="absolute inset-0 bg-black/60 -z-10" />
-      <Card className="mx-auto w-full max-w-sm border-0 bg-transparent shadow-none sm:border sm:border-white/10 sm:bg-black/20 sm:backdrop-blur-sm sm:shadow-lg">
+      <Card className="mx-auto w-full max-w-lg border-0 bg-transparent shadow-none sm:border sm:border-white/10 sm:bg-black/20 sm:backdrop-blur-sm sm:shadow-lg">
         <CardHeader className="text-center">
           <KingsBjjLogo className="mx-auto mb-4 h-16 w-16" />
           <CardTitle className="text-3xl font-bold tracking-tight text-white">
@@ -307,9 +310,15 @@ export default function SignUpPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="grid gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="name" className="text-white/80">Nome</Label>
-              <Input id="name" placeholder="Seu Nome" required className="bg-white/5 border-white/20 text-white placeholder:text-white/50" value={name} onChange={e => setName(e.target.value)} />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="name" className="text-white/80">Nome Completo</Label>
+                  <Input id="name" placeholder="Seu Nome" required className="bg-white/5 border-white/20 text-white placeholder:text-white/50" value={name} onChange={e => setName(e.target.value)} />
+                </div>
+                 <div className="grid gap-2">
+                  <Label htmlFor="dateOfBirth" className="text-white/80">Data de Nascimento</Label>
+                  <Input id="dateOfBirth" type="date" required className="bg-white/5 border-white/20 text-white placeholder:text-white/50" value={dateOfBirth} onChange={e => setDateOfBirth(e.target.value)} />
+                </div>
             </div>
             <div className="grid gap-2">
               <Label htmlFor="email" className="text-white/80">Email</Label>
@@ -323,83 +332,86 @@ export default function SignUpPage() {
                 className="bg-white/5 border-white/20 text-white placeholder:text-white/50"
               />
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="password" className="text-white/80">Senha</Label>
-              <Input id="password" type="password" required className="bg-white/5 border-white/20 text-white" value={password} onChange={e => setPassword(e.target.value)} />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="confirm-password" className="text-white/80">Confirmar Senha</Label>
-              <Input id="confirm-password" type="password" required className="bg-white/5 border-white/20 text-white"/>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="password" className="text-white/80">Senha</Label>
+                  <Input id="password" type="password" required className="bg-white/5 border-white/20 text-white" value={password} onChange={e => setPassword(e.target.value)} />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="confirm-password" className="text-white/80">Confirmar Senha</Label>
+                  <Input id="confirm-password" type="password" required className="bg-white/5 border-white/20 text-white"/>
+                </div>
             </div>
 
-            <div className="grid gap-2">
-              <Label htmlFor="affiliation" className="text-white/80">Filial</Label>
-              <Select onValueChange={setAffiliation} value={affiliation}>
-                <SelectTrigger id="affiliation" className="bg-white/5 border-white/20 text-white">
-                  <SelectValue placeholder="Selecione sua filial" />
-                </SelectTrigger>
-                <SelectContent>
-                  {branches.map((branch) => (
-                    <SelectItem key={branch.id} value={branch.name}>
-                      {branch.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="grid gap-2">
-                <Label htmlFor="mainInstructor" className="text-white/80">Professor</Label>
-                <Select onValueChange={setMainInstructor} value={mainInstructor} disabled={!affiliation || loadingInstructors || filteredInstructors.length === 0}>
-                    <SelectTrigger id="mainInstructor" className="bg-white/5 border-white/20 text-white">
-                        <SelectValue placeholder={
-                            loadingInstructors 
-                                ? "Carregando professores..." 
-                                : !affiliation 
-                                ? "Selecione a filial primeiro" 
-                                : filteredInstructors.length === 0 
-                                ? "Nenhum professor encontrado" 
-                                : "Selecione seu professor"
-                        } />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="affiliation" className="text-white/80">Filial</Label>
+                  <Select onValueChange={setAffiliation} value={affiliation}>
+                    <SelectTrigger id="affiliation" className="bg-white/5 border-white/20 text-white">
+                      <SelectValue placeholder="Selecione sua filial" />
                     </SelectTrigger>
                     <SelectContent>
-                        {filteredInstructors.map((instructor) => (
-                            <SelectItem key={instructor.id} value={instructor.name}>
-                                {instructor.name}
-                            </SelectItem>
-                        ))}
+                      {branches.map((branch) => (
+                        <SelectItem key={branch.id} value={branch.name}>
+                          {branch.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
-                </Select>
-            </div>
-
-             <div className="grid gap-2">
-              <Label className="text-white/80">Categoria</Label>
-              <RadioGroup defaultValue="adulto" onValueChange={handleCategoryChange} className="flex gap-4 pt-2">
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="adulto" id="r-adulto" />
-                  <Label htmlFor="r-adulto" className="text-white/80 font-normal">Adulto</Label>
+                  </Select>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="kids" id="r-kids" />
-                  <Label htmlFor="r-kids" className="text-white/80 font-normal">Kids</Label>
+                <div className="grid gap-2">
+                    <Label htmlFor="mainInstructor" className="text-white/80">Professor</Label>
+                    <Select onValueChange={setMainInstructor} value={mainInstructor} disabled={!affiliation || loadingInstructors || filteredInstructors.length === 0}>
+                        <SelectTrigger id="mainInstructor" className="bg-white/5 border-white/20 text-white">
+                            <SelectValue placeholder={
+                                loadingInstructors 
+                                    ? "Carregando professores..." 
+                                    : !affiliation 
+                                    ? "Selecione a filial primeiro" 
+                                    : filteredInstructors.length === 0 
+                                    ? "Nenhum professor encontrado" 
+                                    : "Selecione seu professor"
+                            } />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {filteredInstructors.map((instructor) => (
+                                <SelectItem key={instructor.id} value={instructor.name}>
+                                    {instructor.name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
                 </div>
-              </RadioGroup>
             </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="belt" className="text-white/80">Graduação</Label>
-              <Select onValueChange={setBelt} value={belt}>
-                <SelectTrigger id="belt" className="bg-white/5 border-white/20 text-white">
-                  <SelectValue placeholder="Selecione sua graduação" />
-                </SelectTrigger>
-                <SelectContent>
-                  {currentBeltList.map((beltOption) => (
-                    <SelectItem key={beltOption} value={beltOption}>
-                      {beltOption}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                    <Label className="text-white/80">Categoria</Label>
+                    <RadioGroup defaultValue="adulto" onValueChange={handleCategoryChange} className="flex gap-4 pt-2">
+                        <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="adulto" id="r-adulto" />
+                        <Label htmlFor="r-adulto" className="text-white/80 font-normal">Adulto</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="kids" id="r-kids" />
+                        <Label htmlFor="r-kids" className="text-white/80 font-normal">Kids</Label>
+                        </div>
+                    </RadioGroup>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="belt" className="text-white/80">Graduação</Label>
+                  <Select onValueChange={setBelt} value={belt}>
+                    <SelectTrigger id="belt" className="bg-white/5 border-white/20 text-white">
+                      <SelectValue placeholder="Selecione sua graduação" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {currentBeltList.map((beltOption) => (
+                        <SelectItem key={beltOption} value={beltOption}>
+                          {beltOption}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
             </div>
             
             {(belt === "Preta" || belt === "Coral") && (

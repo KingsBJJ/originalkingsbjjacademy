@@ -29,6 +29,7 @@ import {
   Trophy,
   Building,
   Sparkles,
+  Cake,
 } from "lucide-react";
 import { Bar, BarChart as RechartsBarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
 import { ChartConfig, ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
@@ -43,6 +44,7 @@ import {
 } from "@/lib/firestoreService";
 import { Skeleton } from "@/components/ui/skeleton";
 import { generateTrainingFocus, type TrainingFocusOutput } from "@/ai/flows/trainingFocusFlow";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const DataCard = ({ title, value, description, icon: Icon }: { title: string; value: number | string; description: string; icon: React.ElementType }) => (
     <Card>
@@ -69,6 +71,54 @@ const barChartConfig = {
     color: "hsl(var(--primary))",
   },
 } satisfies ChartConfig;
+
+const BirthdayCard = ({ people }: { people: (Student | Instructor)[] }) => {
+  const today = new Date();
+  const todayMonth = today.getMonth() + 1;
+  const todayDay = today.getDate();
+
+  const birthdayPeople = people.filter(p => {
+    if (!p.dateOfBirth) return false;
+    const [year, month, day] = p.dateOfBirth.split('-').map(Number);
+    return month === todayMonth && day === todayDay;
+  });
+
+  if (birthdayPeople.length === 0) {
+    return null;
+  }
+
+  return (
+    <Card className="md:col-span-3 bg-yellow-400/10 border-yellow-400/30">
+        <CardHeader>
+            <CardTitle className="flex items-center gap-3 text-yellow-400">
+                <Cake />
+                Aniversariantes de Hoje!
+            </CardTitle>
+            <CardDescription className="text-yellow-400/80">
+                Vamos desejar um feliz aniversário para os nossos colegas de tatame!
+            </CardDescription>
+        </CardHeader>
+        <CardContent>
+            <div className="flex flex-wrap gap-4">
+                {birthdayPeople.map(person => (
+                    <div key={person.id} className="flex items-center gap-3">
+                        <Avatar>
+                           <AvatarImage src={person.avatar} alt={person.name} />
+                            <AvatarFallback>{person.name.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                            <p className="font-semibold">{person.name}</p>
+                            <p className="text-sm text-muted-foreground">
+                                {person.role === 'student' ? 'Aluno' : 'Professor'}
+                            </p>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </CardContent>
+    </Card>
+  );
+};
 
 
 const AdminDashboard = () => {
@@ -187,6 +237,7 @@ const AdminDashboard = () => {
 
   return (
     <div className="grid grid-cols-1 gap-6">
+      <BirthdayCard people={[...students, ...instructors]} />
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
         <DataCard title="Total de Alunos" value={students.length} description="Alunos ativos em todas as filiais" icon={Users} />
         <DataCard title="Total de Filiais" value={branches.length} description="Filiais em operação" icon={Map} />
@@ -314,6 +365,7 @@ const ProfessorDashboard = () => {
   const user = useContext(UserContext);
   const [branches, setBranches] = useState<Branch[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
+  const [instructors, setInstructors] = useState<Instructor[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedAffiliation, setSelectedAffiliation] = useState<string>("");
 
@@ -328,12 +380,14 @@ const ProfessorDashboard = () => {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const [branchesData, studentsData] = await Promise.all([
+            const [branchesData, studentsData, instructorsData] = await Promise.all([
                 getBranches(),
-                getStudents()
+                getStudents(),
+                getInstructors(),
             ]);
             setBranches(branchesData);
             setStudents(studentsData);
+            setInstructors(instructorsData);
         } catch (error) {
             console.error("Failed to fetch professor dashboard data", error);
         } finally {
@@ -403,6 +457,11 @@ const ProfessorDashboard = () => {
         </div>
       );
   }
+  
+  const peopleInAffiliation = [
+    ...filteredStudents,
+    ...instructors.filter(i => i.affiliations?.includes(selectedAffiliation))
+  ];
 
   const nextClass = branches
     .flatMap(b => b.schedule?.map(s => ({...s, branchName: b.name})))
@@ -424,6 +483,7 @@ const ProfessorDashboard = () => {
         </div>
 
         <div className="grid grid-cols-1 gap-6">
+            <BirthdayCard people={peopleInAffiliation} />
             {showAffiliationSelector && (
                 <Card>
                     <CardHeader>

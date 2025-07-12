@@ -1,3 +1,4 @@
+
 // src/lib/firestoreService.ts
 'use server';
 
@@ -44,6 +45,7 @@ export type User = {
   isFirstLogin?: boolean;
   password?: string;
   createdAt?: Date; // Changed to Date
+  dateOfBirth?: string; // Formato YYYY-MM-DD
 };
 
 export type ClassScheduleItem = {
@@ -86,6 +88,7 @@ export type Instructor = {
   password?: string;
   isFirstLogin?: boolean;
   teachingCategories?: ('Adults' | 'Kids')[];
+  dateOfBirth?: string; // Formato YYYY-MM-DD
 };
 
 export type Student = User;
@@ -481,6 +484,7 @@ export const getUserByEmail = async (email: string): Promise<User | null> => {
                 branchId: '', // Or determine from affiliations
                 category: 'Adult', // Default for professors
                 createdAt: undefined, // Instructors might not have this field
+                dateOfBirth: instructorData.dateOfBirth,
             } as User;
         }
 

@@ -43,6 +43,7 @@ const instructorFormSchema = z.object({
   name: z.string().min(3, { message: 'O nome deve ter pelo menos 3 caracteres.' }),
   email: z.string().email({ message: 'Por favor, insira um email válido.' }),
   phone: z.string().min(10, { message: 'O telefone deve ter pelo menos 10 dígitos.' }),
+  dateOfBirth: z.string().optional(),
   affiliations: z.array(z.string()).optional(),
   belt: z.string({ required_error: 'Selecione uma graduação.' }).min(1, { message: 'Selecione uma graduação.' }),
   stripes: z.coerce.number().int().min(0).max(6).optional(),
@@ -67,6 +68,7 @@ export default function NewInstructorPage() {
       name: '',
       email: '',
       phone: '',
+      dateOfBirth: '',
       affiliations: [],
       belt: '',
       bio: '',
@@ -101,11 +103,12 @@ export default function NewInstructorPage() {
     setIsSaving(true);
     try {
       console.log('onSubmit called with data:', JSON.stringify(data, null, 2));
-      const { name, email, phone, belt, affiliations, bio, avatar, stripes, password, isFirstLogin } = data;
+      const { name, email, phone, belt, affiliations, bio, avatar, stripes, password, isFirstLogin, dateOfBirth } = data;
       const instructorData: Omit<Instructor, 'id'> = {
         name,
         email,
         phone,
+        dateOfBirth,
         belt,
         affiliations: affiliations ?? [],
         bio: bio ?? '',
@@ -219,6 +222,19 @@ export default function NewInstructorPage() {
                 />
                 <FormField
                   control={form.control}
+                  name="dateOfBirth"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Data de Nascimento</FormLabel>
+                      <FormControl>
+                        <Input type="date" {...field} value={field.value ?? ''} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
                   name="belt"
                   render={({ field }) => (
                     <FormItem>
@@ -265,7 +281,7 @@ export default function NewInstructorPage() {
                   control={form.control}
                   name="avatar"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="md:col-span-2">
                       <FormLabel>URL da Foto (Opcional)</FormLabel>
                       <FormControl>
                         <Input placeholder="https://..." {...field} value={field.value ?? ''} />
