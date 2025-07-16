@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useContext } from "react";
+import { useContext, useState, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -27,12 +28,14 @@ import {
   beltColorsKids,
   beltInfo,
   beltInfoKids,
-  mockAllStudents,
+  beltProgressionRequirements,
 } from "@/lib/mock-data";
+import { getStudents, type Student } from "@/lib/firestoreService";
 import { cn } from "@/lib/utils";
 import { CheckCircle, GraduationCap } from "lucide-react";
 import { UserContext } from "../client-layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type BeltListItemProps = {
   belt: string;
@@ -125,13 +128,40 @@ const BeltListItem = ({
 
 const GraduationPlan = () => {
     const user = useContext(UserContext);
+    const [students, setStudents] = useState<Student[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchStudents = async () => {
+            setLoading(true);
+            try {
+                const data = await getStudents();
+                setStudents(data);
+            } catch (error) {
+                console.error("Failed to fetch students for graduation plan", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchStudents();
+    }, []);
+
     const allBeltColors = { ...beltColors, ...beltColorsKids };
     
     if (!user) return null;
 
     const displayedStudents = user.role === 'admin'
-        ? mockAllStudents
-        : mockAllStudents.filter(s => s.affiliation === user.affiliation);
+        ? students
+        : students.filter(s => user.affiliations.some(aff => s.affiliations.includes(aff)));
+
+    const calculateProgress = (student: Student) => {
+        const requiredClasses = beltProgressionRequirements[student.belt as keyof typeof beltProgressionRequirements] || 9999;
+        const currentClasses = student.attendance.total;
+        if (requiredClasses === 9999 || requiredClasses === 0) return 0; // No requirement for this belt
+        
+        const progress = Math.min((currentClasses / requiredClasses) * 100, 100);
+        return Math.round(progress);
+    };
 
     return (
         <Card className="mt-8">
@@ -159,8 +189,20 @@ const GraduationPlan = () => {
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {displayedStudents.map((student) => {
+                {loading ? (
+                    Array.from({length: 5}).map((_, i) => (
+                        <TableRow key={i}>
+                            <TableCell><div className="flex items-center gap-2"><Skeleton className="h-9 w-9 rounded-full" /><Skeleton className="h-4 w-32" /></div></TableCell>
+                            <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                            <TableCell><Skeleton className="h-5 w-20 rounded-full" /></TableCell>
+                            <TableCell><Skeleton className="h-4 w-full" /></TableCell>
+                            <TableCell className="text-right"><Skeleton className="h-8 w-20" /></TableCell>
+                        </TableRow>
+                    ))
+                ) : displayedStudents.map((student) => {
                 const beltStyle = allBeltColors[student.belt as keyof typeof allBeltColors] || beltColors.Branca;
+                const progressPercentage = calculateProgress(student);
+
                 return (
                     <TableRow key={student.id}>
                     <TableCell>
@@ -175,7 +217,7 @@ const GraduationPlan = () => {
                         <p className="font-medium">{student.name}</p>
                         </div>
                     </TableCell>
-                    <TableCell>{student.affiliation}</TableCell>
+                    <TableCell>{student.affiliations?.join(', ') || '-'}</TableCell>
                     <TableCell>
                         <Badge
                         className={cn(
@@ -191,11 +233,11 @@ const GraduationPlan = () => {
                     <TableCell>
                         <div className="flex items-center gap-3">
                         <Progress
-                            value={student.nextGraduationProgress}
+                            value={progressPercentage}
                             className="h-2"
                         />
                         <span className="text-xs font-medium text-muted-foreground">
-                            {student.nextGraduationProgress}%
+                            {progressPercentage}%
                         </span>
                         </div>
                     </TableCell>

@@ -43,3 +43,9 @@ next-env.d.ts
 # firebase
 firebase-debug.log
 firestore-debug.log
+
+import { connectFirestoreEmulator } from 'firebase/firestore';
+if (process.env.NODE_ENV === 'development') {
+  connectFirestoreEmulator(db, 'localhost', 8080);
+  console.log('Connected to Firestore emulator');
+}

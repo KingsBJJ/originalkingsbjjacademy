@@ -1,5 +1,9 @@
 {
   "projects": {
-    "default": "kings-bjj-training-hub"
-  }
+    "default": "kings-bjj-training-hub",
+    "startkings": "kings-bjj-training-hub",
+    "firebase use --add": "kings-bjj-training-hub"
+  },
+  "targets": {},
+  "etags": {}
 }

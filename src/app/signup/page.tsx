@@ -24,7 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { allBelts, allBeltsKids, mockInstructors } from "@/lib/mock-data";
+import { allBelts, allBeltsKids } from "@/lib/mock-data";
 import { useToast } from "@/hooks/use-toast";
 import { Check } from "lucide-react";
 import { 
@@ -37,7 +37,7 @@ import {
   DialogTrigger
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { getBranches, saveTermsAcceptance, type Branch, getInstructors, type Instructor } from "@/lib/firestoreService";
+import { getBranches, saveTermsAcceptance, getInstructorsByAffiliation, addStudent, type Branch, type Instructor, type User } from "@/lib/firestoreService";
 
 
 function TermsDialog({ onAccept, isAccepted }: { onAccept: (parentName: string, childName: string) => void, isAccepted: boolean }) {
@@ -106,63 +106,72 @@ function TermsDialog({ onAccept, isAccepted }: { onAccept: (parentName: string, 
 
 
 export default function SignUpPage() {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState("student");
+  const [dateOfBirth, setDateOfBirth] = useState("");
+  const [password, setPassword] = useState("");
   const [belt, setBelt] = useState("");
+  const [stripes, setStripes] = useState(0);
   const [category, setCategory] = useState("adulto");
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [branches, setBranches] = useState<Branch[]>([]);
-  const [instructors, setInstructors] = useState<Instructor[]>([]);
   const [filteredInstructors, setFilteredInstructors] = useState<Instructor[]>([]);
+  const [loadingInstructors, setLoadingInstructors] = useState(false);
   const [affiliation, setAffiliation] = useState("");
   const [mainInstructor, setMainInstructor] = useState("");
   const router = useRouter();
   const { toast } = useToast();
 
   useEffect(() => {
-    const fetchInitialData = async () => {
+    const fetchBranches = async () => {
         try {
-            const [fetchedBranches, fetchedInstructors] = await Promise.all([
-              getBranches(),
-              getInstructors()
-            ]);
+            const fetchedBranches = await getBranches();
             setBranches(fetchedBranches);
-            setInstructors(fetchedInstructors);
         } catch (error) {
-            console.error("Failed to fetch initial data:", error);
+            console.error("Failed to fetch branches:", error);
             toast({
                 variant: "destructive",
-                title: "Erro ao carregar dados",
-                description: "Não foi possível buscar os dados de filiais e instrutores.",
+                title: "Erro ao carregar filiais",
+                description: "Não foi possível buscar os dados de filiais.",
             });
         }
     };
-    fetchInitialData();
-  }, []);
+    fetchBranches();
+  }, [toast]);
 
   useEffect(() => {
-    if (affiliation && branches.length > 0 && instructors.length > 0) {
-      const selectedBranch = branches.find(b => b.id === affiliation);
-      if (selectedBranch) {
-        const branchInstructorsNames = [
-          selectedBranch.responsible,
-          ...(selectedBranch.additionalInstructors || [])
-        ].filter(Boolean); // Filtra nomes vazios ou nulos
-        
-        const filtered = instructors.filter(i => branchInstructorsNames.includes(i.name));
-        setFilteredInstructors(filtered);
-      }
-    } else {
+    if (!affiliation) {
       setFilteredInstructors([]);
+      setMainInstructor("");
+      return;
     }
-    setMainInstructor(""); // Reseta a seleção do professor ao mudar a filial
-  }, [affiliation, branches, instructors]);
+
+    const fetchInstructors = async () => {
+        setLoadingInstructors(true);
+        setMainInstructor(""); // Reset instructor on affiliation change
+        try {
+            const instructors = await getInstructorsByAffiliation(affiliation);
+            setFilteredInstructors(instructors);
+        } catch (error) {
+            console.error("Failed to fetch instructors for affiliation:", error);
+            toast({
+                variant: "destructive",
+                title: "Erro ao buscar instrutores",
+                description: "Não foi possível carregar os instrutores desta filial.",
+            });
+        } finally {
+            setLoadingInstructors(false);
+        }
+    };
+
+    fetchInstructors();
+  }, [affiliation, toast]);
 
 
   const handleCategoryChange = (newCategory: string) => {
     setCategory(newCategory);
-    setBelt(""); // Reseta a faixa ao mudar de categoria
-    setTermsAccepted(false); // Reseta o termo ao mudar a categoria
+    setBelt("");
+    setTermsAccepted(false);
   };
 
   const handleAcceptTerms = async (parentName: string, childName: string) => {
@@ -176,7 +185,7 @@ export default function SignUpPage() {
     }
     
     try {
-        const selectedBranch = branches.find(b => b.id === affiliation);
+        const selectedBranch = branches.find(b => b.name === affiliation);
         if (!selectedBranch) throw new Error("Filial selecionada não encontrada.");
 
         await saveTermsAcceptance({
@@ -204,7 +213,7 @@ export default function SignUpPage() {
   };
 
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (category === "kids" && !termsAccepted) {
@@ -216,17 +225,68 @@ export default function SignUpPage() {
         return;
     }
 
-    if (role === 'professor') {
-      toast({
-        title: "Solicitação Enviada",
-        description: "Seu cadastro como professor foi enviado para aprovação do administrador.",
-      });
+    const selectedBranch = branches.find(b => b.name === affiliation);
+    const branchId = selectedBranch ? selectedBranch.id : '';
+
+    const newStudentData: Omit<User, 'id'> = {
+        name,
+        email,
+        dateOfBirth,
+        password, // In a real app, this should be hashed server-side
+        role: 'student',
+        affiliations: affiliation ? [affiliation] : [],
+        branchId,
+        mainInstructor,
+        category: category === 'adulto' ? 'Adult' : 'Kids',
+        belt,
+        stripes,
+        avatar: `https://placehold.co/128x128.png?text=${name.charAt(0)}`,
+        attendance: { total: 0, lastMonth: 0 },
+        nextGraduationProgress: 0,
+        isFirstLogin: true,
+    };
+
+    const result = await addStudent(newStudentData);
+
+    if (result.success) {
+        toast({
+            title: "Cadastro realizado com sucesso!",
+            description: "Você será redirecionado para o painel."
+        });
+        const params = new URLSearchParams({
+            role: 'student',
+            name,
+            email,
+            affiliation,
+            branchId,
+            mainInstructor,
+            category: category === 'adulto' ? 'Adult' : 'Kids',
+            belt,
+            stripes: String(stripes),
+            newStudent: "true", // Flag for admin notification
+        });
+        router.push(`/dashboard?${params.toString()}`);
+    } else {
+        toast({
+            variant: "destructive",
+            title: "Erro no cadastro",
+            description: result.message || "Não foi possível criar a conta. Tente novamente."
+        });
     }
-    // For simulation, we'll still navigate. In a real app, you'd wait for approval.
-    router.push(`/dashboard?role=${role}`);
   };
 
   const currentBeltList = category === 'adulto' ? allBelts : allBeltsKids;
+  
+  const isFormInvalid =
+    !name ||
+    !email ||
+    !password ||
+    !affiliation ||
+    !mainInstructor ||
+    !belt ||
+    !dateOfBirth ||
+    (category === "kids" && !termsAccepted);
+
 
   return (
     <div className="relative flex min-h-screen w-full items-center justify-center p-4">
@@ -240,19 +300,25 @@ export default function SignUpPage() {
         priority
       />
       <div className="absolute inset-0 bg-black/60 -z-10" />
-      <Card className="mx-auto w-full max-w-sm border-0 bg-transparent shadow-none sm:border sm:border-white/10 sm:bg-black/20 sm:backdrop-blur-sm sm:shadow-lg">
+      <Card className="mx-auto w-full max-w-lg border-0 bg-transparent shadow-none sm:border sm:border-white/10 sm:bg-black/20 sm:backdrop-blur-sm sm:shadow-lg">
         <CardHeader className="text-center">
           <KingsBjjLogo className="mx-auto mb-4 h-16 w-16" />
           <CardTitle className="text-3xl font-bold tracking-tight text-white">
-            Criar Conta
+            Criar Conta de Aluno
           </CardTitle>
           <CardDescription className="text-white/80">Insira seus dados para começar.</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="grid gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="name" className="text-white/80">Nome</Label>
-              <Input id="name" placeholder="Seu Nome" required className="bg-white/5 border-white/20 text-white placeholder:text-white/50" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="name" className="text-white/80">Nome Completo</Label>
+                  <Input id="name" placeholder="Seu Nome" required className="bg-white/5 border-white/20 text-white placeholder:text-white/50" value={name} onChange={e => setName(e.target.value)} />
+                </div>
+                 <div className="grid gap-2">
+                  <Label htmlFor="dateOfBirth" className="text-white/80">Data de Nascimento</Label>
+                  <Input id="dateOfBirth" type="date" required className="bg-white/5 border-white/20 text-white placeholder:text-white/50" value={dateOfBirth} onChange={e => setDateOfBirth(e.target.value)} />
+                </div>
             </div>
             <div className="grid gap-2">
               <Label htmlFor="email" className="text-white/80">Email</Label>
@@ -266,93 +332,86 @@ export default function SignUpPage() {
                 className="bg-white/5 border-white/20 text-white placeholder:text-white/50"
               />
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="password" className="text-white/80">Senha</Label>
-              <Input id="password" type="password" required className="bg-white/5 border-white/20 text-white" />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="confirm-password" className="text-white/80">Confirmar Senha</Label>
-              <Input id="confirm-password" type="password" required className="bg-white/5 border-white/20 text-white"/>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="password" className="text-white/80">Senha</Label>
+                  <Input id="password" type="password" required className="bg-white/5 border-white/20 text-white" value={password} onChange={e => setPassword(e.target.value)} />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="confirm-password" className="text-white/80">Confirmar Senha</Label>
+                  <Input id="confirm-password" type="password" required className="bg-white/5 border-white/20 text-white"/>
+                </div>
             </div>
 
-            <div className="grid gap-2">
-              <Label className="text-white/80">Tipo de Conta</Label>
-              <RadioGroup
-                defaultValue="student"
-                onValueChange={setRole}
-                className="flex gap-4 pt-2"
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="student" id="r-aluno" />
-                  <Label htmlFor="r-aluno" className="text-white/80 font-normal">Aluno</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="professor" id="r-professor" />
-                  <Label htmlFor="r-professor" className="text-white/80 font-normal">Professor</Label>
-                </div>
-              </RadioGroup>
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="affiliation" className="text-white/80">Filial</Label>
-              <Select onValueChange={setAffiliation} value={affiliation}>
-                <SelectTrigger id="affiliation" className="bg-white/5 border-white/20 text-white">
-                  <SelectValue placeholder="Selecione sua filial" />
-                </SelectTrigger>
-                <SelectContent>
-                  {branches.map((branch) => (
-                    <SelectItem key={branch.id} value={branch.id}>
-                      {branch.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="grid gap-2">
-                <Label htmlFor="mainInstructor" className="text-white/80">Professor Responsável</Label>
-                <Select onValueChange={setMainInstructor} value={mainInstructor} disabled={!affiliation || filteredInstructors.length === 0}>
-                    <SelectTrigger id="mainInstructor" className="bg-white/5 border-white/20 text-white">
-                        <SelectValue placeholder={!affiliation ? "Selecione a filial primeiro" : "Selecione seu professor"} />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="affiliation" className="text-white/80">Filial</Label>
+                  <Select onValueChange={setAffiliation} value={affiliation}>
+                    <SelectTrigger id="affiliation" className="bg-white/5 border-white/20 text-white">
+                      <SelectValue placeholder="Selecione sua filial" />
                     </SelectTrigger>
                     <SelectContent>
-                        {filteredInstructors.map((instructor) => (
-                            <SelectItem key={instructor.id} value={instructor.name}>
-                                {instructor.name}
-                            </SelectItem>
-                        ))}
+                      {branches.map((branch) => (
+                        <SelectItem key={branch.id} value={branch.name}>
+                          {branch.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
-                </Select>
-            </div>
-
-             <div className="grid gap-2">
-              <Label className="text-white/80">Categoria</Label>
-              <RadioGroup defaultValue="adulto" onValueChange={handleCategoryChange} className="flex gap-4 pt-2">
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="adulto" id="r-adulto" />
-                  <Label htmlFor="r-adulto" className="text-white/80 font-normal">Adulto</Label>
+                  </Select>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="kids" id="r-kids" />
-                  <Label htmlFor="r-kids" className="text-white/80 font-normal">Kids</Label>
+                <div className="grid gap-2">
+                    <Label htmlFor="mainInstructor" className="text-white/80">Professor</Label>
+                    <Select onValueChange={setMainInstructor} value={mainInstructor} disabled={!affiliation || loadingInstructors || filteredInstructors.length === 0}>
+                        <SelectTrigger id="mainInstructor" className="bg-white/5 border-white/20 text-white">
+                            <SelectValue placeholder={
+                                loadingInstructors 
+                                    ? "Carregando professores..." 
+                                    : !affiliation 
+                                    ? "Selecione a filial primeiro" 
+                                    : filteredInstructors.length === 0 
+                                    ? "Nenhum professor encontrado" 
+                                    : "Selecione seu professor"
+                            } />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {filteredInstructors.map((instructor) => (
+                                <SelectItem key={instructor.id} value={instructor.name}>
+                                    {instructor.name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
                 </div>
-              </RadioGroup>
             </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="belt" className="text-white/80">Graduação</Label>
-              <Select onValueChange={setBelt} value={belt}>
-                <SelectTrigger id="belt" className="bg-white/5 border-white/20 text-white">
-                  <SelectValue placeholder="Selecione sua graduação" />
-                </SelectTrigger>
-                <SelectContent>
-                  {currentBeltList.map((beltOption) => (
-                    <SelectItem key={beltOption} value={beltOption}>
-                      {beltOption}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                    <Label className="text-white/80">Categoria</Label>
+                    <RadioGroup defaultValue="adulto" onValueChange={handleCategoryChange} className="flex gap-4 pt-2">
+                        <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="adulto" id="r-adulto" />
+                        <Label htmlFor="r-adulto" className="text-white/80 font-normal">Adulto</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="kids" id="r-kids" />
+                        <Label htmlFor="r-kids" className="text-white/80 font-normal">Kids</Label>
+                        </div>
+                    </RadioGroup>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="belt" className="text-white/80">Graduação</Label>
+                  <Select onValueChange={setBelt} value={belt}>
+                    <SelectTrigger id="belt" className="bg-white/5 border-white/20 text-white">
+                      <SelectValue placeholder="Selecione sua graduação" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {currentBeltList.map((beltOption) => (
+                        <SelectItem key={beltOption} value={beltOption}>
+                          {beltOption}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
             </div>
             
             {(belt === "Preta" || belt === "Coral") && (
@@ -365,6 +424,8 @@ export default function SignUpPage() {
                     max="6"
                     placeholder="Nº de graus (0-6)"
                     className="bg-white/5 border-white/20 text-white placeholder:text-white/50"
+                    value={String(stripes)}
+                    onChange={e => setStripes(Number(e.target.value))}
                   />
                 </div>
               )}
@@ -399,7 +460,7 @@ export default function SignUpPage() {
             )}
 
 
-            <Button type="submit" className="w-full" disabled={(category === 'kids' && !termsAccepted) || !mainInstructor}>
+            <Button type="submit" className="w-full" disabled={isFormInvalid}>
               Criar conta
             </Button>
           </form>

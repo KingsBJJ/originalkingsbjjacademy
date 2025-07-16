@@ -1,8 +1,9 @@
+
 "use client";
 
-import { useContext, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -32,9 +33,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { UserContext } from '../../client-layout';
 import { ArrowLeft, PlusCircle, Trash2 } from 'lucide-react';
 import { addBranch, getInstructors, type Instructor } from '@/lib/firestoreService';
+import { mockUsers } from '@/lib/mock-data';
 
 const classScheduleSchema = z.object({
   name: z.string().min(1, { message: 'O nome da aula é obrigatório.' }),
@@ -58,8 +59,8 @@ const branchFormSchema = z.object({
 type BranchFormValues = z.infer<typeof branchFormSchema>;
 
 export default function NewBranchPage() {
-  const user = useContext(UserContext);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { toast } = useToast();
   const [instructors, setInstructors] = useState<Instructor[]>([]);
   const [isSaving, setIsSaving] = useState(false);
@@ -70,6 +71,10 @@ export default function NewBranchPage() {
       name: '',
       address: '',
       phone: '',
+      responsible: '',
+      instructor2: '',
+      instructor3: '',
+      instructor4: '',
       schedule: [],
     },
   });
@@ -92,6 +97,9 @@ export default function NewBranchPage() {
       });
   }, [toast]);
 
+  const role = searchParams.get('role');
+  const user = role ? mockUsers[role as keyof typeof mockUsers] : null;
+
   const onSubmit = async (data: BranchFormValues) => {
     setIsSaving(true);
     try {
@@ -102,9 +110,9 @@ export default function NewBranchPage() {
       );
 
       const branchData = {
-        name: name,
-        address: address,
-        phone: phone,
+        name,
+        address,
+        phone,
         schedule: schedule ?? [],
         responsible: responsible ?? '',
         additionalInstructors: additionalInstructors ?? [],
@@ -117,7 +125,8 @@ export default function NewBranchPage() {
         description: `A filial ${data.name} foi adicionada com sucesso.`,
       });
       
-      router.push(`/dashboard/branches?role=${user?.role}`);
+      router.push(`/dashboard/branches?role=${role}`);
+      router.refresh();
 
     } catch (error) {
       console.error("Failed to add branch:", error);
@@ -156,7 +165,7 @@ export default function NewBranchPage() {
     <div className="grid gap-6">
        <div className="flex items-center gap-4">
         <Button variant="outline" size="icon" asChild>
-          <Link href={`/dashboard/branches?role=${user.role}`}>
+          <Link href={`/dashboard/branches?role=${role}`}>
             <ArrowLeft />
             <span className="sr-only">Voltar</span>
           </Link>

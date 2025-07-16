@@ -1,17 +1,19 @@
+
 'use client'; // Marque este componente como cliente
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ArrowLeft } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 
 // Componente cliente para o conteúdo que usa useSearchParams
-interface TermsContentProps {
-  role: string | null;
-}
-export default function TermsContent({ role }: TermsContentProps) {
-  const backHref = role ? `/dashboard?role=${role}` : '/signup';
-  const backText = role ? 'Voltar para o Painel' : 'Voltar para o Cadastro';
+export default function TermsContent() {
+  const searchParams = useSearchParams();
+  const role = searchParams.get('role');
+  
+  const backHref = role ? `/dashboard?role=${role}` : '/';
+  const backText = role ? 'Voltar para o Painel' : 'Voltar para o Login';
 
   return (
     <> {/* Use um Fragment para agrupar elementos */}

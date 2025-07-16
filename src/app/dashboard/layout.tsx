@@ -1,3 +1,4 @@
+
 import { Suspense } from "react";
 import DashboardClientLayout from "./client-layout";
 import { KingsBjjLogo } from "@/components/kings-bjj-logo";
@@ -11,6 +12,8 @@ function DashboardLoading() {
   );
 }
 
+// O layout do servidor agora é muito mais simples.
+// Ele não lida mais com a lógica do usuário, apenas prepara o terreno.
 export default function DashboardLayout({
   children,
 }: {
@@ -18,6 +21,7 @@ export default function DashboardLayout({
 }) {
   return (
     <Suspense fallback={<DashboardLoading />}>
+      {/* O Client Layout agora cuidará de determinar o usuário */}
       <DashboardClientLayout>{children}</DashboardClientLayout>
     </Suspense>
   );

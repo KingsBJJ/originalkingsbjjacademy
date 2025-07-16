@@ -1,9 +1,10 @@
-import { initializeApp, getApps, getApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
 
-// As credenciais do Firebase são configuradas no ambiente de hospedagem.
-// Não é necessário preencher estes valores manualmente.
-const firebaseConfig = {
+import { initializeApp, getApps, getApp, type FirebaseOptions } from "firebase/app";
+import { getFirestore } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
+
+// As variáveis de ambiente NEXT_PUBLIC_* são injetadas diretamente pelo Next.js no processo do navegador.
+const firebaseConfig: FirebaseOptions = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
@@ -12,8 +13,15 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Inicializa o Firebase
-const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
-const db = getFirestore(app);
+// Adiciona uma verificação para garantir que a chave da API está presente.
+if (!firebaseConfig.apiKey) {
+    console.error('Firebase API Key is missing. Please check your environment variables in .env file.');
+}
 
-export { app, db };
+// Inicializa o Firebase de forma segura, evitando reinicializações.
+const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+export { db, auth, app };

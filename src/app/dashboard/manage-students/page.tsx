@@ -1,176 +1,42 @@
-"use client";
-
-import { useContext } from 'react';
+// src/app/dashboard/manage-students/page.tsx
+import { Suspense } from 'react';
 import Link from 'next/link';
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { UserContext } from '../client-layout';
-import { mockAdultStudents, mockKidsStudents, beltColors, beltColorsKids, User as StudentUser } from '@/lib/mock-data';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { MoreHorizontal } from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from '@/components/ui/button'; // Ajuste o caminho conforme sua estrutura
+import { PlusCircle } from 'lucide-react'; // Ajuste o caminho conforme sua estrutura
+import StudentsList from '@/components/StudentsList'; // Ajuste o caminho
+import InstructorsTableSkeleton from '@/components/InstructorsTableSkeleton'; // Ajuste o caminho
+import { mockUsers } from '@/lib/mockUsers'; // Ajuste o caminho
 
+interface Props {
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+}
 
-const allBeltColors = { ...beltColors, ...beltColorsKids };
-type Student = Omit<StudentUser, 'role'>;
-
-const StudentTable = ({ students, userRole, userName }: { students: Student[], userRole: 'admin' | 'professor' | 'student', userName?: string }) => {
-    const title = userRole === 'admin' ? "Lista de Alunos" : `Alunos do Prof. ${userName}`;
-    const description = userRole === 'admin' 
-        ? `Total de ${students.length} alunos cadastrados.`
-        : `Total de ${students.length} alunos na sua turma.`;
-
-    return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Aluno</TableHead>
-              <TableHead>Filial</TableHead>
-              <TableHead>Graduação</TableHead>
-              <TableHead className="text-right">Ações</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {students.length > 0 ? students.map((student) => {
-              const beltStyle = allBeltColors[student.belt as keyof typeof allBeltColors] || allBeltColors.Branca;
-              return (
-                <TableRow key={student.id}>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-9 w-9">
-                        <AvatarImage src={student.avatar} alt={student.name} />
-                        <AvatarFallback>{student.name[0]}</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-medium">{student.name}</p>
-                        <p className="text-xs text-muted-foreground">{student.email}</p>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>{student.affiliation}</TableCell>
-                  <TableCell>
-                     <Badge
-                      className={cn("text-xs font-semibold", beltStyle.bg, beltStyle.text)}
-                      >
-                      {student.belt}
-                      {(student.belt === 'Preta' || student.belt === 'Coral') && student.stripes > 0 && ` - ${student.stripes}º Grau`}
-                      </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                     <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <MoreHorizontal />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                        <DropdownMenuItem>Ver Perfil</DropdownMenuItem>
-                        <DropdownMenuItem>Editar</DropdownMenuItem>
-                         <DropdownMenuItem className="text-red-500">Remover</DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              );
-            }) : (
-                <TableRow>
-                    <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
-                        Nenhum aluno encontrado para sua turma.
-                    </TableCell>
-                </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </CardContent>
-    </Card>
-)};
-
-
-export default function ManageStudentsPage() {
-  const user = useContext(UserContext);
-
-  if (!user || user.role === 'student') {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle>Acesso Negado</CardTitle>
-            <CardDescription>
-              Você não tem permissão para visualizar esta página.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p>Esta área é restrita a administradores e professores.</p>
-             <Button asChild className="mt-4">
-              <Link href={`/dashboard?role=${user?.role || 'student'}`}>Voltar ao Painel</Link>
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  const adultStudents = user.role === 'admin'
-    ? mockAdultStudents
-    : mockAdultStudents.filter(s => s.affiliation === user.affiliation && s.mainInstructor === user.name);
-  
-  const kidsStudents = user.role === 'admin'
-    ? mockKidsStudents
-    : mockKidsStudents.filter(s => s.affiliation === user.affiliation && s.mainInstructor === user.name);
+export default async function ManageStudentsPage({ searchParams }: Props) {
+  const resolvedSearchParams = await searchParams; // Resolver a Promise
+  const roleParam = resolvedSearchParams?.role;
+  const role = Array.isArray(roleParam) ? roleParam[0] : roleParam;
+  const user = role ? mockUsers[role as keyof typeof mockUsers] : null;
 
   return (
     <div className="grid gap-6">
-       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Alunos</h1>
-        <p className="text-muted-foreground">
-          {user.role === 'admin' 
-            ? "Visualize e gerencie todos os alunos do sistema."
-            : "Visualize e gerencie os alunos da sua turma."
-          }
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Alunos</h1>
+          <p className="text-muted-foreground">Gerencie os alunos da sua equipe.</p>
+        </div>
+        {user?.role === 'admin' && (
+          <Button asChild>
+            <Link href={`/dashboard/manage-students/new?role=${user.role}`}>
+              <PlusCircle className="mr-2" />
+              Cadastrar Aluno
+            </Link>
+          </Button>
+        )}
       </div>
-       <Tabs defaultValue="adults" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="adults">Adultos ({adultStudents.length})</TabsTrigger>
-          <TabsTrigger value="kids">Kids ({kidsStudents.length})</TabsTrigger>
-        </TabsList>
-        <TabsContent value="adults" className="mt-4">
-          <StudentTable students={adultStudents} userRole={user.role} userName={user.name} />
-        </TabsContent>
-        <TabsContent value="kids" className="mt-4">
-          <StudentTable students={kidsStudents} userRole={user.role} userName={user.name} />
-        </TabsContent>
-      </Tabs>
+
+      <Suspense fallback={<InstructorsTableSkeleton />}>
+        <StudentsList user={user} />
+      </Suspense>
     </div>
   );
 }

@@ -2,36 +2,25 @@
 
 import React, { useState, useRef, useEffect, useCallback, useContext } from 'react';
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
+  Card, CardContent, CardHeader, CardTitle
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Camera, Check } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 import { UserContext, UserUpdateContext } from '../client-layout';
-import { mockClasses, mockBranches } from '@/lib/mock-data';
-
 
 export default function CheckInPage() {
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
-  const [scannedCode, setScannedCode] = useState<string | null>(null);
+  const [checkinMessage, setCheckinMessage] = useState<string | null>(null);
   const [checkinTime, setCheckinTime] = useState<Date | null>(null);
   const [isScanning, setIsScanning] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const jsQRRef = useRef<any>(null);
-  const router = useRouter();
   const { toast } = useToast();
   const user = useContext(UserContext);
-  const updateUser = useContext(UserUpdateContext);
 
   const stopCamera = useCallback(() => {
     if (streamRef.current) {
@@ -44,11 +33,13 @@ export default function CheckInPage() {
   const startScan = useCallback(async () => {
     try {
       if (!jsQRRef.current) {
-        jsQRRef.current = (await import('jsqr')).default;
-      }
-      
-      if (streamRef.current) {
-        stopCamera();
+        try {
+          jsQRRef.current = (await import('jsqr')).default;
+        } catch (err) {
+          console.error("Erro ao importar jsQR:", err);
+          toast({ variant: "destructive", title: "Erro", description: "Falha ao carregar leitor de QR Code." });
+          return;
+        }
       }
 
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -59,182 +50,49 @@ export default function CheckInPage() {
 
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        videoRef.current.onloadedmetadata = () => {
-          setIsScanning(true);
-        };
+        videoRef.current.play();
+        setIsScanning(true);
       }
-    } catch (error) {
-      console.error('Error accessing camera:', error);
+    } catch (err) {
+      console.error("Erro ao acessar câmera:", err);
       setHasCameraPermission(false);
-      toast({
-        variant: 'destructive',
-        title: 'Acesso à Câmera Negado',
-        description: 'Por favor, habilite a permissão de câmera para continuar.',
-      });
+      toast({ variant: "destructive", title: "Permissão negada", description: "Acesso à câmera foi bloqueado. Verifique as configurações do navegador." });
     }
-  }, [stopCamera, toast]);
+  }, [toast]);
 
-  const handleScanAgain = () => {
-    setScannedCode(null);
-    setCheckinTime(null);
-    startScan();
-  };
-  
   useEffect(() => {
-    startScan();
     return () => {
       stopCamera();
     };
-  }, [startScan, stopCamera]);
-
-  useEffect(() => {
-    let animationFrameId: number;
-
-    const tick = () => {
-      if (
-        isScanning &&
-        videoRef.current &&
-        videoRef.current.readyState === videoRef.current.HAVE_ENOUGH_DATA &&
-        canvasRef.current &&
-        jsQRRef.current &&
-        user
-      ) {
-        const video = videoRef.current;
-        const canvas = canvasRef.current;
-        const ctx = canvas.getContext('2d');
-        const jsQR = jsQRRef.current;
-
-        if (ctx) {
-          canvas.height = video.videoHeight;
-          canvas.width = video.videoWidth;
-          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-          const code = jsQR(imageData.data, imageData.width, imageData.height, {
-            inversionAttempts: 'dontInvert',
-          });
-
-          if (code) {
-            stopCamera();
-            if (code.data === 'KINGS_BJJ_UNIVERSAL_CHECKIN') {
-              // Simulate check-in at any branch by picking the first available class
-              const nextClass = mockClasses[0];
-              const branch = mockBranches.find(b => b.id === nextClass.branchId);
-              const branchName = branch ? branch.name : 'Filial desconhecida';
-              
-              if (nextClass && user && updateUser) {
-                setScannedCode(`${nextClass.name} em ${branchName}`);
-                setCheckinTime(new Date());
-
-                // Update user attendance
-                const newAttendance = {
-                  total: user.attendance.total + 1,
-                  lastMonth: user.attendance.lastMonth + 1,
-                };
-                updateUser({ attendance: newAttendance });
-
-                toast({
-                  title: 'Check-in Realizado!',
-                  description: `Presença confirmada. Sua frequência foi atualizada.`,
-                });
-              } else {
-                 toast({
-                    variant: 'destructive',
-                    title: 'Erro no Check-in',
-                    description: 'Não foi possível encontrar dados da aula ou do usuário.',
-                  });
-              }
-            } else {
-              toast({
-                variant: 'destructive',
-                title: 'QR Code Inválido',
-                description: 'Este não é um QR code de check-in válido.',
-              });
-            }
-          }
-        }
-      }
-      if (isScanning) {
-        animationFrameId = requestAnimationFrame(tick);
-      }
-    };
-
-    if (isScanning) {
-      animationFrameId = requestAnimationFrame(tick);
-    }
-
-    return () => {
-      cancelAnimationFrame(animationFrameId);
-    };
-  }, [isScanning, stopCamera, toast, user, updateUser]);
-
+  }, [stopCamera]);
 
   return (
-    <div className="grid gap-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Check-in por QR Code</h1>
-          <p className="text-muted-foreground">
-            Aponte a câmera para o QR code da aula para registrar sua presença.
-          </p>
-        </div>
-      </div>
+    <div className="p-4 space-y-4">
       <Card>
-        <CardContent className="pt-6">
-          <div className="flex w-full flex-col items-center justify-center gap-6">
-            
-            <div className="relative flex h-80 w-full max-w-md items-center justify-center overflow-hidden rounded-lg border bg-muted">
-              {scannedCode && checkinTime ? (
-                <div className="flex flex-col items-center gap-4 text-center">
-                    <div className="rounded-full bg-green-500/20 p-4 text-green-400">
-                        <Check className="h-12 w-12" />
-                    </div>
-                  <h2 className="text-2xl font-bold">Check-in Confirmado!</h2>
-                  <p className="text-muted-foreground">
-                    Presença confirmada para a aula: <br />
-                    <span className="font-semibold text-foreground">{scannedCode}</span>
-                     <br />
-                    <span className="text-xs">
-                        {format(checkinTime, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
-                    </span>
-                  </p>
-                </div>
-              ) : (
-                <>
-                  <video
-                    ref={videoRef}
-                    className="h-full w-full object-cover"
-                    playsInline
-                    autoPlay
-                    muted
-                  />
-                  <div className="absolute inset-0 z-10 border-[20px] border-black/50 shadow-[0_0_0_9999px_rgba(0,0,0,0.5)]" />
-                </>
-              )}
-            </div>
-
-            {hasCameraPermission === false && (
-                <Alert variant="destructive" className="max-w-md">
-                    <Camera className="h-4 w-4" />
-                    <AlertTitle>Câmera Inacessível</AlertTitle>
-                    <AlertDescription>
-                        Não foi possível acessar a câmera. Verifique as permissões no seu navegador e tente novamente.
-                    </AlertDescription>
-                </Alert>
+        <CardHeader>
+          <CardTitle>Leitura de QR Code</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <video ref={videoRef} className="w-full max-w-md mx-auto rounded-md" />
+          <canvas ref={canvasRef} className="hidden" />
+          <div className="mt-4 flex justify-center">
+            <Button onClick={startScan} disabled={isScanning}>
+              {isScanning ? "Escaneando..." : "Iniciar Leitura"}
+            </Button>
+            {isScanning && (
+              <Button variant="secondary" onClick={stopCamera} className="ml-2">
+                Parar
+              </Button>
             )}
-
-            {scannedCode ? (
-                 <div className="flex gap-2">
-                    <Button onClick={() => router.back()}>Voltar ao Painel</Button>
-                    <Button variant="outline" onClick={handleScanAgain}>Escanear Outro</Button>
-                 </div>
-            ) : (
-                <p className="text-center text-sm text-muted-foreground">
-                    {isScanning ? "Procurando QR code..." : "Posicionando câmera..."}
-                </p>
-            )}
-            
-            <canvas ref={canvasRef} className="hidden" />
           </div>
+          {hasCameraPermission === false && (
+            <Alert variant="destructive" className="mt-4">
+              <AlertTitle>Permissão de câmera negada</AlertTitle>
+              <AlertDescription>
+                Por favor, habilite o acesso à câmera no seu navegador para usar o check-in via QR Code.
+              </AlertDescription>
+            </Alert>
+          )}
         </CardContent>
       </Card>
     </div>

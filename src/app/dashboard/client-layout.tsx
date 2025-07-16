@@ -1,8 +1,9 @@
+
 "use client";
 
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { createContext, useMemo, useContext, useState, useEffect, useCallback } from "react";
+import { createContext, useState, useCallback, useMemo, useEffect } from "react";
 import {
   Avatar,
   AvatarFallback,
@@ -22,7 +23,8 @@ import {
   SidebarInset,
 } from "@/components/ui/sidebar";
 import { KingsBjjLogo } from "@/components/kings-bjj-logo";
-import { mockUsers, User, mockAnnouncements } from "@/lib/mock-data";
+import type { User } from "@/lib/firestoreService";
+import { mockUsers } from "@/lib/mock-data";
 import {
   Award,
   Bell,
@@ -35,6 +37,7 @@ import {
   QrCode,
   Calendar,
   FileText,
+  Contact,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -42,12 +45,19 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { updateUser as updateDbUser, getNotifications, type Notification, getUserByEmail } from "@/lib/firestoreService";
+import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
+import { formatDistanceToNow } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+
 
 type NavItem = {
   href: string;
   icon: React.ElementType;
   label: string;
   external?: boolean;
+  className?: string;
 };
 
 const studentNavItems: NavItem[] = [
@@ -55,10 +65,9 @@ const studentNavItems: NavItem[] = [
   { href: "/dashboard/notifications", icon: Bell, label: "Notificações" },
   { href: "/dashboard/profile", icon: UserIcon, label: "Perfil" },
   { href: "/dashboard/schedule", icon: Calendar, label: "Horários" },
-  { href: "/dashboard/check-in", icon: QrCode, label: "Check-in" },
+  { href: "/dashboard/check-in", icon: QrCode, label: "Check-in", className: "text-yellow-400 hover:text-yellow-300" },
   { href: "/dashboard/branches", icon: MapPin, label: "Filiais" },
   { href: "/dashboard/rankings", icon: Award, label: "Graduações" },
-  { href: "/terms-of-service", icon: FileText, label: "Termo de Resp." },
 ];
 
 const professorNavItems: NavItem[] = [
@@ -66,7 +75,7 @@ const professorNavItems: NavItem[] = [
   { href: "/dashboard/notifications", icon: Bell, label: "Notificações" },
   { href: "/dashboard/schedule", icon: Calendar, label: "Horários" },
   { href: "/dashboard/profile", icon: UserIcon, label: "Perfil" },
-  { href: "/dashboard/instructors", icon: Users, label: "Professores" },
+  { href: "/dashboard/my-students", icon: Contact, label: "Meus Alunos" },
   { href: "/dashboard/rankings", icon: Award, label: "Graduações" },
   { href: "/dashboard/branches", icon: MapPin, label: "Filiais" },
   { href: "/terms-of-service", icon: FileText, label: "Termo de Resp." },
@@ -78,7 +87,7 @@ const adminNavItems: NavItem[] = [
   { href: "/dashboard/class-qr", icon: QrCode, label: "QR Code Universal" },
   { href: "/dashboard/profile", icon: UserIcon, label: "Perfil" },
   { href: "/dashboard/instructors", icon: Users, label: "Professores" },
-  { href: "/dashboard/manage-students", icon: Shield, label: "Alunos" },
+  { href: "/dashboard/manage-students", icon: Shield, label: "Gerenciar Alunos" },
   { href: "/dashboard/rankings", icon: Award, label: "Graduações" },
   { href: "/dashboard/branches", icon: MapPin, label: "Filiais" },
   { href: "/terms-of-service", icon: FileText, label: "Termo de Resp." },
@@ -87,6 +96,8 @@ const adminNavItems: NavItem[] = [
 export const UserContext = createContext<User | null>(null);
 export const UserUpdateContext = createContext<((newUserData: Partial<User>) => void) | null>(null);
 
+const NOTIFICATION_STORAGE_KEY = 'kingsbjj_last_notification_seen_timestamp';
+
 export default function DashboardClientLayout({
   children,
 }: {
@@ -94,53 +105,222 @@ export default function DashboardClientLayout({
 }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const role = searchParams.get("role") || "student";
-  
+  const { toast } = useToast();
+
   const [user, setUser] = useState<User | null>(null);
+  const [newStudentNotification, setNewStudentNotification] = useState(false);
+  const [newStudentName, setNewStudentName] = useState('');
+
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [hasNewNotification, setHasNewNotification] = useState(false);
 
   useEffect(() => {
-    const validRole = role === 'admin' || role === 'professor' ? role : 'student';
-    // Deep copy to prevent mutating the original mock object across sessions
-    setUser(JSON.parse(JSON.stringify(mockUsers[validRole])));
-  }, [role]);
+    const determineUser = async () => {
+      const roleParam = searchParams.get('role') as User['role'];
+      const email = searchParams.get('email');
+      const name = searchParams.get('name');
+      const isNewStudent = searchParams.get('newStudent') === 'true';
+
+      if (isNewStudent && name) {
+        setNewStudentNotification(true);
+        setNewStudentName(name);
+      }
+      
+      const cleanEmail = email?.trim().toLowerCase();
+      let userToSet: User | null = null;
+      
+      // Admin check - uses mock data
+      if (cleanEmail === 'admin@kingsbjj.com' || cleanEmail === 'admin@kings.com' || roleParam === 'admin') {
+          userToSet = mockUsers.admin;
+          setUser(userToSet);
+          return;
+      }
+      
+      // If email is present, prioritize finding a real user in the database
+      if (cleanEmail) {
+        const foundUser = await getUserByEmail(cleanEmail);
+        if (foundUser) {
+          userToSet = foundUser;
+          setUser(userToSet);
+          return;
+        }
+      }
+
+      // If it's a new student signup, construct the user object from params
+      if (!userToSet && isNewStudent) {
+          const affiliation = searchParams.get('affiliation') || '';
+          const belt = searchParams.get('belt') || '';
+          userToSet = {
+              id: `user_${(email || Date.now().toString()).replace(/[@.]/g, '_')}`,
+              name: name || 'Novo Aluno',
+              email: email || '',
+              role: 'student',
+              affiliations: affiliation ? [affiliation] : [],
+              branchId: searchParams.get('branchId') || '',
+              mainInstructor: searchParams.get('mainInstructor') || '',
+              category: (searchParams.get('category') as User['category']) || 'Adult',
+              belt,
+              stripes: Number(searchParams.get('stripes') || 0),
+              avatar: `https://placehold.co/128x128.png?text=${(name || 'A').charAt(0)}`,
+              attendance: { total: 0, lastMonth: 0 },
+              nextGraduationProgress: 5,
+          };
+          setUser(userToSet);
+          return;
+      }
+      
+      // Fallback for demonstration purposes (e.g., professor login) or if no user is found
+      if (!userToSet) {
+          if (roleParam === 'professor') {
+            userToSet = { ...mockUsers.professor };
+          } else {
+            userToSet = { ...mockUsers.student };
+          }
+          if (cleanEmail) userToSet.email = cleanEmail;
+          if (name) userToSet.name = name;
+      }
+
+      setUser(userToSet);
+    };
+
+    // This check ensures the logic only runs on the client-side after mounting,
+    // which prevents hydration errors.
+    if (typeof window !== 'undefined') {
+      determineUser();
+    }
+  }, [searchParams]);
+
+   useEffect(() => {
+    if (!user) return;
+
+    let unsubscribe = () => {};
+
+    const fetchInitialAndListen = async () => {
+      // Get initial data
+      const initialNotifs = await getNotifications(user);
+      setNotifications(initialNotifs);
+
+      // Check for new notifications on initial load
+      const lastSeenTimestamp = localStorage.getItem(NOTIFICATION_STORAGE_KEY) || '0';
+      const mostRecentNotifTimestamp = initialNotifs[0]?.createdAt?.getTime() || 0;
+      
+      if (mostRecentNotifTimestamp > parseInt(lastSeenTimestamp)) {
+        setHasNewNotification(true);
+      }
+
+      // Set up listener for real-time updates - (this is a simplified poll)
+      const intervalId = setInterval(async () => {
+        const newNotifs = await getNotifications(user);
+        if (newNotifs.length > 0 && newNotifs[0].id !== (notifications[0]?.id || '')) {
+             setNotifications(newNotifs);
+             setHasNewNotification(true);
+        }
+      }, 30000); // Poll every 30 seconds
+
+      unsubscribe = () => clearInterval(intervalId);
+    };
+
+    fetchInitialAndListen();
+    return () => unsubscribe();
+  }, [user, notifications]);
+
+  const markNotificationsAsSeen = () => {
+    if (hasNewNotification || newStudentNotification) {
+      setHasNewNotification(false);
+      setNewStudentNotification(false);
+      
+      const mostRecentTimestamp = notifications[0]?.createdAt?.getTime() || Date.now();
+      localStorage.setItem(NOTIFICATION_STORAGE_KEY, mostRecentTimestamp.toString());
+    }
+  };
+
 
   const updateUser = useCallback((newUserData: Partial<User>) => {
     setUser(prevUser => {
-      if (!prevUser) return null;
+        if (!prevUser) return null;
+
+        const dataForDb = { ...newUserData };
+        
+        // --- Client-side State Update (Optimistic Update) ---
+        const updatedUserForState = { ...prevUser };
+
+        // Handle attendance increment for local state correctly
+        if (newUserData.attendance && prevUser.attendance) {
+            updatedUserForState.attendance = {
+                total: prevUser.attendance.total + (newUserData.attendance.total || 0),
+                lastMonth: prevUser.attendance.lastMonth + (newUserData.attendance.lastMonth || 0),
+            };
+            // Merge other properties non-destructively, ensuring attendance is the updated object
+            Object.assign(updatedUserForState, { ...newUserData, attendance: updatedUserForState.attendance });
+        } else {
+            Object.assign(updatedUserForState, newUserData);
+        }
+        
+        // --- Server-side DB Update ---
+        // Pass the original newUserData which contains the increment instructions for Firestore.
+        updateDbUser(prevUser.id, dataForDb).catch(error => {
+            console.error("Failed to update user in DB:", error);
+            toast({
+                variant: "destructive",
+                title: "Erro de Sincronização",
+                description: "Não foi possível salvar as alterações no servidor.",
+            });
+            // Optional: Revert local state on failure
+            setUser(prevUser);
+        });
       
-      const updatedUser = { ...prevUser, ...newUserData };
-      
-      // Handle nested objects like attendance specifically
-      if (newUserData.attendance) {
-        updatedUser.attendance = {
-          ...prevUser.attendance,
-          ...newUserData.attendance
-        };
-      }
-      return updatedUser;
+      return updatedUserForState;
     });
-  }, []);
+  }, [toast]);
 
   const navItems: NavItem[] = useMemo(() => {
-    if (user?.role === 'admin') {
-      return adminNavItems;
-    }
-    if (user?.role === 'professor') {
-      return professorNavItems;
-    }
+    if (user?.role === 'admin') return adminNavItems;
+    if (user?.role === 'professor') return professorNavItems;
     return studentNavItems;
   }, [user?.role]);
 
-  const getHref = (href: string) => `${href}?role=${role}`;
+  const getHref = (href: string) => {
+    if (!user) return href;
+    const params = new URLSearchParams();
+    
+    searchParams.forEach((value, key) => {
+        if (key !== 'newStudent') {
+            params.set(key, value);
+        }
+    });
+
+    if (!params.has('role') && user.role) {
+      params.set('role', user.role);
+    }
+    if (!params.has('email') && user.email) {
+      params.set('email', user.email);
+    }
+    if (!params.has('name') && user.name) {
+      params.set('name', user.name);
+    }
+
+    return `${href}?${params.toString()}`;
+  }
   
   if (!user) {
     return (
       <div className="flex h-screen w-full flex-col items-center justify-center gap-4 bg-background">
         <KingsBjjLogo className="h-24 w-24 animate-pulse" />
-        <p className="text-muted-foreground">Carregando painel...</p>
+        <p className="text-muted-foreground">Inicializando painel...</p>
       </div>
     );
   }
+
+  const roleNames = {
+    student: 'Aluno',
+    professor: 'Professor',
+    admin: 'Admin'
+  };
+
+  const notificationIndicator = hasNewNotification || newStudentNotification;
+  
+  const lastSeenTimestamp = parseInt(localStorage.getItem(NOTIFICATION_STORAGE_KEY) || '0');
+
 
   return (
     <UserContext.Provider value={user}>
@@ -170,6 +350,7 @@ export default function DashboardClientLayout({
                         href={item.external ? item.href : getHref(item.href)}
                         target={item.external ? "_blank" : undefined}
                         rel={item.external ? "noopener noreferrer" : undefined}
+                        className={cn(item.className)}
                       >
                         <item.icon />
                         <span>{item.label}</span>
@@ -198,52 +379,79 @@ export default function DashboardClientLayout({
             </SidebarFooter>
           </Sidebar>
           <SidebarInset>
-            <header className="sticky top-0 z-10 flex h-14 items-center justify-between gap-4 border-b bg-background/80 px-4 backdrop-blur-sm sm:px-6 md:justify-end print:hidden">
-                <SidebarTrigger className="md:hidden"/>
-                <h1 className="text-lg font-semibold md:hidden">
-                  {navItems.find(item => item.href === pathname)?.label || 'Painel'}
-                </h1>
+            <header className="sticky top-0 z-10 flex h-auto min-h-14 flex-col gap-2 border-b bg-background/80 px-4 py-2 backdrop-blur-sm sm:px-6 md:flex-row md:items-center md:justify-end print:hidden">
+                <div className="flex items-center justify-between gap-2 md:flex-1">
+                    <SidebarTrigger className="md:hidden"/>
+                    <h1 className="text-lg font-semibold md:hidden">
+                    {navItems.find(item => item.href === pathname)?.label || 'Painel'}
+                    </h1>
+                </div>
                  <div className="flex items-center gap-4">
-                   <Popover>
+                   <Popover onOpenChange={(isOpen) => { if (isOpen) markNotificationsAsSeen(); }}>
                       <PopoverTrigger asChild>
                         <Button variant="ghost" size="icon" className="relative rounded-full">
                           <Bell className="h-5 w-5" />
-                           {mockAnnouncements.filter(a => !a.branchId || a.branchId === user.branchId).length > 0 && (
-                              <span className="absolute top-1.5 right-1.5 flex h-2.5 w-2.5">
+                           {notificationIndicator && (
+                            <span className="absolute top-1.5 right-1.5 flex h-2.5 w-2.5">
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
                                 <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-                              </span>
-                          )}
+                           </span>
+                           )}
                           <span className="sr-only">Ver notificações</span>
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent align="end" className="w-96 p-0">
                         <div className="flex items-center justify-between border-b p-4">
                           <h3 className="font-semibold">Recados Recentes</h3>
-                          <Badge variant="secondary">{mockAnnouncements.filter(a => !a.branchId || a.branchId === user.branchId).length}</Badge>
+                          <Badge variant="secondary">{notifications.length + (newStudentNotification ? 1 : 0)}</Badge>
                         </div>
-                        <div className="max-h-80 overflow-y-auto">
-                           {mockAnnouncements.filter(a => !a.branchId || a.branchId === user.branchId).length > 0 ? mockAnnouncements.slice(0, 3).map((announcement) => (
-                            <Link key={announcement.id} href={getHref('/dashboard/notifications')} className="block">
-                              <div className="flex items-start gap-3 border-b p-4 text-sm hover:bg-muted/50 last:border-b-0">
-                                  <Avatar className="h-8 w-8">
-                                      <AvatarImage src={announcement.authorAvatar} alt={announcement.author} />
-                                      <AvatarFallback>{announcement.author.charAt(0)}</AvatarFallback>
-                                  </Avatar>
-                                  <div className="grid gap-1">
-                                    <p className="font-semibold leading-relaxed">{announcement.title}</p>
-                                    <p className="text-xs text-muted-foreground line-clamp-2">
-                                        {announcement.content}
-                                    </p>
-                                    <p className="text-xs text-muted-foreground">{announcement.timestamp}</p>
-                                  </div>
-                              </div>
-                            </Link>
-                          )) : (
-                             <div className="p-4 text-center text-sm text-muted-foreground">
-                                Nenhum recado recente.
-                             </div>
-                          )}
+                        <div className="max-h-80 overflow-y-auto p-2">
+                            {newStudentNotification && (
+                                <div className="p-2">
+                                    <div className="flex items-start gap-3">
+                                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500/20">
+                                           <UserIcon className="h-4 w-4 text-green-400"/>
+                                        </div>
+                                        <div className="flex-1">
+                                            <p className="font-semibold">Novo Aluno Cadastrado</p>
+                                            <p className="text-sm text-muted-foreground">
+                                                O aluno <span className="font-bold text-foreground">{newStudentName}</span> acaba de se cadastrar.
+                                            </p>
+                                            <Button variant="link" size="sm" className="p-0 h-auto mt-1" asChild>
+                                                <Link href={getHref('/dashboard/manage-students')}>Ver lista de alunos</Link>
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {notifications.length > 0 ? (
+                                notifications.map(notif => {
+                                    const isNew = notif.createdAt.getTime() > lastSeenTimestamp;
+                                    return (
+                                        <div key={notif.id} className="p-2 hover:bg-muted/50 rounded-md">
+                                            <div className="flex items-start gap-3">
+                                                <div className="relative flex-shrink-0">
+                                                    <Avatar className="h-8 w-8">
+                                                        <AvatarImage src={notif.authorAvatar} alt={notif.authorName} />
+                                                        <AvatarFallback>{notif.authorName.charAt(0)}</AvatarFallback>
+                                                    </Avatar>
+                                                    {isNew && <span className="absolute -top-0.5 -right-0.5 block h-2 w-2 rounded-full bg-primary ring-2 ring-background" />}
+                                                </div>
+                                                <div className="flex-1">
+                                                    <p className="font-semibold text-sm">{notif.title}</p>
+                                                    <p className="text-xs text-muted-foreground truncate">{notif.content}</p>
+                                                    <p className="text-xs text-muted-foreground mt-1">{formatDistanceToNow(notif.createdAt, { addSuffix: true, locale: ptBR })}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })
+                            ) : (!newStudentNotification && (
+                                <div className="p-4 text-center text-sm text-muted-foreground">
+                                    Nenhum recado recente.
+                                </div>
+                            ))}
                         </div>
                         <div className="border-t p-2">
                             <Button size="sm" variant="link" className="w-full" asChild>
@@ -254,7 +462,7 @@ export default function DashboardClientLayout({
                     </Popover>
                   <div className="text-sm font-medium">
                       <span className="text-muted-foreground">Perfil: </span>
-                      <span className="capitalize font-semibold text-primary">{user.role}</span>
+                      <span className="capitalize font-semibold text-primary">{roleNames[user.role]}</span>
                   </div>
                 </div>
             </header>

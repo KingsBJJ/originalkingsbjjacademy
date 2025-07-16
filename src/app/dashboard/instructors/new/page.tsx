@@ -1,8 +1,9 @@
-"use client";
 
-import { useContext, useState, useEffect } from 'react';
+'use client';
+
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -20,7 +21,7 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-  CardDescription
+  CardDescription,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -34,8 +35,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
-import { UserContext } from '../../client-layout';
-import { allBelts } from '@/lib/mock-data';
+import { allBelts, mockUsers } from '@/lib/mock-data';
 import { ArrowLeft } from 'lucide-react';
 import { getBranches, addInstructor, type Branch, type Instructor } from '@/lib/firestoreService';
 
@@ -43,18 +43,21 @@ const instructorFormSchema = z.object({
   name: z.string().min(3, { message: 'O nome deve ter pelo menos 3 caracteres.' }),
   email: z.string().email({ message: 'Por favor, insira um email válido.' }),
   phone: z.string().min(10, { message: 'O telefone deve ter pelo menos 10 dígitos.' }),
+  dateOfBirth: z.string().optional(),
   affiliations: z.array(z.string()).optional(),
   belt: z.string({ required_error: 'Selecione uma graduação.' }).min(1, { message: 'Selecione uma graduação.' }),
   stripes: z.coerce.number().int().min(0).max(6).optional(),
   bio: z.string().optional(),
   avatar: z.string().optional(),
+  password: z.string().optional(),
+  isFirstLogin: z.boolean().optional(),
 });
 
 type InstructorFormValues = z.infer<typeof instructorFormSchema>;
 
 export default function NewInstructorPage() {
-  const user = useContext(UserContext);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { toast } = useToast();
   const [branches, setBranches] = useState<Branch[]>([]);
   const [isSaving, setIsSaving] = useState(false);
@@ -65,77 +68,91 @@ export default function NewInstructorPage() {
       name: '',
       email: '',
       phone: '',
+      dateOfBirth: '',
       affiliations: [],
       belt: '',
       bio: '',
       avatar: '',
       stripes: 0,
+      password: 'KINGS2025',
+      isFirstLogin: true,
     },
   });
 
   useEffect(() => {
     getBranches()
-      .then(setBranches)
+      .then((data) => {
+        console.log('Branches loaded:', data);
+        setBranches(data);
+      })
       .catch((error) => {
-        console.error("Failed to fetch branches:", error);
+        console.error('Failed to fetch branches:', error);
         toast({
-          variant: "destructive",
-          title: "Erro ao carregar filiais.",
+          variant: 'destructive',
+          title: 'Erro ao carregar filiais',
+          description: 'Não foi possível carregar as filiais. Verifique sua conexão ou tente novamente.',
         });
       });
   }, [toast]);
 
-  const watchedBelt = form.watch("belt");
+  const watchedBelt = form.watch('belt');
+  const role = searchParams.get('role');
+  const user = role ? mockUsers[role as keyof typeof mockUsers] : null;
 
   const onSubmit = async (data: InstructorFormValues) => {
     setIsSaving(true);
     try {
-      const { name, email, phone, belt, affiliations, bio, avatar, stripes } = data;
-      
+      console.log('onSubmit called with data:', JSON.stringify(data, null, 2));
+      const { name, email, phone, belt, affiliations, bio, avatar, stripes, password, isFirstLogin, dateOfBirth } = data;
       const instructorData: Omit<Instructor, 'id'> = {
-        name: name,
-        email: email,
-        phone: phone,
-        belt: belt,
+        name,
+        email,
+        phone,
+        dateOfBirth,
+        belt,
         affiliations: affiliations ?? [],
         bio: bio ?? '',
-        avatar: avatar ?? '',
+        avatar: avatar ?? `https://placehold.co/128x128.png?text=${name.charAt(0)}`,
         stripes: stripes ?? 0,
+        password,
+        isFirstLogin,
       };
 
-      await addInstructor(instructorData);
+      const response = await addInstructor(instructorData);
+      console.log('Server Action response:', response);
+
+      if (!response.success) {
+        throw new Error(response.message);
+      }
 
       toast({
         title: 'Professor Cadastrado!',
         description: `O professor ${data.name} foi adicionado com sucesso.`,
       });
-      
-      router.push(`/dashboard/instructors?role=${user?.role}`);
-
+      router.push(`/dashboard/instructors?role=${role}`);
+      router.refresh();
     } catch (error) {
-      console.error("Failed to add instructor:", error);
+      console.error('Failed to add instructor:', error);
       toast({
-        variant: "destructive",
+        variant: 'destructive',
         title: 'Erro ao cadastrar',
-        description: 'Não foi possível adicionar o professor. Tente novamente.',
+        description: error instanceof Error ? error.message : 'Não foi possível adicionar o professor. Tente novamente.',
       });
     } finally {
-        setIsSaving(false);
+      setIsSaving(false);
     }
   };
-  
-  if (user?.role !== 'admin') {
+
+  if (user?.role !== 'admin' && user?.role !== 'professor') {
     return (
       <div className="flex items-center justify-center h-full">
         <Card className="w-full max-w-md">
           <CardHeader>
             <CardTitle>Acesso Negado</CardTitle>
-            <CardDescription>
-              Você não tem permissão para acessar esta página.
-            </CardDescription>
+            <CardDescription>Você não tem permissão para acessar esta página.</CardDescription>
           </CardHeader>
           <CardContent>
-            <p>Esta área é restrita a administradores.</p>
+            <p>Esta área é restrita a administradores e professores.</p>
             <Button asChild className="mt-4">
               <Link href={`/dashboard?role=${user?.role || 'student'}`}>Voltar ao Painel</Link>
             </Button>
@@ -149,14 +166,14 @@ export default function NewInstructorPage() {
     <div className="grid gap-6">
       <div className="flex items-center gap-4">
         <Button variant="outline" size="icon" asChild>
-          <Link href={`/dashboard/instructors?role=${user.role}`}>
+          <Link href={`/dashboard/instructors?role=${role}`}>
             <ArrowLeft />
             <span className="sr-only">Voltar</span>
           </Link>
         </Button>
         <div>
-            <h1 className="text-3xl font-bold tracking-tight">Cadastrar Professor</h1>
-            <p className="text-muted-foreground">Preencha os dados do novo professor.</p>
+          <h1 className="text-3xl font-bold tracking-tight">Cadastrar Professor</h1>
+          <p className="text-muted-foreground">Preencha os dados do novo professor.</p>
         </div>
       </div>
       <Card>
@@ -205,6 +222,19 @@ export default function NewInstructorPage() {
                 />
                 <FormField
                   control={form.control}
+                  name="dateOfBirth"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Data de Nascimento</FormLabel>
+                      <FormControl>
+                        <Input type="date" {...field} value={field.value ?? ''} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
                   name="belt"
                   render={({ field }) => (
                     <FormItem>
@@ -240,18 +270,18 @@ export default function NewInstructorPage() {
                             placeholder="Nº de graus (0-6)"
                             {...field}
                             onChange={(e) => field.onChange(parseInt(e.target.value, 10) || 0)}
-                           />
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                 )}
-                 <FormField
+                <FormField
                   control={form.control}
                   name="avatar"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="md:col-span-2">
                       <FormLabel>URL da Foto (Opcional)</FormLabel>
                       <FormControl>
                         <Input placeholder="https://..." {...field} value={field.value ?? ''} />
@@ -292,10 +322,10 @@ export default function NewInstructorPage() {
                                       return checked
                                         ? field.onChange([...(field.value ?? []), branch.name])
                                         : field.onChange(
-                                            field.value?.filter(
-                                              (value) => value !== branch.name
-                                            )
+                                          field.value?.filter(
+                                            (value) => value !== branch.name
                                           )
+                                        )
                                     }}
                                   />
                                 </FormControl>
@@ -313,31 +343,31 @@ export default function NewInstructorPage() {
                 )}
               />
 
-               <FormField
-                  control={form.control}
-                  name="bio"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Biografia (Opcional)</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Fale um pouco sobre a jornada do professor..."
-                          className="resize-none"
-                          {...field}
-                          value={field.value ?? ''}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              <FormField
+                control={form.control}
+                name="bio"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Biografia (Opcional)</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Fale um pouco sobre a jornada do professor..."
+                        className="resize-none"
+                        {...field}
+                        value={field.value ?? ''}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <div className="flex justify-end gap-2">
-                  <Button variant="outline" type="button" onClick={() => router.back()} disabled={isSaving}>
-                      Cancelar
-                  </Button>
-                  <Button type="submit" disabled={isSaving}>
-                    {isSaving ? 'Salvando...' : 'Salvar Professor'}
-                  </Button>
+                <Button variant="outline" type="button" onClick={() => router.back()} disabled={isSaving}>
+                  Cancelar
+                </Button>
+                <Button type="submit" disabled={isSaving}>
+                  {isSaving ? 'Salvando...' : 'Salvar Professor'}
+                </Button>
               </div>
             </form>
           </Form>
