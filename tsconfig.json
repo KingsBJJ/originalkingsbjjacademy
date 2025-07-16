@@ -29,6 +29,9 @@
       }
     ]
   },
+  "types": [
+    "node"
+  ],
   "include": [
     "next-env.d.ts",
     ".next/types/**/*.ts",

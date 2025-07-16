@@ -1,42 +1,54 @@
-// src/app/dashboard/instructors/[id]/edit/page.ts
+import { Metadata } from 'next';
 
-// Definição dos tipos
-type UserRole = 'admin' | 'instructor' | 'student';
-type User = { name: string; role: UserRole };
+import { getBranches, getInstructor } from '@/lib/firestoreService';
+import { EditInstructorForm } from './EditInstructorForm';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { KingsBjjLogo } from '@/components/kings-bjj-logo';
+import { User, mockUsers } from "@/lib/mock-data";
 
-// Mock de usuários ajustado para usar IDs como chaves
-const mockUsers: Record<string, User> = {
-  '1': { name: 'Admin User', role: 'admin' },
-  '2': { name: 'Instructor User', role: 'instructor' },
-  '3': { name: 'Student User', role: 'student' },
-};
-
-// Tipo das props da página dinâmica
 type PageProps = {
   params: { id: string };
   searchParams: { [key: string]: string | string[] | undefined };
 };
 
-// Definição da página assíncrona
-export default async function EditInstructorPage({ params, searchParams }: PageProps) {
-  // Acessa o ID da rota dinâmica
-  const { id } = params;
+export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+  return {
+    title: `Instructor ${params.id}`,
+  };
+}
 
-  // Acesso seguro ao parâmetro 'role' (opcional, caso seja usado)
-  const roleParam = searchParams?.role;
-  const role = Array.isArray(roleParam) ? roleParam[0] : roleParam;
+export default async function EditInstructorServerPage({
+  params,
+  searchParams,
+}: PageProps) {
+  const role = searchParams?.role as User['role'] || 'student';
+  const user = mockUsers[role] || mockUsers.student; // Simulate user for access control
+  const instructorId = params.id;
 
-  // Carregamento do usuário com base no ID
-  const user = mockUsers[id] || null;
+  const [instructor, branches] = await Promise.all([
+    getInstructor(instructorId),
+    getBranches(),
+  ]);
 
-  // Retorno do JSX
+  if (!instructor) {
+    return (
+      <Card className="w-full max-w-md mx-auto mt-10">
+        <CardHeader className="text-center">
+          <KingsBjjLogo className="h-16 w-16 mx-auto mb-4" />
+          <CardTitle>Professor não encontrado</CardTitle>
+        </CardHeader>
+        <CardContent className="pt-0 text-center">
+          <p className="text-muted-foreground">O professor que você está tentando editar não existe ou foi removido.</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
-    <div>
-      {user ? (
-        <p>Editando {user.name} ({user.role}) com ID: {id}</p>
-      ) : (
-        <p>Usuário não encontrado para ID: {id}</p>
-      )}
-    </div>
+    <EditInstructorForm
+      user={user}
+      initialInstructor={instructor}
+      branches={branches}
+    />
   );
 }

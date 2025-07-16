@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -17,7 +18,11 @@ import { KingsBjjLogo } from "@/components/kings-bjj-logo";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft } from 'lucide-react';
 import { sendPasswordResetEmail } from "firebase/auth";
+<<<<<<< HEAD
 import { auth } from "@/lib/firebase";
+=======
+import { auth } from "@/lib/firebase"; // Correctly import the shared auth instance
+>>>>>>> b481c2bc812841ccf4c793496605892116238ae6
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -40,6 +45,7 @@ export default function ForgotPasswordPage() {
       await sendPasswordResetEmail(auth, email);
       toast({
         title: "Link de Recuperação Enviado",
+<<<<<<< HEAD
         description: `Se o e-mail ${email} estiver cadastrado, você receberá um link para redefinir sua senha. Verifique sua caixa de entrada e spam.`,
       });
     } catch (error: any) {
@@ -51,6 +57,19 @@ export default function ForgotPasswordPage() {
       });
     } finally {
       setIsLoading(false);
+=======
+        description: `Se um usuário com o email ${email} existir, um link para redefinir a senha foi enviado. Verifique sua caixa de entrada e spam.`,
+      });
+    } catch (error) {
+       console.error("Password reset error:", error);
+       toast({
+        variant: "destructive",
+        title: "Erro ao Enviar Email",
+        description: "Não foi possível enviar o link. Verifique o email digitado ou tente novamente.",
+      });
+    } finally {
+        setIsLoading(false);
+>>>>>>> b481c2bc812841ccf4c793496605892116238ae6
     }
   };
 
@@ -78,11 +97,20 @@ export default function ForgotPasswordPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+<<<<<<< HEAD
                 required
               />
             </div>
             <Button type="submit" disabled={isLoading} className="w-full">
               {isLoading ? "Enviando..." : "Enviar Link de Recuperação"}
+=======
+                disabled={isLoading}
+                className="bg-white/5 border-white/20 text-white placeholder:text-white/50"
+              />
+            </div>
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? 'Enviando...' : 'Enviar Link de Recuperação'}
+>>>>>>> b481c2bc812841ccf4c793496605892116238ae6
             </Button>
             <div className="text-center mt-4">
               <Link href="/login" className="text-sm text-blue-500 hover:underline">
