@@ -151,44 +151,20 @@ const BirthdayMessage = ({ user }: { user: User }) => {
 };
 
 
-const AdminDashboard = () => {
-  const [branches, setBranches] = useState<Branch[]>([]);
-  const [instructors, setInstructors] = useState<Instructor[]>([]);
-  const [students, setStudents] = useState<Student[]>([]);
-  const [loading, setLoading] = useState(true);
+async function AdminDashboard() {
+  const [branches, instructors, students] = await Promise.all([
+    getBranches(),
+    getInstructors(),
+    getStudents(),
+  ]);
 
-  const fetchData = async () => {
-      setLoading(true);
-      try {
-          const [branchesData, instructorsData, studentsData] = await Promise.all([
-              getBranches(),
-              getInstructors(),
-              getStudents()
-          ]);
-          setBranches(branchesData);
-          setInstructors(instructorsData);
-          setStudents(studentsData);
-      } catch (error) {
-          console.error("Failed to fetch dashboard data", error);
-      } finally {
-          setLoading(false);
-      }
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const branchStudentData = useMemo(() => {
-    if (!students || !branches) return [];
-    
+  const branchStudentData = (() => {
     const studentCounts = students.reduce((acc, student) => {
         const affiliation = student.affiliations?.[0] || "Sem Filial";
         acc[affiliation] = (acc[affiliation] || 0) + 1;
         return acc;
     }, {} as Record<string, number>);
 
-    // Ensure all branches are present, even if they have 0 students
     branches.forEach(branch => {
         if (!studentCounts[branch.name]) {
             studentCounts[branch.name] = 0;
@@ -198,10 +174,10 @@ const AdminDashboard = () => {
     return Object.entries(studentCounts)
       .filter(([branchName]) => branchName !== "Sem Filial")
       .map(([branchName, studentCount]) => ({
-        name: branchName.replace("Kings BJJ - ", ""), // Shorten name for chart
+        name: branchName.replace("Kings BJJ - ", ""),
         students: studentCount,
       }));
-  }, [students, branches]);
+  })();
   
    const annualPerformanceData = [
     { month: 'Jan', checkins: 450 },
@@ -218,10 +194,8 @@ const AdminDashboard = () => {
     { month: 'Dez', checkins: 700 },
   ];
 
-  const bestBranch = useMemo(() => {
-    if (!students || students.length === 0) {
-      return null
-    }
+  const bestBranch = (() => {
+    if (!students || students.length === 0) return null;
 
     const attendanceByBranch: Record<string, number> = {}
     for (const student of students) {
@@ -243,27 +217,10 @@ const AdminDashboard = () => {
       }
     }
 
-    if (!bestBranchName || maxAttendance === 0) {
-      return null
-    }
+    if (!bestBranchName || maxAttendance === 0) return null;
 
-    return {
-      name: bestBranchName,
-      attendance: maxAttendance,
-    }
-  }, [students]);
-
-  if (loading) {
-    return (
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-            <Skeleton className="h-36" />
-            <Skeleton className="h-36" />
-            <Skeleton className="h-36" />
-            <Skeleton className="h-80 md:col-span-3" />
-            <Skeleton className="h-40 md:col-span-3" />
-        </div>
-    );
-  }
+    return { name: bestBranchName, attendance: maxAttendance };
+  })();
 
   return (
     <div className="grid grid-cols-1 gap-6">
@@ -386,10 +343,9 @@ const AdminDashboard = () => {
           </ChartContainer>
         </CardContent>
       </Card>
-
     </div>
   );
-};
+}
 
 const ProfessorDashboard = () => {
   const user = useContext(UserContext);
