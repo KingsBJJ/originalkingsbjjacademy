@@ -49,7 +49,7 @@ import { generateTrainingFocus, type TrainingFocusOutput } from "@/ai/flows/trai
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { KingsBjjLogo } from "@/components/kings-bjj-logo";
 
-const DataCard = ({ title, value, description, icon: Icon }: { title: string; value: number | string; description: string; icon: React.ElementType }) => (
+const DataCard = ({ title, value, description, icon: Icon, isLoading }: { title: string; value: number | string; description: string; icon: React.ElementType, isLoading?: boolean }) => (
     <Card>
         <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
@@ -58,7 +58,11 @@ const DataCard = ({ title, value, description, icon: Icon }: { title: string; va
             </CardTitle>
         </CardHeader>
         <CardContent>
-            <p className="text-4xl font-bold">{value}</p>
+             {isLoading ? (
+                <Skeleton className="h-10 w-1/2" />
+            ) : (
+                <p className="text-4xl font-bold">{value}</p>
+            )}
             <p className="text-xs text-muted-foreground">{description}</p>
         </CardContent>
     </Card>
@@ -151,12 +155,32 @@ const BirthdayMessage = ({ user }: { user: User }) => {
 };
 
 
-async function AdminDashboard() {
-  const [branches, instructors, students] = await Promise.all([
-    getBranches(),
-    getInstructors(),
-    getStudents(),
-  ]);
+const AdminDashboard = () => {
+  const [branches, setBranches] = useState<Branch[]>([]);
+  const [instructors, setInstructors] = useState<Instructor[]>([]);
+  const [students, setStudents] = useState<Student[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        const [branchesData, instructorsData, studentsData] = await Promise.all([
+          getBranches(),
+          getInstructors(),
+          getStudents(),
+        ]);
+        setBranches(branchesData);
+        setInstructors(instructorsData);
+        setStudents(studentsData);
+      } catch (error) {
+        console.error("Failed to fetch admin data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
 
   const branchStudentData = (() => {
     const studentCounts = students.reduce((acc, student) => {
@@ -226,9 +250,9 @@ async function AdminDashboard() {
     <div className="grid grid-cols-1 gap-6">
       <BirthdayCard people={[...students, ...instructors]} />
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-        <DataCard title="Total de Alunos" value={students.length} description="Alunos ativos em todas as filiais" icon={Users} />
-        <DataCard title="Total de Filiais" value={branches.length} description="Filiais em operação" icon={Map} />
-        <DataCard title="Total de Professores" value={instructors.length} description="Professores em todas as filiais" icon={UserIcon} />
+        <DataCard title="Total de Alunos" value={students.length} description="Alunos ativos em todas as filiais" icon={Users} isLoading={isLoading} />
+        <DataCard title="Total de Filiais" value={branches.length} description="Filiais em operação" icon={Map} isLoading={isLoading} />
+        <DataCard title="Total de Professores" value={instructors.length} description="Professores em todas as filiais" icon={UserIcon} isLoading={isLoading} />
       </div>
 
       <Card className="md:col-span-3">
@@ -237,7 +261,7 @@ async function AdminDashboard() {
               <CardDescription>Visualize a quantidade de alunos para entender a demanda e o crescimento de cada unidade.</CardDescription>
           </CardHeader>
           <CardContent>
-              {branchStudentData.length > 0 ? (
+              {isLoading ? <Skeleton className="h-64 w-full" /> : branchStudentData.length > 0 ? (
                 <ChartContainer config={barChartConfig} className="h-64 w-full">
                     <RechartsBarChart
                         accessibilityLayer
@@ -282,21 +306,23 @@ async function AdminDashboard() {
           <CardDescription>Insights sobre o desempenho das filiais.</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="rounded-lg border bg-card-foreground/5 p-6">
-            <h3 className="text-sm font-semibold text-muted-foreground">Melhor Academia do Mês</h3>
-            {bestBranch ? (
-              <div className="flex items-baseline gap-4 mt-2">
-                <p className="text-3xl font-bold text-primary">{bestBranch.name}</p>
-                <div>
-                  <span className="text-xl font-semibold">{bestBranch.attendance}</span>
-                  <span className="text-sm text-muted-foreground"> check-ins</span>
+            {isLoading ? <Skeleton className="h-24 w-full" /> : (
+                <div className="rounded-lg border bg-card-foreground/5 p-6">
+                    <h3 className="text-sm font-semibold text-muted-foreground">Melhor Academia do Mês</h3>
+                    {bestBranch ? (
+                    <div className="flex items-baseline gap-4 mt-2">
+                        <p className="text-3xl font-bold text-primary">{bestBranch.name}</p>
+                        <div>
+                        <span className="text-xl font-semibold">{bestBranch.attendance}</span>
+                        <span className="text-sm text-muted-foreground"> check-ins</span>
+                        </div>
+                    </div>
+                    ) : (
+                    <p className="mt-2 text-muted-foreground">Nenhum dado de check-in no último mês para determinar a melhor filial.</p>
+                    )}
+                    <p className="text-xs text-muted-foreground mt-1">Baseado no número de check-ins de alunos no último mês.</p>
                 </div>
-              </div>
-            ) : (
-              <p className="mt-2 text-muted-foreground">Nenhum dado de check-in no último mês para determinar a melhor filial.</p>
             )}
-            <p className="text-xs text-muted-foreground mt-1">Baseado no número de check-ins de alunos no último mês.</p>
-          </div>
         </CardContent>
       </Card>
 
@@ -311,36 +337,38 @@ async function AdminDashboard() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <ChartContainer config={barChartConfig} className="h-64 w-full">
-            <RechartsBarChart
-              accessibilityLayer
-              data={annualPerformanceData}
-              margin={{
-                left: -10,
-                right: 20,
-              }}
-            >
-              <XAxis
-                dataKey="month"
-                tickLine={false}
-                axisLine={false}
-                tickMargin={8}
-                fontSize={12}
-              />
-              <YAxis
-                tickLine={false}
-                axisLine={false}
-                tickMargin={8}
-                fontSize={12}
-                allowDecimals={false}
-              />
-              <Tooltip
-                cursor={false}
-                content={<ChartTooltipContent hideLabel />}
-              />
-              <Bar dataKey="checkins" fill="var(--color-checkins)" radius={4} />
-            </RechartsBarChart>
-          </ChartContainer>
+          {isLoading ? <Skeleton className="h-64 w-full" /> : (
+            <ChartContainer config={barChartConfig} className="h-64 w-full">
+                <RechartsBarChart
+                accessibilityLayer
+                data={annualPerformanceData}
+                margin={{
+                    left: -10,
+                    right: 20,
+                }}
+                >
+                <XAxis
+                    dataKey="month"
+                    tickLine={false}
+                    axisLine={false}
+                    tickMargin={8}
+                    fontSize={12}
+                />
+                <YAxis
+                    tickLine={false}
+                    axisLine={false}
+                    tickMargin={8}
+                    fontSize={12}
+                    allowDecimals={false}
+                />
+                <Tooltip
+                    cursor={false}
+                    content={<ChartTooltipContent hideLabel />}
+                />
+                <Bar dataKey="checkins" fill="var(--color-checkins)" radius={4} />
+                </RechartsBarChart>
+            </ChartContainer>
+          )}
         </CardContent>
       </Card>
     </div>
