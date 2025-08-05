@@ -9,6 +9,4 @@ export const ai = genkit({
       // irá buscá-la automaticamente das variáveis de ambiente.
     }),
   ],
-  logLevel: 'debug',
-  enableTracingAndMetrics: true,
 });
