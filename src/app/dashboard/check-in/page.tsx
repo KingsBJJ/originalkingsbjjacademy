@@ -3,12 +3,23 @@
 
 import React, { useState, useRef, useEffect, useCallback, useContext } from 'react';
 import {
+
+  Card, CardContent, CardHeader, CardTitle
+
   Card,
+<<<<<<< HEAD
+=======
+  CardContent,
+  CardHeader,
+  CardTitle,
+>>>>>>> b481c2bc812841ccf4c793496605892116238ae6
+>>>>>>> d603ba0a7a12ea3e0616f4c9095692d3a8d2e22c
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Camera, Check } from 'lucide-react';
+<<<<<<< HEAD
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -16,8 +27,13 @@ import {
   CardContent, CardHeader, CardTitle
 } from '@/components/ui/card';
 
+=======
+>>>>>>> d603ba0a7a12ea3e0616f4c9095692d3a8d2e22c
 import { UserContext, UserUpdateContext } from '../client-layout';
 
+
+
+b481c2bc812841ccf4c793496605892116238ae6
 
 export default function CheckInPage() {
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
@@ -28,10 +44,8 @@ export default function CheckInPage() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const jsQRRef = useRef<any>(null);
-  const router = useRouter();
   const { toast } = useToast();
   const user = useContext(UserContext);
-  const updateUser = useContext(UserUpdateContext);
 
   const stopCamera = useCallback(() => {
     if (streamRef.current) {
@@ -44,11 +58,13 @@ export default function CheckInPage() {
   const startScan = useCallback(async () => {
     try {
       if (!jsQRRef.current) {
-        jsQRRef.current = (await import('jsqr')).default;
-      }
-      
-      if (streamRef.current) {
-        stopCamera();
+        try {
+          jsQRRef.current = (await import('jsqr')).default;
+        } catch (err) {
+          console.error("Erro ao importar jsQR:", err);
+          toast({ variant: "destructive", title: "Erro", description: "Falha ao carregar leitor de QR Code." });
+          return;
+        }
       }
 
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -59,20 +75,17 @@ export default function CheckInPage() {
 
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        videoRef.current.onloadedmetadata = () => {
-          setIsScanning(true);
-        };
+        videoRef.current.play();
+        setIsScanning(true);
       }
-    } catch (error) {
-      console.error('Error accessing camera:', error);
+    } catch (err) {
+      console.error("Erro ao acessar câmera:", err);
       setHasCameraPermission(false);
-      toast({
-        variant: 'destructive',
-        title: 'Acesso à Câmera Negado',
-        description: 'Por favor, habilite a permissão de câmera para continuar.',
-      });
+      toast({ variant: "destructive", title: "Permissão negada", description: "Acesso à câmera foi bloqueado. Verifique as configurações do navegador." });
     }
-  }, [stopCamera, toast]);
+  }, [toast]);
+
+
 
   const handleScanAgain = () => {
     setCheckinMessage(null);
@@ -80,11 +93,14 @@ export default function CheckInPage() {
     startScan();
   };
   
+ b481c2bc812841ccf4c793496605892116238ae6
   useEffect(() => {
-    startScan();
     return () => {
       stopCamera();
     };
+
+  }, [stopCamera]);
+
   }, [startScan, stopCamera]);
 
   useEffect(() => {
@@ -171,18 +187,28 @@ export default function CheckInPage() {
     };
   }, [isScanning, stopCamera, toast, user, updateUser]);
 
+ b481c2bc812841ccf4c793496605892116238ae6
 
   return (
-    <div className="grid gap-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Check-in por QR Code</h1>
-          <p className="text-muted-foreground">
-            Aponte a câmera para o QR code da aula para registrar sua presença.
-          </p>
-        </div>
-      </div>
+    <div className="p-4 space-y-4">
       <Card>
+
+        <CardHeader>
+          <CardTitle>Leitura de QR Code</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <video ref={videoRef} className="w-full max-w-md mx-auto rounded-md" />
+          <canvas ref={canvasRef} className="hidden" />
+          <div className="mt-4 flex justify-center">
+            <Button onClick={startScan} disabled={isScanning}>
+              {isScanning ? "Escaneando..." : "Iniciar Leitura"}
+            </Button>
+            {isScanning && (
+              <Button variant="secondary" onClick={stopCamera} className="ml-2">
+                Parar
+              </Button>
+            )}
+
         <CardContent className="pt-6">
           <div className="flex w-full flex-col items-center justify-center gap-6">
             
@@ -237,7 +263,16 @@ export default function CheckInPage() {
             )}
             
             <canvas ref={canvasRef} className="hidden" />
+ b481c2bc812841ccf4c793496605892116238ae6
           </div>
+          {hasCameraPermission === false && (
+            <Alert variant="destructive" className="mt-4">
+              <AlertTitle>Permissão de câmera negada</AlertTitle>
+              <AlertDescription>
+                Por favor, habilite o acesso à câmera no seu navegador para usar o check-in via QR Code.
+              </AlertDescription>
+            </Alert>
+          )}
         </CardContent>
       </Card>
     </div>

@@ -91,11 +91,15 @@ async function BranchesList({ user }: { user: User | null }) {
     );
 }
 
+
+export default async function BranchesPage({ searchParams }: any) {
+
 export default async function BranchesPage({
   searchParams,
 }: {
   searchParams: { [key: string]: string | string[] | undefined };
 }) {
+>>>>>>> b481c2bc812841ccf4c793496605892116238ae6
   const role = searchParams?.role as User['role'] | undefined;
   
   // Use a mock user based on the role from URL for server-side permission checks.
