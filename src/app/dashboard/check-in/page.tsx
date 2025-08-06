@@ -4,9 +4,6 @@
 import React, { useState, useRef, useEffect, useCallback, useContext } from 'react';
 import {
   Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -15,6 +12,10 @@ import { Camera, Check } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import {
+  CardContent, CardHeader, CardTitle
+} from '@/components/ui/card';
+
 import { UserContext, UserUpdateContext } from '../client-layout';
 
 
