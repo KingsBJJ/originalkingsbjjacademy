@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 export default async function EditBranchPage({ params, searchParams }: any) {
   const role = searchParams?.role as User['role'] || 'student';
   const user = mockUsers[role] || mockUsers.student;
@@ -26,7 +26,7 @@ export default async function EditBranchPage({ params, searchParams }: any) {
       user={user}
       initialBranch={branch}
       instructors={instructors}
-=======
+
 
 import {
   Card,
@@ -74,7 +74,7 @@ export default async function EditBranchPage({
       user={user}
       initialBranch={branch} 
       instructors={instructors} 
->>>>>>> b481c2bc812841ccf4c793496605892116238ae6
+ b481c2bc812841ccf4c793496605892116238ae6
     />
   );
 }

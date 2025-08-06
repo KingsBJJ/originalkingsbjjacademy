@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 // src/app/dashboard/manage-students/page.tsx
 import { Suspense } from 'react';
 import Link from 'next/link';
@@ -39,7 +39,7 @@ export default async function ManageStudentsPage({ searchParams }: Props) {
         <StudentsList user={user} />
       </Suspense>
     </div>
-=======
+
 
 import Link from 'next/link';
 import { Suspense } from 'react';
@@ -277,6 +277,6 @@ export default async function ManageStudentsPage({
     <Suspense fallback={<StudentsListSkeleton />}>
         <StudentList user={user} />
     </Suspense>
->>>>>>> b481c2bc812841ccf4c793496605892116238ae6
+b481c2bc812841ccf4c793496605892116238ae6
   );
 }

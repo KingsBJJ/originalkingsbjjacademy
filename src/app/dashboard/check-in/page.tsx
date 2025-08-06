@@ -3,9 +3,9 @@
 
 import React, { useState, useRef, useEffect, useCallback, useContext } from 'react';
 import {
-<<<<<<< HEAD
+
   Card, CardContent, CardHeader, CardTitle
-=======
+
   Card,
   CardContent,
   CardHeader,
@@ -17,10 +17,10 @@ import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Camera, Check } from 'lucide-react';
 import { UserContext, UserUpdateContext } from '../client-layout';
-<<<<<<< HEAD
-=======
 
->>>>>>> b481c2bc812841ccf4c793496605892116238ae6
+
+
+b481c2bc812841ccf4c793496605892116238ae6
 
 export default function CheckInPage() {
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
@@ -72,22 +72,22 @@ export default function CheckInPage() {
     }
   }, [toast]);
 
-<<<<<<< HEAD
-=======
+
+
   const handleScanAgain = () => {
     setCheckinMessage(null);
     setCheckinTime(null);
     startScan();
   };
   
->>>>>>> b481c2bc812841ccf4c793496605892116238ae6
+ b481c2bc812841ccf4c793496605892116238ae6
   useEffect(() => {
     return () => {
       stopCamera();
     };
-<<<<<<< HEAD
+
   }, [stopCamera]);
-=======
+
   }, [startScan, stopCamera]);
 
   useEffect(() => {
@@ -174,12 +174,12 @@ export default function CheckInPage() {
     };
   }, [isScanning, stopCamera, toast, user, updateUser]);
 
->>>>>>> b481c2bc812841ccf4c793496605892116238ae6
+ b481c2bc812841ccf4c793496605892116238ae6
 
   return (
     <div className="p-4 space-y-4">
       <Card>
-<<<<<<< HEAD
+
         <CardHeader>
           <CardTitle>Leitura de QR Code</CardTitle>
         </CardHeader>
@@ -195,7 +195,7 @@ export default function CheckInPage() {
                 Parar
               </Button>
             )}
-=======
+
         <CardContent className="pt-6">
           <div className="flex w-full flex-col items-center justify-center gap-6">
             
@@ -250,7 +250,7 @@ export default function CheckInPage() {
             )}
             
             <canvas ref={canvasRef} className="hidden" />
->>>>>>> b481c2bc812841ccf4c793496605892116238ae6
+ b481c2bc812841ccf4c793496605892116238ae6
           </div>
           {hasCameraPermission === false && (
             <Alert variant="destructive" className="mt-4">

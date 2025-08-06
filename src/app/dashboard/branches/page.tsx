@@ -91,9 +91,9 @@ async function BranchesList({ user }: { user: User | null }) {
     );
 }
 
-<<<<<<< HEAD
+
 export default async function BranchesPage({ searchParams }: any) {
-=======
+
 export default async function BranchesPage({
   searchParams,
 }: {
