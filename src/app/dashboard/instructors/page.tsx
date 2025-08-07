@@ -1,3 +1,4 @@
+
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { Suspense } from 'react';
@@ -18,7 +19,7 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { getInstructors, type Instructor, type User } from '@/lib/firestoreService';
+import { getInstructors, type User } from '@/lib/firestoreService';
 import { mockUsers } from '@/lib/mock-data';
 import { InstructorTableRowClient } from './InstructorTableRowClient';
 import { Skeleton } from '@/components/ui/skeleton';
