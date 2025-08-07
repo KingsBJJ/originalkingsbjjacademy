@@ -1,17 +1,3 @@
-<<<<<<< HEAD
-// src/app/dashboard/profile/edit/page.tsx
-import { Suspense } from 'react';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import { getUserByEmail, type User } from '@/lib/firestoreService';
-import { mockUsers } from '@/lib/mock-data';
-
-interface Props {
-  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
-}
-=======
 
 "use client";
 
@@ -40,45 +26,15 @@ import { mockAttendanceHistory, beltColors } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 import { Medal, Trophy, BookOpen, Sparkles } from "lucide-react";
 import { UserContext } from "../client-layout";
->>>>>>> b481c2bc812841ccf4c793496605892116238ae6
 
-export default async function EditProfilePage({ searchParams }: Props) {
-  const resolvedSearchParams = await searchParams; // Resolver a Promise
-  const email = resolvedSearchParams?.email as string | undefined;
-  let user = email ? await getUserByEmail(email) : null;
+export default function ProfilePage() {
+  const user = useContext(UserContext);
 
-  // Fallback to role-based mock user if no real user is found
   if (!user) {
-    const role = (resolvedSearchParams?.role || 'student') as User['role'];
-    user = mockUsers[role] || mockUsers.student;
+    // TODO: Add a proper loading skeleton here
+    return <div>Carregando perfil...</div>;
   }
 
-<<<<<<< HEAD
-  // Security check: Only allow users to edit their own profile
-  if (!user) {
-    return (
-      <div className="flex h-full items-center justify-center">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle>Erro</CardTitle>
-            <CardDescription>Usuário não encontrado.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p>Não foi possível carregar os dados do usuário.</p>
-            <Button asChild className="mt-4">
-              <Link href={`/dashboard?role=${user?.role || 'student'}`}>Voltar ao Painel</Link>
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  return (
-    <Suspense fallback={<Skeleton className="h-64 w-full max-w-2xl" />}>
-      <div className="grid gap-6 p-6">
-        <Card className="max-w-2xl">
-=======
   const roleNames = {
     student: 'Aluno',
     professor: 'Professor',
@@ -92,6 +48,7 @@ export default async function EditProfilePage({ searchParams }: Props) {
     const params = new URLSearchParams();
     if (user.role) params.set('role', user.role);
     if (user.email) params.set('email', user.email);
+    if (user.name) params.set('name', user.name);
     return `${href}?${params.toString()}`;
   };
 
@@ -137,30 +94,28 @@ export default async function EditProfilePage({ searchParams }: Props) {
 
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
->>>>>>> b481c2bc812841ccf4c793496605892116238ae6
           <CardHeader>
-            <CardTitle>Editar Perfil</CardTitle>
-            <CardDescription>Atualize as informações do seu perfil.</CardDescription>
+            <CardTitle>Informações de Contato</CardTitle>
+            <CardDescription>
+                Seus detalhes de contato e afiliação.
+            </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="grid gap-4">
-              <div>
-                <label className="block text-sm font-medium">Nome</label>
-                <p className="mt-1 text-sm">{user.name}</p>
-              </div>
-              <div>
-                <label className="block text-sm font-medium">E-mail</label>
-                <p className="mt-1 text-sm">{user.email || email || 'N/A'}</p>
-              </div>
-<<<<<<< HEAD
-              <div>
-                <label className="block text-sm font-medium">Função</label>
-                <p className="mt-1 text-sm">{user.role}</p>
-              </div>
-              <Button asChild className="mt-4">
-                <Link href={`/dashboard?role=${user.role}`}>Voltar ao Painel</Link>
-              </Button>
-=======
+          <CardContent className="space-y-2 text-sm">
+             <div className="flex justify-between">
+                <span className="font-medium text-muted-foreground">Professor Principal:</span>
+                <span>{user.mainInstructor || 'Não definido'}</span>
+            </div>
+             <div className="flex justify-between">
+                <span className="font-medium text-muted-foreground">Telefone:</span>
+                <span>{user.phone || 'Não informado'}</span>
+            </div>
+             <div className="flex justify-between">
+                <span className="font-medium text-muted-foreground">Membro Desde:</span>
+                <span>Jan 2022</span>
+            </div>
+             <div className="flex justify-between">
+                <span className="font-medium text-muted-foreground">Contato de Emergência:</span>
+                <span>(55) 5555-1111</span>
             </div>
           </CardContent>
         </Card>
@@ -177,21 +132,95 @@ export default async function EditProfilePage({ searchParams }: Props) {
                 <span className="capitalize">{roleNames[user.role]}</span>
             </div>
              <div className="flex justify-between">
-                <span className="font-medium text-muted-foreground">Telefone:</span>
-                <span>{user.phone || 'Não informado'}</span>
+                <span className="font-medium text-muted-foreground">Data de Nascimento:</span>
+                <span>{user.dateOfBirth || 'Não informada'}</span>
             </div>
              <div className="flex justify-between">
-                <span className="font-medium text-muted-foreground">Membro Desde:</span>
-                <span>Jan 2022</span>
+                <span className="font-medium text-muted-foreground">Categoria:</span>
+                <span>{user.category}</span>
             </div>
              <div className="flex justify-between">
-                <span className="font-medium text-muted-foreground">Contato de Emergência:</span>
-                <span>(55) 5555-1111</span>
->>>>>>> b481c2bc812841ccf4c793496605892116238ae6
+                <span className="font-medium text-muted-foreground">Plano:</span>
+                <span>Plano Ouro</span>
             </div>
           </CardContent>
         </Card>
       </div>
-    </Suspense>
+
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Medal className="text-primary" />
+              Progresso de Graduação
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="font-medium">
+                  Próxima Graduação: Faixa Roxa
+                </span>
+                <span className="text-muted-foreground">{user.nextGraduationProgress}%</span>
+              </div>
+              <Progress value={user.nextGraduationProgress} />
+              <p className="text-xs text-muted-foreground">
+                Baseado em frequência, tempo e avaliação do professor.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Trophy className="text-yellow-400" />
+              Frequência
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex items-baseline justify-center gap-4">
+            <div>
+              <p className="text-4xl font-bold">{user.attendance.lastMonth}</p>
+              <p className="text-sm text-muted-foreground">Aulas no Mês</p>
+            </div>
+            <div className="h-12 border-l" />
+            <div>
+              <p className="text-4xl font-bold">{user.attendance.total}</p>
+              <p className="text-sm text-muted-foreground">Aulas Totais</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <BookOpen />
+            Histórico de Presença
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Data</TableHead>
+                <TableHead>Aula</TableHead>
+                <TableHead className="text-right">Status</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {mockAttendanceHistory.map((item, index) => (
+                <TableRow key={index}>
+                  <TableCell>{item.date}</TableCell>
+                  <TableCell>{item.class}</TableCell>
+                  <TableCell className="text-right">
+                    <Badge variant="secondary">{item.status}</Badge>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
