@@ -1,11 +1,11 @@
 'use client';
 
 import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
+import Link from "next/link";
 import { ArrowLeft } from 'lucide-react';
 import { sendPasswordResetEmail } from "firebase/auth";
+import { useToast } from "@/hooks/use-toast";
 import { auth } from "@/lib/firebase";
-import Link from "next/link";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -14,6 +14,16 @@ export default function ForgotPasswordPage() {
 
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!email) {
+      toast({
+        variant: "destructive",
+        title: "Erro",
+        description: "Por favor, insira um endereço de e-mail válido.",
+      });
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -22,11 +32,14 @@ export default function ForgotPasswordPage() {
         title: "Link de Recuperação Enviado",
         description: `Se um usuário com o email ${email} existir, um link para redefinir a senha foi enviado. Verifique sua caixa de entrada e spam.`,
       });
-    } catch (error) {
-      console.error("Password reset error:", error);
+    } catch (error: any) {
+      console.error("Erro ao enviar recuperação de senha:", error);
       toast({
-        title: "Erro ao enviar link",
-        description: "Tente novamente em instantes.",
+        variant: "destructive",
+        title: "Erro ao enviar email",
+        description:
+          error?.message ||
+          "Ocorreu um erro. Verifique o e-mail digitado ou tente novamente.",
       });
     } finally {
       setIsLoading(false);
@@ -35,7 +48,10 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="max-w-md mx-auto p-4">
-      <Link href="/signup" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:underline">
+      <Link
+        href="/signup"
+        className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:underline"
+      >
         <ArrowLeft size={16} /> Voltar
       </Link>
 
