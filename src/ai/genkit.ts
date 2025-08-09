@@ -1,5 +1,5 @@
 
-import { genkit } from 'genkit';
+import genkit from '@/lib/genkit'; // Sem as chaves {}
 import { googleAI } from '@genkit-ai/googleai';
 
 export const ai = genkit({
