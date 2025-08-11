@@ -286,13 +286,15 @@ export const getInstructor = async (id: string): Promise<Instructor | null> => {
 
 export const addInstructor = async (instructorData: Omit<Instructor, 'id'>): Promise<{ success: boolean; message: string; id?: string }> => {
   if (!db) {
-    console.error('Attempting to add instructor but Firestore is not initialized.');
     return { success: false, message: 'Failed to add instructor: Firestore is not initialized.' };
   }
   try {
-    console.log('Adding instructor with data:', JSON.stringify(instructorData, null, 2));
+    const emailExists = await checkIfEmailExists(instructorData.email);
+    if (emailExists) {
+        return { success: false, message: 'Este e-mail já pertence a outra conta.' };
+    }
+
     const docRef = await addDoc(collection(db, 'instructors'), instructorData);
-    console.log('Instructor added successfully with ID:', docRef.id);
     return { success: true, message: 'Instructor added successfully', id: docRef.id };
   } catch (error) {
     console.error('Error adding instructor:', error);

@@ -102,7 +102,6 @@ export default function NewInstructorPage() {
   const onSubmit = async (data: InstructorFormValues) => {
     setIsSaving(true);
     try {
-      console.log('onSubmit called with data:', JSON.stringify(data, null, 2));
       const { name, email, phone, belt, affiliations, bio, avatar, stripes, password, isFirstLogin, dateOfBirth } = data;
       const instructorData: Omit<Instructor, 'id'> = {
         name,
@@ -112,15 +111,14 @@ export default function NewInstructorPage() {
         belt,
         affiliations: affiliations ?? [],
         bio: bio ?? '',
-        avatar: avatar ?? `https://placehold.co/128x128.png?text=${name.charAt(0)}`,
+        avatar: avatar || `https://placehold.co/128x128.png?text=${name.charAt(0)}`,
         stripes: stripes ?? 0,
         password,
         isFirstLogin,
       };
 
       const response = await addInstructor(instructorData);
-      console.log('Server Action response:', response);
-
+      
       if (!response.success) {
         throw new Error(response.message);
       }
