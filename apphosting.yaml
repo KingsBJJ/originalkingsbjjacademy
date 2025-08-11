@@ -1,3 +1,6 @@
+# Firebase App Hosting configuration for the 'originalkingsbjjacademy' project.
+backend:
+  region: us-central1
 env:
   - variable: KINGS_BJJ_APP
     value: "default"
