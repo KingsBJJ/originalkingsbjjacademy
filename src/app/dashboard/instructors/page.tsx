@@ -20,7 +20,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { getInstructors, type User, type Instructor } from '@/lib/firestoreService';
 import { mockUsers } from '@/lib/mock-data';
-import { InstructorActions } from './InstructorActionsClient';
+import InstructorTableRowClient from './InstructorTableRowClient';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const BeltBadge = ({ belt, stripes }: { belt: string; stripes?: number }) => {
@@ -82,6 +82,7 @@ async function InstructorsList({ user }: { user: User | null }) {
               <TableHead>Professor</TableHead>
               <TableHead>Filiais</TableHead>
               <TableHead>Graduação</TableHead>
+               <TableHead>Telefone</TableHead>
               <TableHead>
                 <span className="sr-only">Ações</span>
               </TableHead>
@@ -90,45 +91,11 @@ async function InstructorsList({ user }: { user: User | null }) {
           <TableBody>
             {instructors.length > 0 ? (
               instructors.map((instructor) => (
-                <TableRow key={instructor.id}>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-10 w-10">
-                        <AvatarImage src={instructor.avatar} alt={instructor.name} />
-                        <AvatarFallback>{instructor.name.charAt(0)}</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-medium">{instructor.name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {instructor.email}
-                        </p>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    {instructor.affiliations && instructor.affiliations.length > 0 ? (
-                      <div className="flex flex-wrap gap-1">
-                        {instructor.affiliations.map((affiliation) => (
-                          <Badge key={affiliation} variant="outline">
-                            {affiliation}
-                          </Badge>
-                        ))}
-                      </div>
-                    ) : (
-                      <span className="text-sm text-muted-foreground">-</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <BeltBadge belt={instructor.belt} stripes={instructor.stripes} />
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <InstructorActions instructor={instructor} user={user} />
-                  </TableCell>
-                </TableRow>
+                <InstructorTableRowClient key={instructor.id} instructor={instructor} userRole={user?.role || 'student'} />
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={4} className="h-24 text-center">
+                <TableCell colSpan={5} className="h-24 text-center">
                   Nenhum professor cadastrado.
                 </TableCell>
               </TableRow>
