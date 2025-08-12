@@ -116,7 +116,7 @@ const BirthdayCard = ({ people }: { people: (Student | Instructor)[] }) => {
                         <div>
                             <p className="font-semibold">{person.name}</p>
                             <p className="text-sm text-muted-foreground">
-                                {person.role === 'student' ? 'Aluno' : 'Professor'}
+                                {'role' in person && person.role === 'student' ? 'Aluno' : 'Professor'}
                             </p>
                         </div>
                     </div>
@@ -426,8 +426,6 @@ const ProfessorDashboard = () => {
 
     const newStudentsCount = filteredStudents.filter(student => {
         if (student.createdAt) {
-            // The `createdAt` field from Firestore is already a Date object
-            // because of the processing in `getStudents` function.
             const createdAtDate = student.createdAt;
             return createdAtDate.getTime() > oneMonthAgoMillis;
         }
@@ -815,24 +813,24 @@ export default function DashboardPage() {
 
   const welcomeMessage = {
     admin: "Visão geral da Kings Bjj",
+    professor: `Bem-vindo, ${user.name.split(" ")[0]}`,
     student: `Olá, ${user.name.split(" ")[0]}`,
   };
 
   const subMessage = {
     admin: "Gerencie alunos, filiais e professores.",
+    professor: `Aqui está o resumo da sua academia. Vamos ao trabalho.`,
     student: `Aqui está seu resumo de treinos, ${user.name.split(" ")[0]}. Vamos ao trabalho.`,
   };
 
   return (
     <div className="grid gap-4">
-      {user.role !== 'professor' && (
         <div className="grid gap-2 mb-2">
           <h1 className="text-3xl font-bold tracking-tight">
             {welcomeMessage[user.role as keyof typeof welcomeMessage]}
           </h1>
           <p className="text-muted-foreground">{subMessage[user.role as keyof typeof subMessage]}</p>
         </div>
-      )}
 
       {user.role === "admin" && <AdminDashboard />}
       {user.role === "professor" && <ProfessorDashboard />}

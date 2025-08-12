@@ -27,12 +27,12 @@ import { cn } from "@/lib/utils";
 import { Medal, Trophy, BookOpen, Sparkles } from "lucide-react";
 import { UserContext } from "../client-layout";
 
-
 export default function ProfilePage() {
   const user = useContext(UserContext);
 
   if (!user) {
-    return <div>Carregando...</div>;
+    // TODO: Add a proper loading skeleton here
+    return <div>Carregando perfil...</div>;
   }
 
   const roleNames = {
@@ -48,6 +48,7 @@ export default function ProfilePage() {
     const params = new URLSearchParams();
     if (user.role) params.set('role', user.role);
     if (user.email) params.set('email', user.email);
+    if (user.name) params.set('name', user.name);
     return `${href}?${params.toString()}`;
   };
 
@@ -94,35 +95,27 @@ export default function ProfilePage() {
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Medal />
-              <span>Progresso de Graduação</span>
-            </CardTitle>
+            <CardTitle>Informações de Contato</CardTitle>
             <CardDescription>
-              Acompanhe sua jornada para o próximo nível.
+                Seus detalhes de contato e afiliação.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm font-medium">
-                <span>Para o Próximo Grau/Faixa</span>
-                <span>{user.nextGraduationProgress}%</span>
-              </div>
-              <Progress value={user.nextGraduationProgress} />
+          <CardContent className="space-y-2 text-sm">
+             <div className="flex justify-between">
+                <span className="font-medium text-muted-foreground">Professor Principal:</span>
+                <span>{user.mainInstructor || 'Não definido'}</span>
             </div>
-            <div className="grid grid-cols-2 gap-4 text-center">
-              <div>
-                <p className="text-2xl font-bold">
-                  {user.attendance.total}
-                </p>
-                <p className="text-sm text-muted-foreground">Total de Aulas</p>
-              </div>
-              <div>
-                <p className="text-2xl font-bold">
-                  {user.attendance.lastMonth}
-                </p>
-                <p className="text-sm text-muted-foreground">Aulas no Mês</p>
-              </div>
+             <div className="flex justify-between">
+                <span className="font-medium text-muted-foreground">Telefone:</span>
+                <span>{user.phone || 'Não informado'}</span>
+            </div>
+             <div className="flex justify-between">
+                <span className="font-medium text-muted-foreground">Membro Desde:</span>
+                <span>Jan 2022</span>
+            </div>
+             <div className="flex justify-between">
+                <span className="font-medium text-muted-foreground">Contato de Emergência:</span>
+                <span>(55) 5555-1111</span>
             </div>
           </CardContent>
         </Card>
@@ -139,99 +132,95 @@ export default function ProfilePage() {
                 <span className="capitalize">{roleNames[user.role]}</span>
             </div>
              <div className="flex justify-between">
-                <span className="font-medium text-muted-foreground">Telefone:</span>
-                <span>{user.phone || 'Não informado'}</span>
+                <span className="font-medium text-muted-foreground">Data de Nascimento:</span>
+                <span>{user.dateOfBirth || 'Não informada'}</span>
             </div>
              <div className="flex justify-between">
-                <span className="font-medium text-muted-foreground">Membro Desde:</span>
-                <span>Jan 2022</span>
+                <span className="font-medium text-muted-foreground">Categoria:</span>
+                <span>{user.category}</span>
             </div>
              <div className="flex justify-between">
-                <span className="font-medium text-muted-foreground">Contato de Emergência:</span>
-                <span>(55) 5555-1111</span>
+                <span className="font-medium text-muted-foreground">Plano:</span>
+                <span>Plano Ouro</span>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {user.role === 'student' ? (
-          <Card>
-            <CardHeader>
-              <CardTitle>Histórico de Presença</CardTitle>
-              <CardDescription>
-                Seus check-ins de aulas recentes.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Data</TableHead>
-                    <TableHead>Aula</TableHead>
-                    <TableHead className="text-right">Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {mockAttendanceHistory.map((item) => (
-                    <TableRow key={item.date}>
-                      <TableCell>{item.date}</TableCell>
-                      <TableCell>{item.class}</TableCell>
-                      <TableCell className="text-right">
-                        <Badge
-                          variant={
-                            item.status === "Presente" ? "default" : "destructive"
-                          }
-                          className={cn(
-                            item.status === "Presente" && "bg-green-500/20 text-green-300 border-green-500/30"
-                          )}
-                        >
-                          {item.status}
-                        </Badge>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-      ) : (
+      <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                  <Trophy className="h-5 w-5" />
-                  Qualificações e Conquistas
-              </CardTitle>
-              <CardDescription>
-                  Resumo da jornada e especialidades do professor.
-              </CardDescription>
+            <CardTitle className="flex items-center gap-2">
+              <Medal className="text-primary" />
+              Progresso de Graduação
+            </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-6">
-              <div>
-                  <h4 className="font-semibold mb-2 flex items-center gap-2"><BookOpen className="h-4 w-4 text-primary" /> Biografia</h4>
-                  <p className="text-sm text-muted-foreground pl-6 border-l-2 border-primary/20 ml-2">
-                      Com mais de 20 anos de dedicação ao Jiu-Jitsu, Professor {user.name.split(' ')[1]} é faixa preta {user.stripes}º grau, reconhecido por sua técnica refinada e didática excepcional. Sua jornada é marcada por inúmeros títulos e, principalmente, pela formação de centenas de atletas e cidadãos.
-                  </p>
+          <CardContent>
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="font-medium">
+                  Próxima Graduação: Faixa Roxa
+                </span>
+                <span className="text-muted-foreground">{user.nextGraduationProgress}%</span>
               </div>
-              <div>
-                  <h4 className="font-semibold mb-2 flex items-center gap-2"><Medal className="h-4 w-4 text-primary" /> Principais Conquistas</h4>
-                  <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1 pl-8">
-                      <li>Campeão Mundial IBJJF (2010)</li>
-                      <li>Campeão Pan-Americano (2009, 2011)</li>
-                      <li>Mestre do Ano - Federação Estadual (2018)</li>
-                  </ul>
-              </div>
-              <div>
-                  <h4 className="font-semibold mb-2 flex items-center gap-2"><Sparkles className="h-4 w-4 text-primary" /> Especialidades</h4>
-                  <div className="flex flex-wrap gap-2 pl-8">
-                      <Badge variant="secondary">Guarda De La Riva</Badge>
-                      <Badge variant="secondary">Passagem de Pressão</Badge>
-                      <Badge variant="secondary">Jiu-Jitsu Infantil</Badge>
-                      <Badge variant="secondary">Defesa Pessoal</Badge>
-                  </div>
-              </div>
+              <Progress value={user.nextGraduationProgress} />
+              <p className="text-xs text-muted-foreground">
+                Baseado em frequência, tempo e avaliação do professor.
+              </p>
+            </div>
           </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Trophy className="text-yellow-400" />
+              Frequência
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex items-baseline justify-center gap-4">
+            <div>
+              <p className="text-4xl font-bold">{user.attendance.lastMonth}</p>
+              <p className="text-sm text-muted-foreground">Aulas no Mês</p>
+            </div>
+            <div className="h-12 border-l" />
+            <div>
+              <p className="text-4xl font-bold">{user.attendance.total}</p>
+              <p className="text-sm text-muted-foreground">Aulas Totais</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <BookOpen />
+            Histórico de Presença
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Data</TableHead>
+                <TableHead>Aula</TableHead>
+                <TableHead className="text-right">Status</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {mockAttendanceHistory.map((item, index) => (
+                <TableRow key={index}>
+                  <TableCell>{item.date}</TableCell>
+                  <TableCell>{item.class}</TableCell>
+                  <TableCell className="text-right">
+                    <Badge variant="secondary">{item.status}</Badge>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
       </Card>
-      )}
     </div>
   );
 }

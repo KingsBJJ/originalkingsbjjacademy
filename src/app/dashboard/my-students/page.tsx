@@ -34,11 +34,9 @@ const formatJoinDate = (date: Date | undefined) => {
     const now = new Date();
     const oneMonth = 30 * 24 * 60 * 60 * 1000;
     
-    // Check if the date is less than a month ago
     if (now.getTime() - jsDate.getTime() < oneMonth) {
         return `Há ${formatDistanceToNow(jsDate, { locale: ptBR })}`;
     }
-    // Otherwise, format as "Month Year"
     return `Desde ${format(jsDate, 'MMM yyyy', { locale: ptBR })}`;
 };
 
@@ -140,7 +138,6 @@ const StudentsListSkeleton = () => (
 async function MyStudentsList({ user }: { user: User }) {
   const allStudents = await getStudents();
 
-  // For admins, show all students. For professors, filter by mainInstructor.
   const myStudents = user.role === 'admin' 
     ? allStudents 
     : allStudents.filter(student => student.mainInstructor === user.name);
@@ -188,13 +185,11 @@ export default async function MyStudentsPage({
   const email = searchParams?.email as string;
   let user = email ? await getUserByEmail(email) : null;
 
-  // Fallback to role-based mock user if no real user is found
   if (!user) {
     const role = (searchParams?.role || 'student') as User['role'];
     user = mockUsers[role] || mockUsers.student;
   }
   
-  // Security check: Only professors and admins can access this page.
   if (user.role !== 'professor' && user.role !== 'admin') {
     return (
       <div className="flex h-full items-center justify-center">

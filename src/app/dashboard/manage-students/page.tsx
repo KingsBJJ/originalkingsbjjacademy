@@ -153,7 +153,6 @@ const StudentsListSkeleton = () => (
 async function StudentList({ user }: { user: User }) {
   const allStudents = await getStudents();
 
-  // Admin sees all students
   const filteredStudents = allStudents;
 
   const adultStudents = filteredStudents.filter(s => s.category === 'Adult');
@@ -200,7 +199,6 @@ export default async function ManageStudentsPage({
 }) {
   const role = (searchParams?.role || 'student') as User['role'];
   
-  // Create a representative user object for data fetching and permission checks.
   const baseUser = mockUsers[role] || mockUsers.student;
   const user: User = {
       ...baseUser,

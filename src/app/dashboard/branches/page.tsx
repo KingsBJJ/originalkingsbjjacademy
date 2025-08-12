@@ -75,8 +75,6 @@ export default async function BranchesPage({
 }) {
   const role = searchParams?.role as User['role'] | undefined;
   
-  // Use a mock user based on the role from URL for server-side permission checks.
-  // The full user state is managed on the client in `client-layout.tsx`.
   const user = role ? mockUsers[role] : null;
 
   return (

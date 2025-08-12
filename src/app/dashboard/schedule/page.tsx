@@ -55,11 +55,8 @@ export default async function SchedulePage({
 }) {
   const role = (searchParams?.role || 'student') as User['role'];
   
-  // Get user details from URL or mock data to determine affiliation
   const affiliationFromParams = searchParams?.affiliation as string;
   
-  // Use a mock user to get affiliations for server-side rendering logic.
-  // The actual, full user object is handled on the client.
   const userFromMock = mockUsers[role] || mockUsers.student;
   const userAffiliations = affiliationFromParams 
       ? [affiliationFromParams] 
@@ -67,7 +64,6 @@ export default async function SchedulePage({
 
   const branches = await getBranches();
 
-  // Flatten all class schedules from all branches into a single array
   const allClasses = branches.flatMap(branch => 
       (branch.schedule ?? []).map(item => ({
           ...item,
@@ -75,20 +71,19 @@ export default async function SchedulePage({
       }))
   );
 
-  // Filter classes based on user role and affiliation
   const displayedClasses = role === "admin"
-      ? allClasses // Admin sees all classes
-      : allClasses.filter((c) => userAffiliations.includes(c.branchName)); // Students/professors see their branch's classes
+      ? allClasses
+      : allClasses.filter((c) => userAffiliations.includes(c.branchName));
 
   const adultClasses = displayedClasses.filter(c => c.category === "Adults");
   const kidsClasses = displayedClasses.filter(c => c.category === "Kids");
 
   return (
     <div className="grid gap-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Horários das Aulas</h1>
+       <div>
+        <h1 className="text-3xl font-bold tracking-tight">Grade de Horários</h1>
         <p className="text-muted-foreground">
-          Encontre sua próxima aula e planeje sua semana.
+            Confira a agenda completa de aulas para sua filial.
         </p>
       </div>
 
