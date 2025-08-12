@@ -21,13 +21,11 @@ import {
 import { Button } from '@/components/ui/button';
 import { getInstructors, type User } from '@/lib/firestoreService';
 import { mockUsers } from '@/lib/mock-data';
-<<<<<<< HEAD
-import { Skeleton } from '@/components/ui/skeleton'; 
-import { InstructorActions } from './InstructorActionsClient';
-=======
 import { InstructorTableRowClient } from './InstructorTableRowClient';
+// This component might be from your local branch. Ensure it's needed and correctly implemented.
+// import { InstructorActions } from './InstructorActionsClient';
+import { BeltBadge } from '@/components/ui/belt-badge'; // Assuming BeltBadge is needed for grading
 import { Skeleton } from '@/components/ui/skeleton';
->>>>>>> ccd82443213cfc940a531324e7cba62ab366217f
 
 const InstructorsTableSkeleton = () => (
     <Card>
@@ -48,9 +46,9 @@ const InstructorsTableSkeleton = () => (
                 </TableHeader>
                 <TableBody>
                     {Array.from({ length: 3 }).map((_, i) => (
-                        <TableRow key={i}>
-                            <TableCell><div className="flex items-center gap-2"><Skeleton className="h-9 w-9 rounded-full" /><Skeleton className="h-4 w-32" /></div></TableCell>
-                            <TableCell><Skeleton className="h-4 w-40" /></TableCell>
+                        <TableRow key={i}> 
+                            <TableCell><div className="flex items-center gap-2"><Skeleton className="h-9 w-9 rounded-full" /><Skeleton className="h-4 w-32" /></div></TableCell> 
+                            <TableCell><Skeleton className="h-4 w-40" /></TableCell> 
                             <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
                             <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                             <TableCell className="text-right"><Skeleton className="h-8 w-8" /></TableCell>
@@ -65,61 +63,6 @@ const InstructorsTableSkeleton = () => (
 async function InstructorsList({ user }: { user: User | null }) {
     const instructors = await getInstructors();
 
-<<<<<<< HEAD
-  return (
-    <Card>
-      <CardContent className="p-0">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Professor</TableHead>
-              <TableHead>Filiais</TableHead>
-              <TableHead>Graduação</TableHead>
-               <TableHead>Telefone</TableHead>
-              <TableHead>
-                <span className="sr-only">Ações</span>
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {instructors.length > 0 ? (
-              instructors.map((instructor) => (
-                 <TableRow key={instructor.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-9 w-9">
-                          <AvatarImage src={instructor.avatar} alt={instructor.name} />
-                          <AvatarFallback>{instructor.name.charAt(0)}</AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium">{instructor.name}</p>
-                          <p className="text-xs text-muted-foreground">{instructor.email}</p>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>{instructor.affiliations?.join(', ') || 'N/A'}</TableCell>
-                    <TableCell>
-                      <BeltBadge belt={instructor.belt} stripes={instructor.stripes} />
-                    </TableCell>
-                    <TableCell>{instructor.phone}</TableCell>
-                    <TableCell className="text-right">
-                       <InstructorActions instructor={instructor} user={user} />
-                    </TableCell>
-                  </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center">
-                  Nenhum professor cadastrado.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </CardContent>
-    </Card>
-  );
-=======
     return (
         <Card>
             <CardHeader>
@@ -162,7 +105,6 @@ async function InstructorsList({ user }: { user: User | null }) {
             </CardContent>
         </Card>
     );
->>>>>>> ccd82443213cfc940a531324e7cba62ab366217f
 }
 
 export const metadata: Metadata = {
