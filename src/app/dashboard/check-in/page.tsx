@@ -15,7 +15,7 @@ import { Camera, Check } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { UserContext, UserUpdateContext } from '../client-layout';
+import { UserContext, UserUpdateContext } from '@/app/dashboard/client-layout';
 
 
 export default function CheckInPage() {

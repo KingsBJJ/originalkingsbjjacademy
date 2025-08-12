@@ -1,23 +1,16 @@
-// src/app/api/genkit/route.ts
-/**
- * @fileoverview This file creates a Genkit-instrumented Next.js API route.
- *
- * It imports all the flow definitions from the codebase and exports them
- * via a Next.js route handler.
- */
-import { ai } from '@/ai/genkit'; // Importa a instância 'ai' que você configurou
-import { NextRequest } from 'next/server';
-import { createApiHandler } from '@genkit-ai/firebase/functions'; // Importa o handler para web
+import { genkit } from 'genkit';
 
-// Import all flows so that they are registered with the Genkit framework.
-import * as trainingFocusFlow from '@/ai/flows/trainingFocusFlow';
+// Initialize Genkit. Add your configuration here, e.g., plugins for models.
+export const ai = genkit({});
+  // plugins: [
+  //   googleAI(), // Example: configure Google AI plugin
+  // ],
+  import { genkit } from 'genkit';
 
-// Crie um handler de API usando a instância 'ai'
-const handler = createApiHandler({
-  ai: ai, // Passe a instância 'ai' configurada
-});
-
-// Crie uma rota handler que serve a API Genkit usando o handler criado
-export async function POST(req: NextRequest) {
-  return await handler(req); // Use o handler para processar a requisição
-}
+  // Initialize Genkit. Add your configuration here, e.g., plugins for models.
+  export const ai = genkit({
+    // plugins: [
+    //   googleAI(), // Example: configure Google AI plugin
+    // ],
+  });
+  

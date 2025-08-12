@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/card';
 import { getBranches, type User } from '@/lib/firestoreService';
 import { mockUsers } from '@/lib/mock-data';
-import { BranchActions } from './BranchActionsClient';
+import { BranchCardClient } from './BranchCardClient';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const BranchesGridSkeleton = () => (
@@ -49,30 +49,7 @@ async function BranchesList({ user }: { user: User | null }) {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {branches.length > 0 ? (
                 branches.map((branch) => (
-                    <Card key={branch.id}>
-                        <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
-                            <CardTitle className="text-xl font-bold text-primary">{branch.name}</CardTitle>
-                            <BranchActions branch={branch} user={user} />
-                        </CardHeader>
-                        <CardContent>
-                             <div className="space-y-3 pt-2">
-                                <p className="text-sm text-foreground flex items-start gap-2 pt-2">
-                                    <MapPin className="h-4 w-4 shrink-0 mt-0.5 text-primary" />
-                                    <span>{branch.address}</span>
-                                </p>
-                                <p className="text-sm text-foreground flex items-center gap-2 pt-2">
-                                    <Phone className="h-4 w-4 shrink-0 text-primary" />
-                                    <span>{branch.phone}</span>
-                                </p>
-                                {branch.responsible && (
-                                    <p className="text-sm text-foreground flex items-center gap-2 pt-2">
-                                        <UserIcon className="h-4 w-4 shrink-0 text-primary" />
-                                        <strong>Responsável:</strong> {branch.responsible}
-                                    </p>
-                                )}
-                            </div>
-                        </CardContent>
-                    </Card>
+                    <BranchCardClient key={branch.id} branch={branch} userRole={user?.role || 'student'} />
                 ))
             ) : (
                 <Card className="md:col-span-2 lg:col-span-3">

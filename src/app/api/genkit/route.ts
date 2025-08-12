@@ -7,14 +7,14 @@
  */
 import { ai } from '@/ai/genkit';
 import { NextRequest, NextResponse } from 'next/server';
-import { createApiHandler } from '@genkit-ai/firebase/functions'; // Importa o handler para web
+import * as firebaseGenkit from '@genkit-ai/firebase'; // Importa o handler para web
 
 // Import all flows so that they are registered with the Genkit framework.
 import * as trainingFocusFlow from '@/ai/flows/trainingFocusFlow';
 
 // Crie um handler de API usando a instância 'ai'
-const handler = createApiHandler({
- ai: ai, // Passe a instância 'ai' configurada
+const handler = firebaseGenkit.createApiHandler({
+  ai: ai, // Passe a instância 'ai' configurada
 });
 
 // Create a route handler that serves the Genkit API.

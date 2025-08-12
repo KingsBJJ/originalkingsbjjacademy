@@ -34,8 +34,8 @@ import {
 } from "lucide-react";
 import { Bar, BarChart as RechartsBarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
 import { ChartConfig, ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
-import { UserContext } from "./client-layout";
-import { 
+import { UserContext } from "@/app/dashboard/client-layout";
+import {
     getBranches, 
     getInstructors, 
     getStudents, 
