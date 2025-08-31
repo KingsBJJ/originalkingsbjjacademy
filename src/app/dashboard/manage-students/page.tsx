@@ -192,19 +192,15 @@ async function StudentList({ user }: { user: User }) {
   );
 }
 
-export default async function ManageStudentsPage({
-  searchParams,
-}: {
-  searchParams: { [key: string]: string | string[] | undefined };
-}) {
-  const role = (searchParams?.role || 'student') as User['role'];
+export default async function ManageStudentsPage() {
+  const role: User['role'] = 'student';
   
   const baseUser = mockUsers[role] || mockUsers.student;
   const user: User = {
       ...baseUser,
       role,
-      email: (searchParams?.email as string) || baseUser.email,
-      name: (searchParams?.name as string) || baseUser.name,
+      email: baseUser.email,
+      name: baseUser.name,
       affiliations: role === 'professor' ? baseUser.affiliations : [], 
   };
   

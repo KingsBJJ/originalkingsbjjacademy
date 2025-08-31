@@ -1,9 +1,9 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'bjj.academy.kingsbjjapp',
-  appName: 'next-genkit-app',
-  webDir: 'public'
+  appId: 'com.kingsbjj.app',
+  appName: 'Kings BJJ Academy',
+  webDir: 'out'
 };
 
 export default config;

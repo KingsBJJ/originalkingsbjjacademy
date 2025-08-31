@@ -1,4 +1,4 @@
-'use server';
+// 'use server'; // Commented out for static export
 // src/ai/flows/trainingFocusFlow.ts
 
 export type TrainingFocusInput = {

@@ -3,6 +3,9 @@
 
 const nextConfig = {
   /* config options here */
+  output: 'export',
+  trailingSlash: true,
+  distDir: 'out',
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -10,6 +13,7 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   images: {
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',

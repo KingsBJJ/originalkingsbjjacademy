@@ -11,11 +11,11 @@ import { EditProfileForm } from './EditProfileForm';
 import { KingsBjjLogo } from '@/components/kings-bjj-logo';
 
 export default async function EditProfilePage({
-  searchParams,
+  
 }: {
   searchParams: { [key:string]: string | string[] | undefined };
 }) {
-  const email = searchParams?.email as string;
+  const email = "example@example.com";
   
   const [user, branches, instructors] = await Promise.all([
     getUserByEmail(email),

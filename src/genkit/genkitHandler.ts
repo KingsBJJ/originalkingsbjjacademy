@@ -1,5 +1,5 @@
 // src/genkit/genkitHandler.ts
-'use server';
+// 'use server'; // Commented out for static export
 
 import { initGenkit } from '@genkit-ai/core';
 import { simpleTestFlow } from './simpleTestFlow';

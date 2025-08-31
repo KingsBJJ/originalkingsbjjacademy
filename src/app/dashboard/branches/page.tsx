@@ -68,14 +68,10 @@ async function BranchesList({ user }: { user: User | null }) {
     );
 }
 
-export default async function BranchesPage({
-  searchParams,
-}: {
-  searchParams: { [key: string]: string | string[] | undefined };
-}) {
-  const role = searchParams?.role as User['role'] | undefined;
-  
-  const user = role ? mockUsers[role] : null;
+export default async function BranchesPage() {
+  // For static export, use a default user role
+  const role: User['role'] = 'student';
+  const user = mockUsers[role];
 
   return (
     <div className="grid gap-6">

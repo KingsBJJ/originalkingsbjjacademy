@@ -8,16 +8,24 @@ import { EditBranchForm } from './EditBranchForm';
 import { KingsBjjLogo } from '@/components/kings-bjj-logo';
 import { User, mockUsers } from "@/lib/mock-data";
 
+// Generate static params for static export
+export async function generateStaticParams() {
+  return [
+    { id: 'example' },
+    { id: 'test' },
+  ];
+}
+
 // This is now a Server Component
 export default async function EditBranchPage({
   params,
-  searchParams,
+  
 }: {
   params: { id: string };
-  searchParams: { [key: string]: string | string[] | undefined };
+  
 }) {
 
-  const role = searchParams?.role as User['role'] || 'student';
+  const role: User["role"] = "student";
   const user = mockUsers[role] || mockUsers.student; // Simulate user for access control
   const branchId = params.id;
 
