@@ -1,13 +1,9 @@
 import type { Metadata } from "next";
-import { Poppins } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 
-const poppins = Poppins({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-poppins",
-});
+// Using system fonts instead of Google Fonts for offline compatibility
+const fontClass = "font-sans";
 
 export const metadata: Metadata = {
   title: "Kings BJJ Hub de Treinamento",
@@ -21,7 +17,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR" className="dark">
-      <body className={`${poppins.variable} font-body antialiased`}>
+      <body className={`${fontClass} antialiased`}>
         {children}
         <Toaster />
       </body>

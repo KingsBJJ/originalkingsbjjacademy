@@ -178,15 +178,15 @@ async function MyStudentsList({ user }: { user: User }) {
 
 
 export default async function MyStudentsPage({
-  searchParams,
+  
 }: {
-  searchParams: { [key: string]: string | string[] | undefined };
+  
 }) {
-  const email = searchParams?.email as string;
+  const email = "example@example.com";
   let user = email ? await getUserByEmail(email) : null;
 
   if (!user) {
-    const role = (searchParams?.role || 'student') as User['role'];
+    const role: User['role'] = 'professor';
     user = mockUsers[role] || mockUsers.student;
   }
   

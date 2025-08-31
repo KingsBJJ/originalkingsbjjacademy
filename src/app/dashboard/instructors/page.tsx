@@ -21,7 +21,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { getInstructors, type User } from '@/lib/firestoreService';
 import { mockUsers } from '@/lib/mock-data';
-import { InstructorTableRowClient } from './InstructorTableRowClient';
+import InstructorTableRowClient from './InstructorTableRowClient';
 // This component might be from your local branch. Ensure it's needed and correctly implemented.
 // import { InstructorActions } from './InstructorActionsClient';
 import { BeltBadge } from '@/components/ui/belt-badge'; // Assuming BeltBadge is needed for grading
@@ -113,11 +113,11 @@ export const metadata: Metadata = {
 };
 
 export default async function InstructorsPage({
-    searchParams,
+    
 }: {
-    searchParams: { [key: string]: string | string[] | undefined };
+    
 }) {
-    const role = searchParams?.role as User['role'] | undefined;
+    const role: User["role"] = "student";
     const user = role ? mockUsers[role] : null;
 
     return (

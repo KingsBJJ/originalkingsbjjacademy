@@ -48,14 +48,10 @@ const ClassListRenderer = ({ classes, userRole }: { classes: ClassWithBranch[], 
     );
 };
 
-export default async function SchedulePage({
-  searchParams,
-}: {
-  searchParams: { [key: string]: string | string[] | undefined };
-}) {
-  const role = (searchParams?.role || 'student') as User['role'];
+export default async function SchedulePage() {
+  const role: User['role'] = 'student';
   
-  const affiliationFromParams = searchParams?.affiliation as string;
+  const affiliationFromParams = '';
   
   const userFromMock = mockUsers[role] || mockUsers.student;
   const userAffiliations = affiliationFromParams 

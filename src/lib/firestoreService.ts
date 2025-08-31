@@ -1,6 +1,6 @@
 
 // src/lib/firestoreService.ts
-'use server';
+// 'use server'; // Commented out for static export
 
 import {
   collection,
